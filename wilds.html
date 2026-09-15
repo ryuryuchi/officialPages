@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Monster Hunter Wilds の装備・護石シミュレーター">
+  <title>Wilds Build Finder</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="page-width">
+      <p class="eyebrow">MONSTER HUNTER WILDS</p>
+      <h1>Build Finder</h1>
+      <p class="subtitle">目標スキルを満たす防具・護石・装飾品の候補を探します。</p>
+    </div>
+  </header>
+
+  <main class="page-width">
+    <section class="panel" aria-labelledby="conditions-title">
+      <div class="section-title">
+        <div>
+          <p class="eyebrow">CONDITIONS</p>
+          <h2 id="conditions-title">検索条件</h2>
+        </div>
+        <button id="search-button" type="button">装備を検索</button>
+      </div>
+      <div id="status" class="status" role="status" aria-live="polite">データを読み込み中…</div>
+
+      <div class="controls">
+        <label>防具ランク
+          <select id="rank-filter">
+            <option value="high">上位</option>
+            <option value="low">下位</option>
+            <option value="all">すべて</option>
+          </select>
+        </label>
+        <label>武器種
+          <select id="weapon-kind"><option value="">指定なし</option></select>
+        </label>
+        <label class="wide">武器（任意）
+          <select id="weapon-select" disabled><option value="">武器なし</option></select>
+        </label>
+      </div>
+
+      <div class="options">
+        <label><input id="fixed-charms" type="checkbox" checked> 固定護石を候補に含める</label>
+        <label><input id="random-charms" type="checkbox" checked> 理論上のランダム護石を候補に含める</label>
+      </div>
+
+      <div class="skill-controls">
+        <div>
+          <label for="skill-select">目標スキル</label>
+          <select id="skill-select" disabled></select>
+        </div>
+        <div>
+          <label for="skill-level">必要Lv</label>
+          <input id="skill-level" type="number" min="1" value="1" disabled>
+        </div>
+        <button id="add-skill-button" type="button" disabled>追加</button>
+      </div>
+      <div id="target-skills" class="target-skills" aria-live="polite"></div>
+      <p class="hint">最大20スキル。装飾品は所持数を制限せず、必要スキルを満たすように自動装着します。</p>
+    </section>
+
+    <section class="result-section" aria-labelledby="results-title">
+      <div class="section-title">
+        <div>
+          <p class="eyebrow">RESULTS</p>
+          <h2 id="results-title">候補装備</h2>
+        </div>
+        <p id="result-summary" class="result-summary"></p>
+      </div>
+      <div id="results" class="results"></div>
+    </section>
+  </main>
+
+  <footer class="page-width">
+    データ提供: <a href="https://wilds.mhdb.io/" target="_blank" rel="noreferrer">MHWilds DB API</a> /
+    <a href="https://docs.google.com/spreadsheets/d/1sWzcj2yZ7ZIgY8MH6CbR2pZj13bwBHlnXIkhakCsdLM/htmlview" target="_blank" rel="noreferrer">護石テーブル</a>
+  </footer>
+  <script src="app.js"></script>
+</body>
+</html>
