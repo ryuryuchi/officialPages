@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="フォルダくんの取扱説明書">
     <title>フォルダくん 取扱説明書</title>
     <link rel="stylesheet" href="../../assets/css/style_qiita.css">
 </head>
@@ -12,406 +11,467 @@
         <article class="card">
             <div class="article-header">
                 <h1 class="article-title">フォルダくん 取扱説明書</h1>
-                <p>テンプレートを選ぶだけで、決まったフォルダ構成や初期ファイルをまとめて作成する Windows 用ツールです。</p>
-                <p>
-                    <img src="https://img.shields.io/badge/OS-Windows%2010%20%2F%2011-0078D6" alt="対応OS：Windows 10 / 11">
-                    <img src="https://img.shields.io/badge/UI-Tkinter-3776AB" alt="UI：Tkinter">
-                    <img src="https://img.shields.io/badge/用途-社内ツール-2ea44f" alt="用途：社内ツール">
-                </p>
+
             </div>
-
             <div class="article-body">
-                <section class="toc" aria-labelledby="toc-title">
-                    <h2 id="toc-title">目次</h2>
-                    <ul>
-                        <li><a href="#できること">1. できること</a></li>
-                        <li><a href="#まず使う">2. まず使う</a></li>
-                        <li><a href="#右クリックメニューに登録する">3. 右クリックメニューに登録する</a></li>
-                        <li><a href="#テンプレートを編集する">4. テンプレートを編集する</a></li>
-                        <li><a href="#templatejsonを直接編集する">5. template.jsonを直接編集する</a></li>
-                        <li><a href="#作成時の動作">6. 作成時の動作</a></li>
-                        <li><a href="#困ったとき">7. 困ったとき</a></li>
-                        <li><a href="#開発者向け情報">8. 開発者向け情報</a></li>
-                    </ul>
-                </section>
-
-                <details>
-                    <summary>この取説を最初に読む人向け：最短手順</summary>
-                    <ol>
-                        <li><code>フォルダくん.exe</code> と <code>template.json</code> を同じフォルダに置く。</li>
-                        <li><code>フォルダくん.exe</code> を起動する。</li>
-                        <li>上部のテンプレートを選ぶ。</li>
-                        <li>「作成先フォルダ選択」で作成先を選ぶ。</li>
-                        <li>「フォルダ作成」を押し、プレビューで内容を確認する。</li>
-                        <li>問題がなければ「実行」を押す。</li>
-                    </ol>
-                    <p>右クリックから起動したい場合は、<a href="#右クリックメニューに登録する">3. 右クリックメニューに登録する</a>を設定してください。</p>
-                </details>
-
-                <blockquote>
-                    <p><strong>注記</strong></p>
-                    <p><code>template.json</code> はテンプレートの本体です。実行ファイルだけを別の場所へ移動するとテンプレートが表示されないため、必ず同じフォルダに置いてください。</p>
-                </blockquote>
-
-                <h2 id="できること">1. できること</h2>
-                <p>フォルダくんでは、次の内容をテンプレートとして登録できます。</p>
-                <ul>
-                    <li>複数階層のフォルダを一括作成</li>
-                    <li>空のフォルダを含む定型フォルダ構成の作成</li>
-                    <li>フォルダ作成時に初期ファイルも作成</li>
-                    <li>テンプレートの追加、削除、並び替え</li>
-                    <li>既存フォルダ・既存ファイルを確認してから実行</li>
-                    <li>実行前プレビュー</li>
-                    <li>書き込みを行わないDry Run</li>
-                    <li>エクスプローラーの右クリックメニューから作成先を指定して起動</li>
-                </ul>
-
-                <h3>用途の例</h3>
-                <details>
-                    <summary>よくあるテンプレート例</summary>
-                    <table>
-                        <thead>
-                            <tr><th>用途</th><th>作成される例</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>新規ツール</td><td><code>00_Source</code>、<code>10_exe</code>、<code>20_文書</code>、<code>30_参考資料</code></td></tr>
-                            <tr><td>資料作成</td><td><code>原稿</code>、<code>画像</code>、<code>完成版</code>、<code>参考資料</code></td></tr>
-                            <tr><td>プログラム学習</td><td><code>source</code>、<code>tests</code>、<code>docs</code>、<code>data</code></td></tr>
-                            <tr><td>メモ整理</td><td><code>inbox</code>、<code>処理中</code>、<code>archive</code></td></tr>
-                        </tbody>
-                    </table>
-                </details>
-
-                <h2 id="まず使う">2. まず使う</h2>
-                <h3>2.1 ファイルを配置する</h3>
-                <p>配布済みの実行ファイルを使う場合は、次の2ファイルを同じフォルダに置きます。</p>
-                <pre><code>フォルダくん/
-├─ フォルダくん.exe
-└─ template.json</code></pre>
-                <p>このリポジトリに含まれる配布用ファイルを使う場合の例です。</p>
-                <pre><code>10_exe/
-├─ フォルダくん.exe
-└─ template.json</code></pre>
-                <p>ソースコードから起動する場合は、次のようにします。</p>
-                <pre><code>00_Sorce/
-├─ main.py
-└─ template.json</code></pre>
-
-                <h3>2.2 起動する</h3>
-                <p><code>フォルダくん.exe</code> をダブルクリックします。</p>
-                <p>画面上部に <code>template.json</code> のテンプレート名が表示されます。テンプレートが複数ある場合は、コンボボックスから使用するものを選択してください。</p>
-                <details>
-                    <summary>ソースコードから起動する場合</summary>
-                    <p>Python 3 と Tkinter がインストールされた環境で、<code>00_Sorce</code> フォルダをカレントディレクトリにして実行します。</p>
-                    <pre><code>python .\main.py</code></pre>
-                    <p>Windowsでは、Pythonのインストール時に「Add Python to PATH」を有効にしておくと便利です。</p>
-                </details>
-
-                <h3>2.3 作成先を選ぶ</h3>
+            <blockquote>
+                <p>テンプレートを選ぶだけで、決まったフォルダ構成や初期ファイルをまとめて作成する Windows 用ツールです。</p>
+            </blockquote>
+            <p><img src="https://img.shields.io/badge/OS-Windows%2010%20%2F%2011-0078D6" alt="対応OS"> <img src="https://img.shields.io/badge/UI-Tkinter-3776AB" alt="UI"> <img src="https://img.shields.io/badge/用途-社内ツール-2ea44f" alt="License"></p>
+            <h2 id="目次">目次</h2>
+            <ul>
+                <li><a href="#1-できること">1. できること</a></li>
+                <li><a href="#2-まず使う">2. まず使う</a></li>
+                <li><a href="#3-右クリックメニューに登録する">3. 右クリックメニューに登録する</a></li>
+                <li><a href="#4-テンプレートを編集する">4. テンプレートを編集する</a></li>
+                <li><a href="#5-templatejsonを直接編集する">5. template.jsonを直接編集する</a></li>
+                <li><a href="#6-作成時の動作">6. 作成時の動作</a></li>
+                <li><a href="#7-困ったとき">7. 困ったとき</a></li>
+                <li><a href="#8-開発者向け情報">8. 開発者向け情報</a></li>
+            </ul>
+            <details>
+                <summary>この取説を最初に読む人向け：最短手順</summary>
                 <ol>
-                    <li>「作成先フォルダ選択」をクリックします。</li>
-                    <li>フォルダ選択ダイアログで作成先を選びます。</li>
-                    <li>ウィンドウのタイトルに選択したパスが表示されることを確認します。</li>
+                    <li><code>フォルダくん.exe</code> と <code>template.json</code> を同じフォルダに置く。</li>
+                    <li><code>フォルダくん.exe</code> を起動する。</li>
+                    <li>上部のテンプレートを選ぶ。</li>
+                    <li>「作成先フォルダ選択」で作成先を選ぶ。</li>
+                    <li>「フォルダ作成」を押し、プレビューで内容を確認する。</li>
+                    <li>問題がなければ「実行」を押す。</li>
                 </ol>
-                <p>たとえば <code>C:\Work\NewProject</code> を選んだ場合、テンプレート内の相対パスは次のように作成されます。</p>
-                <pre><code>C:\Work\NewProject\00_Source
-C:\Work\NewProject\10_文書
-C:\Work\NewProject\20_参考資料</code></pre>
-
-                <h3>2.4 作成前に確認する</h3>
-                <p>「フォルダ作成」をクリックすると、作成プレビューが開きます。</p>
+                <p>右クリックから起動したい場合は、<a href="#3-右クリックメニューに登録する">3. 右クリックメニューに登録する</a>を設定してください。</p>
+            </details>
+            <blockquote>
+                <p><code>template.json</code> はテンプレートの本体です。実行ファイルだけを別の場所へ移動するとテンプレートが表示されないため、必ず同じフォルダに置いてください。</p>
+            </blockquote>
+            <h2 id="1-できること">1. できること</h2>
+            <p>フォルダくんでは、次の内容をテンプレートとして登録できます。</p>
+            <ul>
+                <li>複数階層のフォルダを一括作成</li>
+                <li>空のフォルダを含む定型フォルダ構成の作成</li>
+                <li>フォルダ作成時に初期ファイルも作成</li>
+                <li>テンプレートの追加、削除、並び替え</li>
+                <li>既存フォルダ・既存ファイルを確認してから実行</li>
+                <li>実行前プレビュー</li>
+                <li>書き込みを行わないDry Run</li>
+                <li>エクスプローラーの右クリックメニューから作成先を指定して起動</li>
+            </ul>
+            <h3 id="用途の例">用途の例</h3>
+            <details>
+                <summary>よくあるテンプレート例</summary>
                 <table>
                     <thead>
-                        <tr><th>表示</th><th>意味</th></tr>
+                        <tr>
+                            <th>用途</th>
+                            <th>作成される例</th>
+                        </tr>
                     </thead>
                     <tbody>
-                        <tr><td>新規</td><td>まだ存在しないため、新しく作成される</td></tr>
-                        <tr><td>既存ファイル</td><td>同じ場所にファイルがある</td></tr>
-                        <tr><td>既存ディレクトリ</td><td>同じ場所にフォルダがある</td></tr>
-                        <tr><td>新規作成</td><td>対象を作成する</td></tr>
-                        <tr><td>スキップ</td><td>対象を変更しない</td></tr>
-                        <tr><td>上書き</td><td>既存ファイルをテンプレートの内容で置き換える</td></tr>
+                        <tr>
+                            <td>新規ツール</td>
+                            <td><code>00<em>Source</code>、<code>10</em>exe</code>、<code>20<em>文書</code>、<code>30</em>参考資料</code></td>
+                        </tr>
+                        <tr>
+                            <td>資料作成</td>
+                            <td><code>原稿</code>、<code>画像</code>、<code>完成版</code>、<code>参考資料</code></td>
+                        </tr>
+                        <tr>
+                            <td>プログラム学習</td>
+                            <td><code>source</code>、<code>tests</code>、<code>docs</code>、<code>data</code></td>
+                        </tr>
+                        <tr>
+                            <td>メモ整理</td>
+                            <td><code>inbox</code>、<code>処理中</code>、<code>archive</code></td>
+                        </tr>
                     </tbody>
                 </table>
-                <p>行を選択して「新規作成」「スキップ」「上書き」を押すと、その行の動作を変更できます。フォルダに対する「上書き」は選択できません。</p>
-                <details>
-                    <summary>安全に実行するおすすめ手順</summary>
-                    <ol>
-                        <li>まず「Dry Run」を押して、対象と動作だけを確認する。</li>
-                        <li>既存ファイルがある行は「スキップ」のままにする。</li>
-                        <li>内容を置き換えたいファイルだけ「上書き」に変更する。</li>
-                        <li>最後に「実行」を押す。</li>
-                    </ol>
-                </details>
-
-                <h3>2.5 Dry Runを使う</h3>
-                <p>Dry Runは、実際のフォルダ・ファイルを作成せずに実行予定を表示します。</p>
-                <p>テンプレートのパスが正しいか確認したいときや、既存フォルダへ適用する前の確認に利用してください。</p>
-
-                <h2 id="右クリックメニューに登録する">3. 右クリックメニューに登録する</h2>
-                <p>右クリック登録を行うと、エクスプローラーでフォルダを開いている状態から、作成先を自動設定してフォルダくんを起動できます。</p>
-                <h3>3.1 事前準備</h3>
-                <p>まず、実行ファイルの絶対パスを確認します。例：</p>
-                <pre><code>C:\Tools\フォルダくん\フォルダくん.exe</code></pre>
-                <p>パスに空白や日本語が含まれていても動作しますが、コマンドでは必ず実行ファイルのパス全体を二重引用符で囲んでください。</p>
-                <blockquote>
-                    <p><strong>警告</strong></p>
-                    <p>右クリック登録後に実行ファイルを移動すると、登録したコマンドが古いパスのままになります。移動した場合は、登録を削除してから再登録してください。</p>
-                </blockquote>
-
-                <h3>3.2 Windows 11の「フォルダの背景」に登録する（おすすめ）</h3>
-                <p>この設定では、フォルダを開いた状態で背景を右クリックしたときに「フォルダくんで作成」が表示されます。<code>%V</code> が現在開いているフォルダのパスに置き換わります。</p>
-                <h4>レジストリエディターで設定する</h4>
+            </details>
+            <h2 id="2-まず使う">2. まず使う</h2>
+            <h3 id="2-1-ファイルを配置する">2.1 ファイルを配置する</h3>
+            <p>配布済みの実行ファイルを使う場合は、次の2ファイルを同じフォルダに置きます。</p>
+            <pre><code class="language-text">フォルダくん/
+├─ フォルダくん.exe
+└─ template.json</code></pre>
+            <p>このリポジトリに含まれる配布用ファイルを使う場合の例です。</p>
+            <pre><code class="language-text">10_exe/
+├─ フォルダくん.exe
+└─ template.json</code></pre>
+            <p>ソースコードから起動する場合は、次のようにします。</p>
+            <pre><code class="language-text">00_Sorce/
+├─ main.py
+└─ template.json</code></pre>
+            <h3 id="2-2-起動する">2.2 起動する</h3>
+            <p><code>フォルダくん.exe</code> をダブルクリックします。</p>
+            <p>画面上部に <code>template.json</code> のテンプレート名が表示されます。テンプレートが複数ある場合は、コンボボックスから使用するものを選択してください。</p>
+            <details>
+                <summary>ソースコードから起動する場合</summary>
+                <p>Python 3 と Tkinter がインストールされた環境で、<code>00_Sorce</code> フォルダをカレントディレクトリにして実行します。</p>
+                <pre><code class="language-powershell">python .\main.py</code></pre>
+                <p>Windowsでは、Pythonのインストール時に「Add Python to PATH」を有効にしておくと便利です。</p>
+            </details>
+            <h3 id="2-3-作成先を選ぶ">2.3 作成先を選ぶ</h3>
+            <ol>
+                <li>「作成先フォルダ選択」をクリックします。</li>
+                <li>フォルダ選択ダイアログで作成先を選びます。</li>
+                <li>ウィンドウのタイトルに選択したパスが表示されることを確認します。</li>
+            </ol>
+            <p>たとえば <code>C:\Work\NewProject</code> を選んだ場合、テンプレート内の相対パスは次のように作成されます。</p>
+            <pre><code class="language-text">C:\Work\NewProject\00_Source
+C:\Work\NewProject\10_文書
+C:\Work\NewProject\20_参考資料</code></pre>
+            <h3 id="2-4-作成前に確認する">2.4 作成前に確認する</h3>
+            <p>「フォルダ作成」をクリックすると、作成プレビューが開きます。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>表示</th>
+                        <th>意味</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>新規</td>
+                        <td>まだ存在しないため、新しく作成される</td>
+                    </tr>
+                    <tr>
+                        <td>既存ファイル</td>
+                        <td>同じ場所にファイルがある</td>
+                    </tr>
+                    <tr>
+                        <td>既存ディレクトリ</td>
+                        <td>同じ場所にフォルダがある</td>
+                    </tr>
+                    <tr>
+                        <td>新規作成</td>
+                        <td>対象を作成する</td>
+                    </tr>
+                    <tr>
+                        <td>スキップ</td>
+                        <td>対象を変更しない</td>
+                    </tr>
+                    <tr>
+                        <td>上書き</td>
+                        <td>既存ファイルをテンプレートの内容で置き換える</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>行を選択して「新規作成」「スキップ」「上書き」を押すと、その行の動作を変更できます。フォルダに対する「上書き」は選択できません。</p>
+            <details>
+                <summary>安全に実行するおすすめ手順</summary>
                 <ol>
-                    <li><code>Win</code> + <code>R</code> を押します。</li>
-                    <li><code>regedit</code> と入力してEnterを押します。</li>
-                    <li>ユーザーアカウント制御が表示されたら「はい」を押します。</li>
-                    <li>次の場所へ移動します。
-                        <pre><code>HKEY_CLASSES_ROOT\Directory\Background\shell</code></pre>
-                    </li>
-                    <li><code>shell</code> を右クリックし、「新規」→「キー」を選びます。</li>
-                    <li>キー名を <code>フォルダくん</code> にします。</li>
-                    <li>作成した <code>フォルダくん</code> キーを右クリックし、「新規」→「文字列値」を選びます。</li>
-                    <li>値の名前を <code>Icon</code> にし、値のデータへ実行ファイルのパスを入力します。
-                        <pre><code>C:\Tools\フォルダくん\フォルダくん.exe</code></pre>
-                    </li>
-                    <li><code>フォルダくん</code> キーを右クリックし、「新規」→「キー」を選び、キー名を <code>command</code> にします。</li>
-                    <li><code>command</code> の「既定」をダブルクリックし、次の形式で入力します。
-                        <pre><code>"C:\Tools\フォルダくん\フォルダくん.exe" "%V"</code></pre>
-                    </li>
-                    <li>レジストリエディターを閉じます。</li>
-                    <li>エクスプローラーで任意のフォルダを開き、背景を右クリックします。</li>
-                    <li>Windows 11では「その他のオプションを表示」を開き、「フォルダくん」を選びます。</li>
+                    <li>まず「Dry Run」を押して、対象と動作だけを確認する。</li>
+                    <li>既存ファイルがある行は「スキップ」のままにする。</li>
+                    <li>内容を置き換えたいファイルだけ「上書き」に変更する。</li>
+                    <li>最後に「実行」を押す。</li>
                 </ol>
-
-                <h4>登録後の動作</h4>
-                <p>たとえば <code>C:\Work\ProjectA</code> を開いて実行すると、フォルダくんの作成先が自動的に次のようになります。</p>
-                <pre><code>C:\Work\ProjectA</code></pre>
-                <p>毎回「作成先フォルダ選択」を押す必要はありません。</p>
-
-                <h3>3.3 フォルダそのものの右クリックに登録する</h3>
-                <p>フォルダを開かず、フォルダアイコンそのものを右クリックして起動したい場合は、次の場所に登録します。</p>
-                <pre><code>HKEY_CLASSES_ROOT\Directory\shell</code></pre>
-                <p>作成するキーの構成は次のとおりです。</p>
-                <pre><code>HKEY_CLASSES_ROOT
+            </details>
+            <h3 id="2-5-dry-runを使う">2.5 Dry Runを使う</h3>
+            <p>Dry Runは、実際のフォルダ・ファイルを作成せずに実行予定を表示します。</p>
+            <p>テンプレートのパスが正しいか確認したいときや、既存フォルダへ適用する前の確認に利用してください。</p>
+            <h2 id="3-右クリックメニューに登録する">3. 右クリックメニューに登録する</h2>
+            <p>右クリック登録を行うと、エクスプローラーでフォルダを開いている状態から、作成先を自動設定してフォルダくんを起動できます。</p>
+            <h3 id="3-1-事前準備">3.1 事前準備</h3>
+            <p>まず、実行ファイルの絶対パスを確認します。例：</p>
+            <pre><code class="language-text">C:\Tools\フォルダくん\フォルダくん.exe</code></pre>
+            <p>パスに空白や日本語が含まれていても動作しますが、コマンドでは必ず実行ファイルのパス全体を二重引用符で囲んでください。</p>
+            <blockquote>
+                <p>右クリック登録後に実行ファイルを移動すると、登録したコマンドが古いパスのままになります。移動した場合は、登録を削除してから再登録してください。</p>
+            </blockquote>
+            <h3 id="3-2-windows-11の-フォルダの背景-に登録する-おすすめ">3.2 Windows 11の「フォルダの背景」に登録する（おすすめ）</h3>
+            <p>この設定では、フォルダを開いた状態で背景を右クリックしたときに「フォルダくんで作成」が表示されます。<code>%V</code> が現在開いているフォルダのパスに置き換わります。</p>
+            <h4 id="レジストリエディターで設定する">レジストリエディターで設定する</h4>
+            <ol>
+                <li><code>Win</code> + <code>R</code> を押します。</li>
+                <li><code>regedit</code> と入力してEnterを押します。</li>
+                <li>ユーザーアカウント制御が表示されたら「はい」を押します。</li>
+                <li>次の場所へ移動します。</li>
+            </ol>
+            <p>``<code>text HKEY<em>CLASSES</em>ROOT\Directory\Background\shell </code>``</p>
+            <ol>
+                <li><code>shell</code> を右クリックし、「新規」→「キー」を選びます。</li>
+                <li>キー名を <code>フォルダくん</code> にします。</li>
+                <li>作成した <code>フォルダくん</code> キーを右クリックし、「新規」→「文字列値」を選びます。</li>
+                <li>値の名前を <code>Icon</code> にし、値のデータへ実行ファイルのパスを入力します。</li>
+            </ol>
+            <p>``<code>text C:\Tools\フォルダくん\フォルダくん.exe </code>``</p>
+            <ol>
+                <li><code>フォルダくん</code> キーを右クリックし、「新規」→「キー」を選び、キー名を <code>command</code> にします。</li>
+                <li><code>command</code> の「既定」をダブルクリックし、次の形式で入力します。</li>
+            </ol>
+            <p>``<code>text "C:\Tools\フォルダくん\フォルダくん.exe" "%V" </code>``</p>
+            <ol>
+                <li>レジストリエディターを閉じます。</li>
+                <li>エクスプローラーで任意のフォルダを開き、背景を右クリックします。</li>
+                <li>Windows 11では「その他のオプションを表示」を開き、「フォルダくん」を選びます。</li>
+            </ol>
+            <h4 id="登録後の動作">登録後の動作</h4>
+            <p>たとえば <code>C:\Work\ProjectA</code> を開いて実行すると、フォルダくんの作成先が自動的に次のようになります。</p>
+            <pre><code class="language-text">C:\Work\ProjectA</code></pre>
+            <p>毎回「作成先フォルダ選択」を押す必要はありません。</p>
+            <h3 id="3-3-フォルダそのものの右クリックに登録する">3.3 フォルダそのものの右クリックに登録する</h3>
+            <p>フォルダを開かず、フォルダアイコンそのものを右クリックして起動したい場合は、次の場所に登録します。</p>
+            <pre><code class="language-text">HKEY_CLASSES_ROOT\Directory\shell</code></pre>
+            <p>作成するキーの構成は次のとおりです。</p>
+            <pre><code class="language-text">HKEY_CLASSES_ROOT
 └─ Directory
    └─ shell
       └─ フォルダくん
          └─ command</code></pre>
-                <p><code>command</code> の既定値は <code>%1</code> を使います。</p>
-                <pre><code>"C:\Tools\フォルダくん\フォルダくん.exe" "%1"</code></pre>
-                <p>背景メニューとフォルダアイコンの両方に登録する場合は、<code>Background\shell</code> と <code>Directory\shell</code> の両方に同じ設定を作成してください。</p>
-
-                <h3>3.4 <code>.reg</code> ファイルで登録する方法（任意）</h3>
-                <p>レジストリエディターを手作業で操作する代わりに、次の内容を <code>.reg</code> ファイルとして保存して実行することもできます。</p>
-                <p><code>C:\\Tools\\フォルダくん\\フォルダくん.exe</code> の部分は、自分の環境の実行ファイルパスに置き換えてください。レジストリファイル内では、区切り文字の <code>\</code> を2つ書きます。</p>
-                <pre><code>Windows Registry Editor Version 5.00
+            <p><code>command</code> の既定値は <code>%1</code> を使います。</p>
+            <pre><code class="language-text">&quot;C:\Tools\フォルダくん\フォルダくん.exe&quot; &quot;%1&quot;</code></pre>
+            <p>背景メニューとフォルダアイコンの両方に登録する場合は、<code>Background\shell</code> と <code>Directory\shell</code> の両方に同じ設定を作成してください。</p>
+            <h3 id="3-4-reg-ファイルで登録する方法-任意">3.4 <code>.reg</code> ファイルで登録する方法（任意）</h3>
+            <p>レジストリエディターを手作業で操作する代わりに、次の内容を <code>.reg</code> ファイルとして保存して実行することもできます。</p>
+            <p><code>C:\\Tools\\フォルダくん\\フォルダくん.exe</code> の部分は、自分の環境の実行ファイルパスに置き換えてください。レジストリファイル内では、区切り文字の <code>\</code> を2つ書きます。</p>
+            <pre><code class="language-reg">Windows Registry Editor Version 5.00
 
 [HKEY_CLASSES_ROOT\Directory\Background\shell\FolderKun]
-@="フォルダくんで作成"
-"Icon"="C:\\Tools\\フォルダくん\\フォルダくん.exe"
+@=&quot;フォルダくんで作成&quot;
+&quot;Icon&quot;=&quot;C:\\Tools\\フォルダくん\\フォルダくん.exe&quot;
 
 [HKEY_CLASSES_ROOT\Directory\Background\shell\FolderKun\command]
-@="\"C:\\Tools\\フォルダくん\\フォルダくん.exe\" \"%V\""
+@=&quot;\&quot;C:\\Tools\\フォルダくん\\フォルダくん.exe\&quot; \&quot;%V\&quot;&quot;
 
 [HKEY_CLASSES_ROOT\Directory\shell\FolderKun]
-@="フォルダくんで作成"
-"Icon"="C:\\Tools\\フォルダくん\\フォルダくん.exe"
+@=&quot;フォルダくんで作成&quot;
+&quot;Icon&quot;=&quot;C:\\Tools\\フォルダくん\\フォルダくん.exe&quot;
 
 [HKEY_CLASSES_ROOT\Directory\shell\FolderKun\command]
-@="\"C:\\Tools\\フォルダくん\\フォルダくん.exe\" \"%1\""</code></pre>
-                <p>保存時の文字コードは、Windowsのレジストリエディターで読み込める形式にしてください。文字化けする場合は、メモ帳の「名前を付けて保存」でUTF-16 LEを指定して保存します。</p>
-                <details>
-                    <summary>登録を削除する方法</summary>
-                    <ol>
-                        <li><code>Win</code> + <code>R</code> → <code>regedit</code> を開きます。</li>
-                        <li>背景メニューを削除する場合は、次のキーを削除します。
-                            <pre><code>HKEY_CLASSES_ROOT\Directory\Background\shell\フォルダくん</code></pre>
-                        </li>
-                        <li>フォルダアイコンのメニューを削除する場合は、次のキーを削除します。
-                            <pre><code>HKEY_CLASSES_ROOT\Directory\shell\フォルダくん</code></pre>
-                        </li>
-                    </ol>
-                    <p>キーを削除する前に、対象キーを右クリックして「エクスポート」を選ぶとバックアップできます。</p>
-                </details>
-
-                <h3>3.5 Windows 11で表示されない場合</h3>
-                <p>Windows 11の新しい右クリックメニューでは、登録した項目が「その他のオプションを表示」の中に入る場合があります。</p>
-                <p>次を確認してください。</p>
-                <ul>
-                    <li><code>command</code> のパスが実行ファイルの実際の場所と一致している</li>
-                    <li>実行ファイルのパス全体が二重引用符で囲まれている</li>
-                    <li>背景メニューは <code>Directory\Background\shell</code> に登録されている</li>
-                    <li>フォルダアイコンメニューは <code>Directory\shell</code> に登録されている</li>
-                    <li>エクスプローラーを再起動している</li>
-                    <li><code>フォルダくん.exe</code> と <code>template.json</code> が同じフォルダにある</li>
-                </ul>
-                <p>エクスプローラーを再起動するには、タスクマネージャーで「Windows エクスプローラー」を選び、「再起動」を押します。</p>
-
-                <h2 id="テンプレートを編集する">4. テンプレートを編集する</h2>
-                <h3>4.1 テンプレート編集画面を開く</h3>
+@=&quot;\&quot;C:\\Tools\\フォルダくん\\フォルダくん.exe\&quot; \&quot;%1\&quot;&quot;</code></pre>
+            <p>保存時の文字コードは、Windowsのレジストリエディターで読み込める形式にしてください。文字化けする場合は、メモ帳の「名前を付けて保存」でUTF-16 LEを指定して保存します。</p>
+            <details>
+                <summary>登録を削除する方法</summary>
                 <ol>
-                    <li>メイン画面の「テンプレート編集」を押します。</li>
-                    <li>左側のテンプレート一覧から編集対象を選びます。</li>
-                    <li>右側の「フォルダ」または「ファイル」タブを選びます。</li>
+                    <li><code>Win</code> + <code>R</code> → <code>regedit</code> を開きます。</li>
+                    <li>背景メニューを削除する場合は、次のキーを削除します。</li>
                 </ol>
-                <h3>4.2 フォルダを登録する</h3>
-                <p>「フォルダ」タブでは、1行に1つの相対パスを入力します。</p>
-                <pre><code>00_Source
+                <p>``<code>text HKEY<em>CLASSES</em>ROOT\Directory\Background\shell\フォルダくん </code>``</p>
+                <ol>
+                    <li>フォルダアイコンのメニューを削除する場合は、次のキーを削除します。</li>
+                </ol>
+                <p>``<code>text HKEY<em>CLASSES</em>ROOT\Directory\shell\フォルダくん </code>``</p>
+                <p>キーを削除する前に、対象キーを右クリックして「エクスポート」を選ぶとバックアップできます。</p>
+            </details>
+            <h3 id="3-5-windows-11で表示されない場合">3.5 Windows 11で表示されない場合</h3>
+            <p>Windows 11の新しい右クリックメニューでは、登録した項目が「その他のオプションを表示」の中に入る場合があります。</p>
+            <p>次を確認してください。</p>
+            <ul>
+                <li><code>command</code> のパスが実行ファイルの実際の場所と一致している</li>
+                <li>実行ファイルのパス全体が二重引用符で囲まれている</li>
+                <li>背景メニューは <code>Directory\Background\shell</code> に登録されている</li>
+                <li>フォルダアイコンメニューは <code>Directory\shell</code> に登録されている</li>
+                <li>エクスプローラーを再起動している</li>
+                <li><code>フォルダくん.exe</code> と <code>template.json</code> が同じフォルダにある</li>
+            </ul>
+            <p>エクスプローラーを再起動するには、タスクマネージャーで「Windows エクスプローラー」を選び、「再起動」を押します。</p>
+            <h2 id="4-テンプレートを編集する">4. テンプレートを編集する</h2>
+            <h3 id="4-1-テンプレート編集画面を開く">4.1 テンプレート編集画面を開く</h3>
+            <ol>
+                <li>メイン画面の「テンプレート編集」を押します。</li>
+                <li>左側のテンプレート一覧から編集対象を選びます。</li>
+                <li>右側の「フォルダ」または「ファイル」タブを選びます。</li>
+            </ol>
+            <h3 id="4-2-フォルダを登録する">4.2 フォルダを登録する</h3>
+            <p>「フォルダ」タブでは、1行に1つの相対パスを入力します。</p>
+            <pre><code class="language-text">00_Source
 10_exe
 20_文書
 20_文書\画像</code></pre>
-                <p><code>/</code> で区切る書き方も利用できます。</p>
-                <pre><code>00_Source
+            <p><code>/</code> で区切る書き方も利用できます。</p>
+            <pre><code class="language-text">00_Source
 10_exe
 20_文書
 20_文書/画像</code></pre>
-                <p>入力内容に応じて、上部のツリー表示が更新されます。ツリー上で同じ階層の項目をドラッグすると並び順を変更できます。</p>
-                <h3>4.3 初期ファイルを登録する</h3>
-                <p>「ファイル」タブの「追加」を押し、次の2項目を入力します。</p>
-                <table>
-                    <thead>
-                        <tr><th>項目</th><th>例</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>ファイルパス</td><td><code>docs/README.md</code></td></tr>
-                        <tr><td>初期内容</td><td><code># Project</code></td></tr>
-                    </tbody>
-                </table>
-                <p>ファイルの親フォルダは、実行時に自動作成されます。たとえば <code>docs/README.md</code> を登録すると、<code>docs</code> が存在しない場合でも作成されます。</p>
-                <p>ファイルの編集は、一覧の行を選択して「編集」を押すか、行をダブルクリックします。</p>
-                <h3>4.4 テンプレートを追加・削除する</h3>
-                <ul>
-                    <li>「新規」：空のテンプレートを追加</li>
-                    <li>「削除」：左側で選択中のテンプレートを削除</li>
-                    <li>左側の <code>↑</code> / <code>↓</code>：テンプレートの表示順を変更</li>
-                    <li>「保存」：<code>template.json</code> に書き込む</li>
-                </ul>
-                <p>編集内容は「保存」を押すまでファイルへ反映されません。</p>
-                <blockquote>
-                    <p><strong>警告</strong></p>
-                    <p>「削除」はテンプレート定義を削除する操作です。作成済みのフォルダやファイルは削除しません。</p>
-                </blockquote>
-
-                <h2 id="templatejsonを直接編集する">5. template.jsonを直接編集する</h2>
-                <p>テンプレートはJSON形式で保存されています。文字コードはUTF-8を使用してください。</p>
-                <h3>5.1 フォルダだけを作る形式</h3>
-                <pre><code>{
-  "FolderTemplate": {
-    "folders": [
-      "00_Source",
-      "10_文書",
-      "20_参考資料"
+            <p>入力内容に応じて、上部のツリー表示が更新されます。ツリー上で同じ階層の項目をドラッグすると並び順を変更できます。</p>
+            <h3 id="4-3-初期ファイルを登録する">4.3 初期ファイルを登録する</h3>
+            <p>「ファイル」タブの「追加」を押し、次の2項目を入力します。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>項目</th>
+                        <th>例</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>ファイルパス</td>
+                        <td><code>docs/README.md</code></td>
+                    </tr>
+                    <tr>
+                        <td>初期内容</td>
+                        <td><code># Project</code></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>ファイルの親フォルダは、実行時に自動作成されます。たとえば <code>docs/README.md</code> を登録すると、<code>docs</code> が存在しない場合でも作成されます。</p>
+            <p>ファイルの編集は、一覧の行を選択して「編集」を押すか、行をダブルクリックします。</p>
+            <h3 id="4-4-テンプレートを追加-削除する">4.4 テンプレートを追加・削除する</h3>
+            <ul>
+                <li>「新規」：空のテンプレートを追加</li>
+                <li>「削除」：左側で選択中のテンプレートを削除</li>
+                <li>左側の <code>↑</code> / <code>↓</code>：テンプレートの表示順を変更</li>
+                <li>「保存」：<code>template.json</code> に書き込む</li>
+            </ul>
+            <p>編集内容は「保存」を押すまでファイルへ反映されません。</p>
+            <blockquote>
+                <p>「削除」はテンプレート定義を削除する操作です。作成済みのフォルダやファイルは削除しません。</p>
+            </blockquote>
+            <h2 id="5-template-jsonを直接編集する">5. template.jsonを直接編集する</h2>
+            <p>テンプレートはJSON形式で保存されています。文字コードはUTF-8を使用してください。</p>
+            <h3 id="5-1-フォルダだけを作る形式">5.1 フォルダだけを作る形式</h3>
+            <pre><code class="language-json">{
+  &quot;FolderTemplate&quot;: {
+    &quot;folders&quot;: [
+      &quot;00_Source&quot;,
+      &quot;10_文書&quot;,
+      &quot;20_参考資料&quot;
     ]
   }
 }</code></pre>
-                <h3>5.2 フォルダとファイルを作る形式</h3>
-                <pre><code>{
-  "SampleTemplate": {
-    "folders": [
-      "source",
-      "docs"
+            <h3 id="5-2-フォルダとファイルを作る形式">5.2 フォルダとファイルを作る形式</h3>
+            <pre><code class="language-json">{
+  &quot;SampleTemplate&quot;: {
+    &quot;folders&quot;: [
+      &quot;source&quot;,
+      &quot;docs&quot;
     ],
-    "files": {
-      "source/main.py": "# entry point\n",
-      "docs/README.md": "# Documentation\n"
+    &quot;files&quot;: {
+      &quot;source/main.py&quot;: &quot;# entry point\n&quot;,
+      &quot;docs/README.md&quot;: &quot;# Documentation\n&quot;
     }
   }
 }</code></pre>
-                <h3>5.3 JSON記述ルール</h3>
-                <details>
-                    <summary>項目の仕様</summary>
-                    <table>
-                        <thead>
-                            <tr><th>項目</th><th>型</th><th>内容</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>テンプレート名</td><td>文字列</td><td>メイン画面に表示する名前。重複不可</td></tr>
-                            <tr><td><code>folders</code></td><td>配列</td><td>作成する相対フォルダパス</td></tr>
-                            <tr><td><code>files</code></td><td>オブジェクト</td><td>キーがファイルパス、値が初期内容</td></tr>
-                            <tr><td>初期内容</td><td>文字列</td><td>UTF-8で書き込まれるテキスト</td></tr>
-                        </tbody>
-                    </table>
-                </details>
-                <h3>5.4 パスの制限</h3>
-                <p>テンプレートのパスは、作成先の中に収まる相対パスだけを指定できます。</p>
-                <ul>
-                    <li>絶対パスは指定できません（例：<code>C:\temp</code>、<code>/tmp</code>）</li>
-                    <li><code>..</code> で作成先の外へ移動するパスは指定できません</li>
-                    <li>Windowsで使用できない文字 <code>&lt; &gt; : " | ? *</code> は指定できません</li>
-                    <li>空のパスは指定できません</li>
-                    <li>パス区切りは <code>/</code> が扱いやすく、<code>\</code> も利用できます</li>
-                </ul>
-                <p>入力が不正な場合は、作成前に「パスエラー」として表示され、作成処理は実行されません。</p>
-                <h3>5.5 編集後に読み込ませる</h3>
-                <p>外部エディターで <code>template.json</code> を編集した場合は、いったんフォルダくんを終了してから再起動してください。起動時に実行ファイルと同じフォルダの <code>template.json</code> が読み込まれます。</p>
-
-                <h2 id="作成時の動作">6. 作成時の動作</h2>
-                <h3>6.1 既存フォルダ</h3>
-                <p>既に同じフォルダが存在する場合、初期状態では「スキップ」になります。既存フォルダそのものを削除したり、内容を消したりはしません。</p>
-                <h3>6.2 既存ファイル</h3>
-                <p>既に同じファイルがある場合、初期状態では「スキップ」になります。</p>
-                <ul>
-                    <li>「スキップ」：既存ファイルを変更しない</li>
-                    <li>「上書き」：テンプレートの初期内容で置き換える</li>
-                </ul>
-                <p>上書きする場合は、重要なファイルをバックアップしてから実行してください。</p>
-                <h3>6.3 ファイルとフォルダが衝突する場合</h3>
-                <p>同じパスにファイルとフォルダが混在するなど、作成できない構成はエラーになります。テンプレートの「フォルダ」タブと「ファイル」タブで、パスが重複していないか確認してください。</p>
-                <h3>6.4 右クリック起動時の作成先</h3>
-                <p>起動時にフォルダパスが引数として渡された場合、最初の有効なフォルダを作成先として使用します。</p>
+            <h3 id="5-3-json記述ルール">5.3 JSON記述ルール</h3>
+            <details>
+                <summary>項目の仕様</summary>
                 <table>
                     <thead>
-                        <tr><th>起動方法</th><th>渡される値</th><th>作成先</th></tr>
+                        <tr>
+                            <th>項目</th>
+                            <th>型</th>
+                            <th>内容</th>
+                        </tr>
                     </thead>
                     <tbody>
-                        <tr><td>フォルダの背景メニュー</td><td><code>%V</code></td><td>開いているフォルダ</td></tr>
-                        <tr><td>フォルダアイコンのメニュー</td><td><code>%1</code></td><td>選択したフォルダ</td></tr>
-                        <tr><td>ダブルクリック</td><td>なし</td><td>起動時のカレントフォルダ</td></tr>
-                        <tr><td>「作成先フォルダ選択」</td><td>選択したパス</td><td>選択したフォルダ</td></tr>
+                        <tr>
+                            <td>テンプレート名</td>
+                            <td>文字列</td>
+                            <td>メイン画面に表示する名前。重複不可</td>
+                        </tr>
+                        <tr>
+                            <td><code>folders</code></td>
+                            <td>配列</td>
+                            <td>作成する相対フォルダパス</td>
+                        </tr>
+                        <tr>
+                            <td><code>files</code></td>
+                            <td>オブジェクト</td>
+                            <td>キーがファイルパス、値が初期内容</td>
+                        </tr>
+                        <tr>
+                            <td>初期内容</td>
+                            <td>文字列</td>
+                            <td>UTF-8で書き込まれるテキスト</td>
+                        </tr>
                     </tbody>
                 </table>
-
-                <h2 id="困ったとき">7. 困ったとき</h2>
-                <details>
-                    <summary>テンプレートが表示されない</summary>
-                    <ul>
-                        <li><code>template.json</code> が実行ファイルと同じフォルダにあるか確認する</li>
-                        <li>ファイル名が <code>template.json</code> になっているか確認する</li>
-                        <li>JSONのカンマ、括弧、引用符が正しいか確認する</li>
-                        <li>外部エディターで保存した場合は、フォルダくんを再起動する</li>
-                        <li>読み込みエラーが表示された場合は、エラーメッセージを確認する</li>
-                    </ul>
-                </details>
-                <details>
-                    <summary>右クリックから起動できない</summary>
-                    <ul>
-                        <li><code>command</code> の実行ファイルパスを確認する</li>
-                        <li>パスを二重引用符で囲む</li>
-                        <li>背景メニューなら <code>%V</code>、フォルダアイコンなら <code>%1</code> を使う</li>
-                        <li>Windows 11の「その他のオプションを表示」を確認する</li>
-                        <li>実行ファイルと <code>template.json</code> を同じフォルダに置く</li>
-                        <li>レジストリ登録後にエクスプローラーを再起動する</li>
-                    </ul>
-                </details>
-                <details>
-                    <summary>ファイルが作成されない</summary>
-                    <ul>
-                        <li>プレビューで対象が「スキップ」になっていないか確認する</li>
-                        <li>同じ場所にフォルダが存在していないか確認する</li>
-                        <li>作成先への書き込み権限があるか確認する</li>
-                        <li>パスに禁止文字や絶対パスが含まれていないか確認する</li>
-                        <li>必要なファイルだけ「上書き」に変更する</li>
-                    </ul>
-                </details>
-                <details>
-                    <summary>文字化けする</summary>
-                    <p>テンプレートファイルと初期ファイルはUTF-8で保存してください。<code>.reg</code> ファイルを読み込むときだけは、文字コードの影響でレジストリの表示名が文字化けする場合があります。その場合は、<code>.reg</code> ファイルをUTF-16 LEで保存してから再実行してください。</p>
-                </details>
-
-                <h2 id="開発者向け情報">8. 開発者向け情報</h2>
-                <h3>8.1 リポジトリ構成</h3>
-                <pre><code>フォルダくん/
+            </details>
+            <h3 id="5-4-パスの制限">5.4 パスの制限</h3>
+            <p>テンプレートのパスは、作成先の中に収まる相対パスだけを指定できます。</p>
+            <ul>
+                <li>絶対パスは指定できません（例：<code>C:\temp</code>、<code>/tmp</code>）</li>
+                <li><code>..</code> で作成先の外へ移動するパスは指定できません</li>
+                <li>Windowsで使用できない文字 <code>&lt; &gt; : " | ? *</code> は指定できません</li>
+                <li>空のパスは指定できません</li>
+                <li>パス区切りは <code>/</code> が扱いやすく、<code>\</code> も利用できます</li>
+            </ul>
+            <p>入力が不正な場合は、作成前に「パスエラー」として表示され、作成処理は実行されません。</p>
+            <h3 id="5-5-編集後に読み込ませる">5.5 編集後に読み込ませる</h3>
+            <p>外部エディターで <code>template.json</code> を編集した場合は、いったんフォルダくんを終了してから再起動してください。起動時に実行ファイルと同じフォルダの <code>template.json</code> が読み込まれます。</p>
+            <h2 id="6-作成時の動作">6. 作成時の動作</h2>
+            <h3 id="6-1-既存フォルダ">6.1 既存フォルダ</h3>
+            <p>既に同じフォルダが存在する場合、初期状態では「スキップ」になります。既存フォルダそのものを削除したり、内容を消したりはしません。</p>
+            <h3 id="6-2-既存ファイル">6.2 既存ファイル</h3>
+            <p>既に同じファイルがある場合、初期状態では「スキップ」になります。</p>
+            <ul>
+                <li>「スキップ」：既存ファイルを変更しない</li>
+                <li>「上書き」：テンプレートの初期内容で置き換える</li>
+            </ul>
+            <p>上書きする場合は、重要なファイルをバックアップしてから実行してください。</p>
+            <h3 id="6-3-ファイルとフォルダが衝突する場合">6.3 ファイルとフォルダが衝突する場合</h3>
+            <p>同じパスにファイルとフォルダが混在するなど、作成できない構成はエラーになります。テンプレートの「フォルダ」タブと「ファイル」タブで、パスが重複していないか確認してください。</p>
+            <h3 id="6-4-右クリック起動時の作成先">6.4 右クリック起動時の作成先</h3>
+            <p>起動時にフォルダパスが引数として渡された場合、最初の有効なフォルダを作成先として使用します。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>起動方法</th>
+                        <th>渡される値</th>
+                        <th>作成先</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>フォルダの背景メニュー</td>
+                        <td><code>%V</code></td>
+                        <td>開いているフォルダ</td>
+                    </tr>
+                    <tr>
+                        <td>フォルダアイコンのメニュー</td>
+                        <td><code>%1</code></td>
+                        <td>選択したフォルダ</td>
+                    </tr>
+                    <tr>
+                        <td>ダブルクリック</td>
+                        <td>なし</td>
+                        <td>起動時のカレントフォルダ</td>
+                    </tr>
+                    <tr>
+                        <td>「作成先フォルダ選択」</td>
+                        <td>選択したパス</td>
+                        <td>選択したフォルダ</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h2 id="7-困ったとき">7. 困ったとき</h2>
+            <details>
+                <summary>テンプレートが表示されない</summary>
+                <ul>
+                    <li><code>template.json</code> が実行ファイルと同じフォルダにあるか確認する</li>
+                    <li>ファイル名が <code>template.json</code> になっているか確認する</li>
+                    <li>JSONのカンマ、括弧、引用符が正しいか確認する</li>
+                    <li>外部エディターで保存した場合は、フォルダくんを再起動する</li>
+                    <li>読み込みエラーが表示された場合は、エラーメッセージを確認する</li>
+                </ul>
+            </details>
+            <details>
+                <summary>右クリックから起動できない</summary>
+                <ul>
+                    <li><code>command</code> の実行ファイルパスを確認する</li>
+                    <li>パスを二重引用符で囲む</li>
+                    <li>背景メニューなら <code>%V</code>、フォルダアイコンなら <code>%1</code> を使う</li>
+                    <li>Windows 11の「その他のオプションを表示」を確認する</li>
+                    <li>実行ファイルと <code>template.json</code> を同じフォルダに置く</li>
+                    <li>レジストリ登録後にエクスプローラーを再起動する</li>
+                </ul>
+            </details>
+            <details>
+                <summary>ファイルが作成されない</summary>
+                <ul>
+                    <li>プレビューで対象が「スキップ」になっていないか確認する</li>
+                    <li>同じ場所にフォルダが存在していないか確認する</li>
+                    <li>作成先への書き込み権限があるか確認する</li>
+                    <li>パスに禁止文字や絶対パスが含まれていないか確認する</li>
+                    <li>必要なファイルだけ「上書き」に変更する</li>
+                </ul>
+            </details>
+            <details>
+                <summary>文字化けする</summary>
+                <p>テンプレートファイルと初期ファイルはUTF-8で保存してください。<code>.reg</code> ファイルを読み込むときだけは、文字コードの影響でレジストリの表示名が文字化けする場合があります。その場合は、<code>.reg</code> ファイルをUTF-16 LEで保存してから再実行してください。</p>
+            </details>
+            <h2 id="8-開発者向け情報">8. 開発者向け情報</h2>
+            <h3 id="8-1-リポジトリ構成">8.1 リポジトリ構成</h3>
+            <pre><code class="language-text">フォルダくん/
 ├─ 00_Sorce/
 │  ├─ main.py
 │  └─ template.json
@@ -421,24 +481,22 @@ C:\Work\NewProject\20_参考資料</code></pre>
 └─ 20_文書/
    ├─ 説明書.txt
    └─ フォルダくん_取扱説明書.md</code></pre>
-                <h3>8.2 テンプレートの読み込み場所</h3>
-                <p>アプリは実行形式に応じて、次の場所から <code>template.json</code> を読み込みます。</p>
-                <ul>
-                    <li><code>.exe</code>：<code>フォルダくん.exe</code> と同じフォルダ</li>
-                    <li>Python実行：<code>main.py</code> と同じフォルダ</li>
-                </ul>
-                <h3>8.3 ビルド時の注意</h3>
-                <p>PyInstallerなどで実行ファイルを作り直す場合でも、<code>template.json</code> は実行ファイルの横に配置してください。テンプレートを実行ファイルへ埋め込む方式ではないため、テンプレートを変更するたびに再ビルドする必要はありません。</p>
-                <h3>8.4 関連ファイル</h3>
-                <ul>
-                    <li><a href="../00_Sorce/main.py">main.py</a>：アプリ本体</li>
-                    <li><a href="../00_Sorce/template.json">template.json</a>：開発用テンプレート</li>
-                    <li><a href="../10_exe/template.json">template.json</a>：配布用テンプレート</li>
-                </ul>
-
-                <hr>
-                <p><strong>最終更新</strong>：2026-09-11<br>
-                <strong>対象アプリ</strong>：フォルダくん</p>
+            <h3 id="8-2-テンプレートの読み込み場所">8.2 テンプレートの読み込み場所</h3>
+            <p>アプリは実行形式に応じて、次の場所から <code>template.json</code> を読み込みます。</p>
+            <ul>
+                <li><code>.exe</code>：<code>フォルダくん.exe</code> と同じフォルダ</li>
+                <li>Python実行：<code>main.py</code> と同じフォルダ</li>
+            </ul>
+            <h3 id="8-3-ビルド時の注意">8.3 ビルド時の注意</h3>
+            <p>PyInstallerなどで実行ファイルを作り直す場合でも、<code>template.json</code> は実行ファイルの横に配置してください。テンプレートを実行ファイルへ埋め込む方式ではないため、テンプレートを変更するたびに再ビルドする必要はありません。</p>
+            <h3 id="8-4-関連ファイル">8.4 関連ファイル</h3>
+            <ul>
+                <li><a href="../00_Sorce/main.py">main.py</a>：アプリ本体</li>
+                <li><a href="../00_Sorce/template.json">template.json</a>：開発用テンプレート</li>
+                <li><a href="../10_exe/template.json">template.json</a>：配布用テンプレート</li>
+            </ul>
+            <hr>
+            <p><strong>最終更新</strong>：2026-09-11 <strong>対象アプリ</strong>：フォルダくん</p>
             </div>
         </article>
     </main>
