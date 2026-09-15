@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Official Pages</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --text-color: #1f2937;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1rem 2rem;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        main {
+            flex: 1;
+            max-width: 800px;
+            width: 100%;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .card h2 {
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            border-left: 4px solid var(--primary-color);
+            padding-left: 0.75rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: #64748b;
+            font-size: 0.875rem;
+            border-top: 1px solid #e2e8f0;
+            background-color: var(--card-bg);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Official Pages</h1>
+    </header>
+
+    <main>
+        <section class="card">
+            <h2>ようこそ</h2>
+            <p>GitHub Pages を利用したオフィシャルページへようこそ。このページはリポジトリのルートに配置された <code>index.html</code> から配信されています。</p>
+        </section>
+
+        <section class="card">
+            <h2>コンテンツ準備中</h2>
+            <p>今後コンテンツを追加・更新していく予定です。</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; Official Pages. Powered by GitHub Pages.</p>
+    </footer>
+</body>
+</html>
