@@ -9,6 +9,21 @@ GitHub Pages 用のリポジトリです。
 - `index.html`: Webサイトのトップページ
 - `.nojekyll`: Jekyll処理を無効化する設定ファイル
 
+## 当日の日記フォルダとindex.mdを生成
+
+当日日付のフォルダ（`diary/YYYY-MM-DD/`）と空の `index.md` を作成するスクリプトを用意しています。
+すでにファイルが存在する場合は上書きされません。
+
+```powershell
+python .\create_diary.py
+```
+
+バッチファイルからも実行できます（Windows のスタートアップ等に登録して起動時に自動作成することも可能です）。
+
+```powershell
+.\create_diary.bat
+```
+
 ## MarkdownからHTMLを生成
 
 `index.md`を同じフォルダの`index.html`へ変換するジェネレーターを用意しています。
