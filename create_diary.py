@@ -18,7 +18,7 @@ def create_diary_page() -> Path:
 
 	index_file = diary_directory / "index.md"
 	index_file.touch(exist_ok=True)
-	folder_path = str(diary_directory)
+	folder_path = str(repository_root)
 	file_path = str(index_file)
 	code = shutil.which("code.cmd")
 	if code is None:
