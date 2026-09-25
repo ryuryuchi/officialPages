@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pythonアプリで自動化できる動作</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">Pythonアプリで自動化できる動作</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>Pythonで作成したアプリケーションを使って、日常作業や業務の定型処理のうち、入力・判断・出力の手順を明確にできるものをどこまで自動化できるかを整理した。</p>
+            <h2 id="結論">結論</h2>
+            <p>Pythonでは、ファイル操作、データの読み書き・集計、Web APIとの通信、メール送受信、外部コマンドの実行、データベース処理、ブラウザー操作、定期実行、結果通知まで自動化できる。単純なバッチから、GUI付きの業務アプリや複数サービスをつなぐ処理まで発展させられる。</p>
+            <p>ただし、Pythonだけで全てが完結するわけではない。ブラウザー操作にはPlaywrightなどの外部ライブラリ、Excel固有の処理にはopenpyxlなど、OSの起動設定にはタスクスケジューラなどを組み合わせる。ログ、再実行、認証情報の保護、対象サービスの利用規約を設計に含める必要がある。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="2026年8月時点の前提">2026年8月時点の前提</h3>
+            <p>本メモの標準ライブラリ参照先<code>docs.python.org/3</code>は、現行の安定版系列Python 3.14の文書へ解決される。Python 3.15はプレリリース段階であり、本番自動化では利用パッケージの対応を確認してから採用する。</p>
+            <p>主な外部パッケージのPyPI最新安定版は、Playwright 1.62.0（Python 3.10以上）、openpyxl 3.1.5（Python 3.8以上）、pandas 3.0.5（Python 3.11以上）である。要件は今後変わるため、導入時には固定値として扱わず各プロジェクトのメタデータを再確認する。</p>
+            <p>openpyxlのRead the Docsは<code>latest</code>でも3.1.4を表示し、PyPIの3.1.5より遅れている。 版確認にはPyPIも併用し、機能説明とセキュリティ上の注意には公式文書を使う。</p>
+            <h3 id="自動化できる代表例">自動化できる代表例</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>分野</th>
+                        <th>自動化できる動作</th>
+                        <th>主な手段</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>ファイル・フォルダー</td>
+                        <td>拡張子別の収集、名前変更、移動、コピー、バックアップ、フォルダー監視</td>
+                        <td><code>pathlib</code>、<code>shutil</code></td>
+                    </tr>
+                    <tr>
+                        <td>文書・画像</td>
+                        <td>テキスト抽出、形式変換、画像のリサイズ・透かし、PDFの分割・結合</td>
+                        <td>標準ライブラリ、目的別パッケージ</td>
+                    </tr>
+                    <tr>
+                        <td>Excel・CSV</td>
+                        <td>複数ファイルの統合、値の整形、集計、帳票作成、セルへの書き込み</td>
+                        <td><code>csv</code>、<code>pandas</code>、<code>openpyxl</code></td>
+                    </tr>
+                    <tr>
+                        <td>データベース</td>
+                        <td>データの登録・検索・更新、重複排除、集計結果の保存</td>
+                        <td><code>sqlite3</code>、各DB用ドライバー</td>
+                    </tr>
+                    <tr>
+                        <td>Web・API</td>
+                        <td>HTTPリクエスト、データ取得・登録、JSON変換、定期的な情報収集</td>
+                        <td><code>urllib</code>、HTTPクライアント、API SDK</td>
+                    </tr>
+                    <tr>
+                        <td>ブラウザー</td>
+                        <td>ログイン後の画面操作、フォーム入力、ダウンロード、スクリーンショット、E2Eテスト</td>
+                        <td>Playwright、Selenium</td>
+                    </tr>
+                    <tr>
+                        <td>メール・通知</td>
+                        <td>定型メール送信、受信メールの取得・添付保存、処理結果の通知</td>
+                        <td><code>smtplib</code>、<code>imaplib</code>、<code>email</code>、通知サービス</td>
+                    </tr>
+                    <tr>
+                        <td>PC・他のアプリ</td>
+                        <td>コマンド実行、別アプリへのデータ受け渡し、処理結果の取得</td>
+                        <td><code>subprocess</code>、OS機能</td>
+                    </tr>
+                    <tr>
+                        <td>定期処理</td>
+                        <td>毎日・毎時の実行、複数処理の順番制御、並行実行</td>
+                        <td>タスクスケジューラ、cron、<code>sched</code>、<code>asyncio</code></td>
+                    </tr>
+                    <tr>
+                        <td>GUI・運用</td>
+                        <td>ボタンからの処理開始、入力フォーム、進捗表示、エラー表示</td>
+                        <td><code>tkinter</code>、GUI外部ライブラリ、ログ</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3 id="具体的な業務フローの例">具体的な業務フローの例</h3>
+            <ul>
+                <li>指定フォルダーに届いたCSVを読み込み、列名・日付・重複を検査してExcelの集計表を作る。</li>
+                <li>Web APIから毎朝データを取得し、SQLiteに保存して前日との差分をメールで通知する。</li>
+                <li>複数の帳票ファイルを一括処理し、処理済みフォルダーへ移動して実行ログを残す。</li>
+                <li>ブラウザーで社内システムへアクセスし、決められた項目を入力して結果をダウンロードする。</li>
+                <li>外部コマンドや別のPythonモジュールを順番に実行し、失敗時に後続処理を止めて通知する。</li>
+                <li>GUIのボタンから処理を開始し、利用者が設定値を変更できる小規模な業務ツールにする。</li>
+            </ul>
+            <h3 id="自動化の構成パターン">自動化の構成パターン</h3>
+            <ol>
+                <li><strong>入力</strong>: ファイル、フォーム、API、メールなどからデータを受け取る。</li>
+                <li><strong>検証</strong>: 必須項目、形式、対象範囲、重複、権限を確認する。</li>
+                <li><strong>処理</strong>: 整形、計算、検索、変換、外部サービスへの登録を行う。</li>
+                <li><strong>出力</strong>: ファイル、データベース、メール、画面、APIレスポンスへ結果を出す。</li>
+                <li><strong>運用</strong>: ログ、エラー通知、再実行、バックアップ、実行スケジュールを管理する。</li>
+            </ol>
+            <p>定型的な処理は自動化しやすい一方、最終承認、例外的な判断、本人確認、規約で禁止されている大量アクセスなどは、人の確認を残す設計が安全である。</p>
+            <h3 id="選び方と注意点">選び方と注意点</h3>
+            <ul>
+                <li><strong>APIがあるサービス</strong>: 画面操作よりAPIを優先する。認証方式、レート制限、利用規約、取得データの個人情報を確認する。</li>
+                <li><strong>画面しかないサービス</strong>: PlaywrightやSeleniumを使えるが、画面変更で壊れやすい。待機条件、失敗時のスクリーンショット、再実行方法を用意する。</li>
+                <li><strong>ファイル処理</strong>: 上書き前にバックアップまたは一時ファイルを使い、対象拡張子やフォルダーを限定する。</li>
+                <li><strong>Excel入力の安全性</strong>: 信頼できないOffice Open XMLファイルをopenpyxlで処理する場合、公式文書が案内する<code>defusedxml</code>の利用を検討する。</li>
+                <li><strong>外部コマンド</strong>: <code>subprocess</code>では引数を文字列連結せず、引数の配列として渡す。外部入力をコマンドとして実行しない。</li>
+                <li><strong>認証情報</strong>: パスワードやAPIキーをソースコード・ログに書かず、環境変数やOSの資格情報管理などを使う。</li>
+                <li><strong>失敗への対応</strong>: <code>logging</code>で開始・終了・対象件数・エラーを記録し、部分成功時の扱いと再実行時の重複登録を決める。</li>
+                <li><strong>負荷と並行性</strong>: ネットワーク待ちが多い処理は<code>asyncio</code>などを検討するが、相手サービスへの過剰な同時アクセスは避ける。</li>
+                <li><strong>配布</strong>: 利用者がPython環境を持たない場合は、実行ファイル化やインストーラーを検討する。ただし外部ブラウザーや設定ファイルの配布も必要になる。</li>
+            </ul>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://docs.python.org/3/library/index.html">Python Standard Library</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.python.org/3/library/subprocess.html">subprocess — Subprocess management</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.python.org/3/library/pathlib.html">pathlib — Object-oriented filesystem paths</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.python.org/3/library/urllib.request.html">urllib.request — Extensible library for opening URLs</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.python.org/3/library/email.html">email — An email and MIME handling package</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.python.org/3/library/sqlite3.html">sqlite3 — DB-API 2.0 interface for SQLite databases</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.python.org/3/library/asyncio.html">asyncio — Asynchronous I/O</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.python.org/3/library/logging.html">logging — Logging facility for Python</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://playwright.dev/python/docs/library">Playwright Python Library</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://pypi.org/project/playwright/">Playwright - PyPI</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://openpyxl.readthedocs.io/en/latest/">openpyxl documentation</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://pypi.org/project/openpyxl/">openpyxl - PyPI</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://pandas.pydata.org/docs/">pandas documentation</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://pypi.org/project/pandas/">pandas - PyPI</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://devguide.python.org/versions/">Python Developer's Guide: Status of Python versions</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: 全参考URLを再確認し、Python系列、主要外部パッケージの現行版・要件、openpyxlの安全上の注意を追記</li>
+                <li>2026-08-28: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

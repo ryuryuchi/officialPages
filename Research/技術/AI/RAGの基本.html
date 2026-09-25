@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAGの基本</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">RAGの基本</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>生成AIの話で使われるRAG（Retrieval-Augmented Generation、検索拡張生成）が何を指す言葉なのかを、言語・フレームワーク・データベースとの違いも含めて初心者向けに整理する。</p>
+            <h2 id="結論">結論</h2>
+            <p>RAGは<strong>プログラミング言語でも、単独のフレームワークでもない</strong>。質問に関係する資料を先に検索し、その検索結果をLLM（大規模言語モデル）へ渡して回答を生成させる、アプリケーションの構成方法・設計パターンである。</p>
+            <p>一言で言えば、RAGは「LLMに、回答前に関連資料を読ませる仕組み」である。モデルの再学習をしなくても、社内文書、製品マニュアル、最新情報などを回答の根拠に使える。ただし、検索結果が間違っていたり不足していたりすれば、RAGでも正しい回答は保証されない。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="ragは何ではないか">RAGは何ではないか</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>用語</th>
+                        <th>RAGとの関係</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>プログラミング言語</td>
+                        <td>RAG専用の言語はない。Python、TypeScript、Java、Goなどで実装できる</td>
+                    </tr>
+                    <tr>
+                        <td>フレームワーク</td>
+                        <td>RAGそのものはフレームワークではない。LangChainやLlamaIndexなどのフレームワークで構築しやすくできる</td>
+                    </tr>
+                    <tr>
+                        <td>LLM</td>
+                        <td>回答を文章として生成する部品。RAGはLLMの前段に検索処理を追加する</td>
+                    </tr>
+                    <tr>
+                        <td>ベクトルデータベース</td>
+                        <td>文書を検索するための保存先の一つ。RAGに使えるが、RAGそのものではない</td>
+                    </tr>
+                    <tr>
+                        <td>ファインチューニング</td>
+                        <td>モデルの重みを学習し直す方法。RAGは通常、モデルの重みを変更せず、質問時に資料を渡す</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3 id="基本の処理の流れ">基本の処理の流れ</h3>
+            <pre><code class="language-text">文書を集める
+  ↓
+文書を小さなまとまり（チャンク）に分ける
+  ↓
+各チャンクを検索しやすい表現（埋め込み）に変換して保存する
+  ↓
+ユーザーの質問を受ける
+  ↓
+質問に関係するチャンクを検索する
+  ↓
+質問と検索結果をLLMに渡す
+  ↓
+LLMが検索結果を参考に回答する</code></pre>
+            <p>このうち、文書の分割・埋め込み・保存は事前に行うことが多い。質問のたびに行うのは、質問を検索し、関連する資料を取り出し、LLMへ渡して回答を生成する処理である。</p>
+            <h3 id="身近な例">身近な例</h3>
+            <p>会社の就業規則PDFをLLMにそのまま覚えさせるのではなく、次のように使う。</p>
+            <ol>
+                <li>就業規則を数百〜数千文字程度のチャンクに分割する。</li>
+                <li>各チャンクを検索用のベクトルに変換して、検索システムへ登録する。</li>
+                <li>「有給休暇は何日ある？」という質問を受ける。</li>
+                <li>質問と意味が近いチャンクを検索する。</li>
+                <li>見つかった条文を質問と一緒にLLMへ渡す。</li>
+                <li>LLMが条文を根拠に回答する。</li>
+            </ol>
+            <p>この場合、就業規則をモデルに再学習させているわけではない。質問時に必要な部分だけを一時的な文脈として渡している。</p>
+            <h3 id="使われる部品">使われる部品</h3>
+            <ul>
+                <li><strong>LLM</strong>: 検索結果を読み、自然な文章にまとめる。例としてGPT、Claude、Geminiなどがある。</li>
+                <li><strong>埋め込みモデル</strong>: 文書や質問を、意味を反映した数値ベクトルへ変換する。</li>
+                <li><strong>検索システム</strong>: ベクトル検索、キーワード検索、または両者を組み合わせたハイブリッド検索を行う。</li>
+                <li><strong>データストア</strong>: ベクトルデータベース、検索エンジン、通常のデータベースなど。保存するデータや規模に応じて選ぶ。</li>
+                <li><strong>オーケストレーションコード</strong>: 検索、権限確認、プロンプト作成、LLM呼び出し、引用表示などをつなぐアプリケーションコード。</li>
+            </ul>
+            <h3 id="フレームワークとの関係">フレームワークとの関係</h3>
+            <p>LangChainやLlamaIndexは、RAGでよく必要になる文書読み込み、分割、検索、LLM呼び出しなどを組み合わせやすくするライブラリ／フレームワークである。これらを使わず、各サービスのAPIを直接呼び出してRAGを実装することもできる。</p>
+            <p>したがって、次の整理が分かりやすい。</p>
+            <pre><code class="language-text">RAG              = 仕組み・設計パターン
+LangChain等      = その仕組みを組み立てるための道具
+Python等         = 道具を使って実装するプログラミング言語
+LLM              = 最終的な文章を生成するモデル</code></pre>
+            <h3 id="ragとファインチューニングの違い">RAGとファインチューニングの違い</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>観点</th>
+                        <th>RAG</th>
+                        <th>ファインチューニング</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>情報の追加</td>
+                        <td>検索結果を質問時に渡す</td>
+                        <td>学習データでモデルの重みを更新する</td>
+                    </tr>
+                    <tr>
+                        <td>最新情報への反映</td>
+                        <td>文書を更新して再登録しやすい</td>
+                        <td>再学習が必要になりやすい</td>
+                    </tr>
+                    <tr>
+                        <td>根拠の提示</td>
+                        <td>検索元の文書やURLを表示しやすい</td>
+                        <td>回答の根拠を直接取り出せるとは限らない</td>
+                    </tr>
+                    <tr>
+                        <td>主な用途</td>
+                        <td>社内文書検索、FAQ、規程・マニュアル回答</td>
+                        <td>口調・形式・特定タスクの学習</td>
+                    </tr>
+                    <tr>
+                        <td>注意点</td>
+                        <td>検索品質と渡す文脈に強く依存する</td>
+                        <td>学習データの品質、コスト、再学習管理が必要</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>実際のシステムでは、RAGとファインチューニングを併用することもある。</p>
+            <h3 id="ragの利点と限界">RAGの利点と限界</h3>
+            <p><strong>利点</strong></p>
+            <ul>
+                <li>モデルの学習後に追加された資料を利用しやすい。</li>
+                <li>非公開の社内資料を、モデル全体の再学習なしで参照させられる。</li>
+                <li>検索した資料や引用元を回答に添えやすい。</li>
+                <li>モデルが持つ知識と外部資料を組み合わせられる。</li>
+            </ul>
+            <p><strong>限界</strong></p>
+            <ul>
+                <li>検索が関係ない資料を返すと、回答も誤る可能性がある。</li>
+                <li>資料の分割方法、検索条件、取得件数、プロンプトの設計で品質が変わる。</li>
+                <li>資料に答えがない場合でも、LLMが推測してしまうことがある。</li>
+                <li>権限管理を別途設計しないと、ユーザーが見てはいけない文書を検索結果に含める危険がある。</li>
+                <li>文書の更新、重複除去、評価、監視などの運用が必要である。</li>
+            </ul>
+            <p>そのため、「RAGを導入すればハルシネーションがなくなる」という理解は正しくない。RAGは回答を根拠資料へ近づける手段であり、検索・生成・権限・評価を含むシステム全体の品質管理が必要である。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://arxiv.org/abs/2005.11401">Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks</a></li>
+                <li>参照日: 2026-09-10</li>
+                <li><a href="https://arxiv.org/html/2005.11401">Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks（HTML本文）</a></li>
+                <li>参照日: 2026-09-10</li>
+                <li><a href="https://developers.openai.com/api/docs/guides/retrieval">Retrieval - OpenAI API</a></li>
+                <li>参照日: 2026-09-10</li>
+                <li><a href="https://developers.llamaindex.ai/python/framework/getting_started/concepts/">Concepts - LlamaIndex</a></li>
+                <li>参照日: 2026-09-10</li>
+                <li><a href="https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/grounding/overview">Grounding overview - Google Cloud</a></li>
+                <li>参照日: 2026-09-10</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-10: RAGの位置付け、処理の流れ、関連部品、フレームワークとの違い、利点と限界を初版作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

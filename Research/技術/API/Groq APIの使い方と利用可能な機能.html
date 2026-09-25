@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Groq APIの使い方と利用可能な機能</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">Groq APIの使い方と利用可能な機能</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>GroqCloudのAPIを利用するためのAPIキー取得手順、最小の呼び出し方、2026-09-08時点で公式ドキュメントに掲載されている主な機能を整理する。</p>
+            <h2 id="結論">結論</h2>
+            <p>Groq APIは、<code>https://api.groq.com/openai/v1</code> をベースURLとするOpenAI互換APIである。Groq Consoleでプロジェクトを選択してAPIキーを生成し、キーを<code>GROQ<em>API</em>KEY</code>環境変数に保存してから、公式のPython/JavaScript SDK、OpenAI SDK、またはHTTPで呼び出す。</p>
+            <p>基本用途はテキスト生成だが、対応モデルを選べば画像理解、音声文字起こし・英訳、音声合成、関数呼び出し、JSON Schemaに従う構造化出力、組み込みツールを用いるエージェント機能、非同期バッチ処理も利用できる。利用可否、モデルID、料金、レート制限は変更されるため、実装時にはConsoleのModelsとLimitsを確認する。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="apiキーの取得">APIキーの取得</h3>
+            <ol>
+                <li><a href="https://console.groq.com/">Groq Console</a>へサインインする。</li>
+                <li>複数の用途・環境を分ける場合は、Consoleの<strong>Projects</strong>でプロジェクトを作成して選択する。APIキー、利用状況、ログ、プロジェクトごとのレート制限は選択中のプロジェクトに紐付く。</li>
+                <li><a href="https://console.groq.com/keys">API Keys画面</a>でキーを作成する。生成後の秘密値は安全な場所へ保存し、ソースコード、Git履歴、ブラウザー向けJavaScript、ログには含めない。</li>
+                <li>ローカル開発では環境変数に設定する。PowerShellでは、現在のプロセスだけに設定する例は次のとおり。</li>
+            </ol>
+            <pre><code class="language-powershell">$env:GROQ_API_KEY = &quot;作成したAPIキー&quot;</code></pre>
+            <p>永続的な環境変数、CI/CDのシークレット、またはシークレット管理サービスを用途に応じて使う。漏えいが疑われるキーはConsoleで直ちに無効化し、新しいキーへ置き換える。</p>
+            <h3 id="最小の呼び出し例">最小の呼び出し例</h3>
+            <p>公式Python SDKをインストールし、環境変数からキーを読む例である。</p>
+            <pre><code class="language-powershell">pip install groq</code></pre>
+            <pre><code class="language-python">from groq import Groq
+
+client = Groq()
+response = client.chat.completions.create(
+    model=&quot;llama-3.3-70b-versatile&quot;,
+    messages=[
+        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;日本の首都を一文で答えてください。&quot;}
+    ],
+)
+print(response.choices[0].message.content)</code></pre>
+            <p>SDKは既定で<code>GROQ<em>API</em>KEY</code>を参照する。HTTPを直接使う場合は、<code>Authorization: Bearer __RAW<em>HTML</em>0__</code>ヘッダーを付けて、<code>POST https://api.groq.com/openai/v1/chat/completions</code>へ送信する。既存のOpenAI SDKでも、APIキーとこのベースURLを指定すればOpenAI互換のインターフェースで利用できる。</p>
+            <pre><code class="language-python">import os
+from openai import OpenAI
+
+client = OpenAI(
+    api_key=os.environ[&quot;GROQ_API_KEY&quot;],
+    base_url=&quot;https://api.groq.com/openai/v1&quot;,
+)
+response = client.chat.completions.create(
+    model=&quot;llama-3.3-70b-versatile&quot;,
+    messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;短い挨拶を返してください。&quot;}],
+)
+print(response.choices[0].message.content)</code></pre>
+            <p>利用前に<code>GET https://api.groq.com/openai/v1/models</code>で、自分のアカウントで有効なモデルIDを取得できる。上記モデルIDは公式ドキュメントの例であり、モデルの提供終了や権限によって利用できない場合がある。</p>
+            <h3 id="使える主な機能">使える主な機能</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>機能</th>
+                        <th>内容</th>
+                        <th>主なAPI・注意点</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>テキスト会話・生成</td>
+                        <td>system/user/assistantメッセージによる会話、ストリーミング、複数ターンの文脈送信</td>
+                        <td><code>chat/completions</code>。モデルごとのコンテキスト長、ツール、推論対応をModelsで確認する。</td>
+                    </tr>
+                    <tr>
+                        <td>Responses API</td>
+                        <td>OpenAI Responses API互換のテキスト・画像入力、テキスト出力、関数呼び出し</td>
+                        <td><code>POST /responses</code>。公式文書ではベータであり、状態保持型会話は未対応のため履歴をアプリ側で送る。</td>
+                    </tr>
+                    <tr>
+                        <td>画像理解</td>
+                        <td>画像URLまたはBase64 data URLとテキストをモデルへ渡し、説明、OCR、視覚的な質問応答を行う</td>
+                        <td>対応するVisionモデルが必要。画像URL入力はリクエスト全体20 MB以下、画像枚数にはモデル別上限がある。</td>
+                    </tr>
+                    <tr>
+                        <td>音声文字起こし・英訳</td>
+                        <td>音声ファイルまたはURLをテキストへ変換し、対応モデルでは英語へ翻訳する</td>
+                        <td><code>POST /audio/transcriptions</code>、<code>POST /audio/translations</code>。対応形式・ファイルサイズ・翻訳対応はモデルと利用プランを確認する。</td>
+                    </tr>
+                    <tr>
+                        <td>音声合成</td>
+                        <td>テキストから音声を生成する</td>
+                        <td><code>POST /audio/speech</code>。公式文書掲載のOrpheusモデルでは英語・アラビア語の音声を提供する。</td>
+                    </tr>
+                    <tr>
+                        <td>関数呼び出し（Tool Use）</td>
+                        <td>アプリがJSON Schemaで定義した関数候補をモデルが選び、引数を返す</td>
+                        <td>関数を実行するのはアプリ側。引数を検証し、危険な操作は許可制にする。対応モデルに限定される。</td>
+                    </tr>
+                    <tr>
+                        <td>構造化出力</td>
+                        <td>JSON Object ModeまたはJSON Schemaに沿う応答を得る</td>
+                        <td>対応モデルでは<code>response_format</code>を使う。<code>strict: true</code>は制約付きデコードでスキーマ準拠を保証するが、公式文書掲載時点ではGPT-OSS 20B/120Bに限定される。</td>
+                    </tr>
+                    <tr>
+                        <td>推論</td>
+                        <td>複雑な問題向けに推論量を指定できるモデルを使う</td>
+                        <td><code>reasoning_effort</code>またはResponses APIの<code>reasoning.effort</code>を使う。許容値はモデル別で、未対応値は400となる。</td>
+                    </tr>
+                    <tr>
+                        <td>Groq Compound</td>
+                        <td>Web検索、Webページ訪問、コード実行、Wolfram Alphaをサーバー側で自動利用するシステム</td>
+                        <td><code>groq/compound</code>と<code>groq/compound-mini</code>。Compoundではカスタムのユーザー定義ツールは未対応。機密・個人情報を外部ツールへ送らない設計が必要。</td>
+                    </tr>
+                    <tr>
+                        <td>Responses APIの組み込みツール</td>
+                        <td>コード実行、ブラウザー検索などをResponses APIから使う</td>
+                        <td>ベータ機能。利用可能なモデルとツールは公式ドキュメントで確認する。</td>
+                    </tr>
+                    <tr>
+                        <td>Batch API</td>
+                        <td>大量のリクエストを非同期でまとめて実行する</td>
+                        <td>標準レート制限に影響せず、公式文書では50%低コスト、処理時間は24時間から7日間とされる。即時応答が必要な用途には不向き。</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3 id="運用時の確認事項">運用時の確認事項</h3>
+            <ul>
+                <li>レート制限は組織単位で適用される。RPM、RPD、TPM、TPD、音声秒数などの上限のうち、先に到達したものが制限になる。正確な上限は<a href="https://console.groq.com/settings/limits">Limits画面</a>を確認する。</li>
+                <li>制限超過時は<code>429 Too Many Requests</code>が返る。<code>retry-after</code>と<code>x-ratelimit-*</code>レスポンスヘッダーを読み、指数バックオフを実装する。</li>
+                <li>APIキーはフロントエンドに置かず、信頼できるバックエンド経由で呼び出す。HTTPS/TLSの検証を無効化しない。</li>
+                <li>モデルの一覧、価格、提供状態、対応機能は固定ではない。実装・更新時に<a href="https://console.groq.com/docs/models">Models</a>、<a href="https://console.groq.com/pricing">料金</a>、各機能のモデル対応表を確認する。</li>
+            </ul>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://console.groq.com/docs/quickstart">Groq API Quickstart</a></li>
+                <li>参照日: 2026-09-08</li>
+                <li><a href="https://console.groq.com/docs/libraries">Groq API Libraries</a></li>
+                <li>参照日: 2026-09-08</li>
+                <li><a href="https://console.groq.com/docs/projects">Projects</a></li>
+                <li>参照日: 2026-09-08</li>
+                <li><a href="https://console.groq.com/docs/api-reference">Groq API Reference</a></li>
+                <li>参照日: 2026-09-08</li>
+                <li><a href="https://console.groq.com/docs/models">Models</a></li>
+                <li>参照日: 2026-09-08</li>
+                <li><a href="https://console.groq.com/docs/vision">Vision</a></li>
+                <li>参照日: 2026-09-08</li>
+                <li><a href="https://console.groq.com/docs/speech-to-text">Speech to Text</a></li>
+                <li>参照日: 2026-09-08</li>
+                <li><a href="https://console.groq.com/docs/text-to-speech">Text to Speech</a></li>
+                <li>参照日: 2026-09-08</li>
+                <li><a href="https://console.groq.com/docs/tool-use">Tool Use</a></li>
+                <li>参照日: 2026-09-08</li>
+                <li><a href="https://console.groq.com/docs/structured-outputs">Structured Outputs</a></li>
+                <li>参照日: 2026-09-08</li>
+                <li><a href="https://console.groq.com/docs/responses-api">Responses API</a></li>
+                <li>参照日: 2026-09-08</li>
+                <li><a href="https://console.groq.com/docs/compound">Groq Compound</a></li>
+                <li>参照日: 2026-09-08</li>
+                <li><a href="https://console.groq.com/docs/batch">Batch Processing</a></li>
+                <li>参照日: 2026-09-08</li>
+                <li><a href="https://console.groq.com/docs/rate-limits">Rate Limits</a></li>
+                <li>参照日: 2026-09-08</li>
+                <li><a href="https://console.groq.com/docs/production-readiness/security-onboarding">Security Onboarding</a></li>
+                <li>参照日: 2026-09-08</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-08: 初版を作成。APIキー取得、基本利用、主要機能、運用上の注意を整理。</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マウスから離れやすいVS Codeキーボードショートカット</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">マウスから離れやすいVS Codeキーボードショートカット</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>Windows版VS Codeで、カーソル移動、選択、編集、検索、表示切替をマウスに 頼らず行うための既定ショートカットを整理する。</p>
+            <h2 id="結論">結論</h2>
+            <p>既に使っている<code>Ctrl+D</code>、<code>Alt+Up</code> / <code>Alt+Down</code>、<code>Ctrl+P</code>に加えて、まず <code>Ctrl+Shift+P</code>（コマンドパレット）、<code>Ctrl+Backtick</code>（統合ターミナル）、 <code>F8</code>（次の問題）、<code>Alt+Left</code> / <code>Alt+Right</code>（移動履歴）、<code>Ctrl+K Ctrl+S</code> （ショートカット設定）を覚えると、編集以外の操作でもマウスを使う頻度を 減らせる。</p>
+            <p>既定キーは拡張機能、ユーザー設定、キーボード配列、OSやドライバーとの競合で 変わり得る。実際に割り当てられたキーは<code>Ctrl+K Ctrl+S</code>で確認し、競合時は 同画面の<strong>Show Same Keybindings</strong>または <strong>Developer: Toggle Keyboard Shortcuts Troubleshooting</strong>で確認する。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="追加で便利な既定ショートカット">追加で便利な既定ショートカット</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>分類</th>
+                        <th>ショートカット</th>
+                        <th>操作</th>
+                        <th>使いどころ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>コマンド</td>
+                        <td><code>Ctrl+Shift+P</code> / <code>F1</code></td>
+                        <td>コマンドパレットを開く</td>
+                        <td>名前を覚えていない機能も、機能名で実行する。</td>
+                    </tr>
+                    <tr>
+                        <td>ショートカット</td>
+                        <td><code>Ctrl+K Ctrl+S</code></td>
+                        <td>Keyboard Shortcutsを開く</td>
+                        <td>キーの検索、変更、競合確認を行う。2回連続で押すコード（chord）である。</td>
+                    </tr>
+                    <tr>
+                        <td>保存</td>
+                        <td><code>Ctrl+S</code></td>
+                        <td>保存</td>
+                        <td>変更を明示的に保存する。</td>
+                    </tr>
+                    <tr>
+                        <td>ファイル</td>
+                        <td><code>Ctrl+N</code></td>
+                        <td>新規ファイル</td>
+                        <td>作業用の未保存ファイルを開く。</td>
+                    </tr>
+                    <tr>
+                        <td>エディター</td>
+                        <td><code>Ctrl+W</code></td>
+                        <td>現在のエディターを閉じる</td>
+                        <td>読み終えたタブを閉じる。</td>
+                    </tr>
+                    <tr>
+                        <td>エディター</td>
+                        <td><code>Ctrl+\</code></td>
+                        <td>エディターを分割</td>
+                        <td>定義やテストを横に並べて参照する。</td>
+                    </tr>
+                    <tr>
+                        <td>エディター</td>
+                        <td><code>Ctrl+1</code> / <code>Ctrl+2</code> / <code>Ctrl+3</code></td>
+                        <td>指定したエディターグループへ移動</td>
+                        <td>分割したペインをキーボードで行き来する。</td>
+                    </tr>
+                    <tr>
+                        <td>表示</td>
+                        <td><code>Ctrl+B</code></td>
+                        <td>主サイドバーを表示・非表示</td>
+                        <td>コード領域を一時的に広くする。</td>
+                    </tr>
+                    <tr>
+                        <td>パネル</td>
+                        <td><code>Ctrl+J</code></td>
+                        <td>下部パネルを表示・非表示</td>
+                        <td>ターミナル、Problems、Outputの表示を切り替える。</td>
+                    </tr>
+                    <tr>
+                        <td>ターミナル</td>
+                        <td><code>Ctrl+Backtick</code></td>
+                        <td>統合ターミナルを表示・非表示</td>
+                        <td>編集とコマンド実行を往復する。Backtickは`キーを指し、位置はキーボード配列で確認する。</td>
+                    </tr>
+                    <tr>
+                        <td>問題</td>
+                        <td><code>Ctrl+Shift+M</code></td>
+                        <td>Problemsビューを開く</td>
+                        <td>エラーと警告を一覧する。</td>
+                    </tr>
+                    <tr>
+                        <td>問題</td>
+                        <td><code>F8</code> / <code>Shift+F8</code></td>
+                        <td>次／前の問題へ移動</td>
+                        <td>エラーを順に修正する。</td>
+                    </tr>
+                    <tr>
+                        <td>ナビゲーション</td>
+                        <td><code>Alt+Left</code> / <code>Alt+Right</code></td>
+                        <td>前／次の移動位置へ戻る／進む</td>
+                        <td>定義ジャンプや検索結果をたどった後に戻る。</td>
+                    </tr>
+                    <tr>
+                        <td>定義</td>
+                        <td><code>F12</code></td>
+                        <td>定義へ移動</td>
+                        <td>シンボルの実装を開く。</td>
+                    </tr>
+                    <tr>
+                        <td>定義</td>
+                        <td><code>Alt+F12</code></td>
+                        <td>定義をプレビュー</td>
+                        <td>現在の位置を保ったまま定義を確認する。</td>
+                    </tr>
+                    <tr>
+                        <td>シンボル</td>
+                        <td><code>F2</code></td>
+                        <td>シンボル名を変更</td>
+                        <td>対応言語では文字列置換ではなく意味を考慮して名前を変更する。</td>
+                    </tr>
+                    <tr>
+                        <td>検索</td>
+                        <td><code>Ctrl+H</code></td>
+                        <td>現在のファイルで置換</td>
+                        <td>置換前に差分を確認する。</td>
+                    </tr>
+                    <tr>
+                        <td>検索</td>
+                        <td><code>Alt+L</code></td>
+                        <td>選択範囲内の検索を切替</td>
+                        <td>長いファイルの選択部分だけを検索する。</td>
+                    </tr>
+                    <tr>
+                        <td>検索</td>
+                        <td><code>Ctrl+Shift+J</code></td>
+                        <td>全体検索の詳細を表示・非表示</td>
+                        <td>含める／除外するファイルパターンを指定する。</td>
+                    </tr>
+                    <tr>
+                        <td>選択</td>
+                        <td><code>Ctrl+K Ctrl+D</code></td>
+                        <td>次の一致をスキップ</td>
+                        <td><code>Ctrl+D</code>で不要な一致を選んでしまいそうな場合に使う。</td>
+                    </tr>
+                    <tr>
+                        <td>編集</td>
+                        <td><code>Ctrl+/</code></td>
+                        <td>行コメントを切替</td>
+                        <td>コードを一時的に無効化したり、コメントを付けたりする。</td>
+                    </tr>
+                    <tr>
+                        <td>整形</td>
+                        <td><code>Shift+Alt+F</code></td>
+                        <td>ドキュメントを整形</td>
+                        <td>言語ごとのフォーマッターが利用できる場合に使う。</td>
+                    </tr>
+                    <tr>
+                        <td>表示</td>
+                        <td><code>Ctrl+K Z</code></td>
+                        <td>Zen Modeを開始</td>
+                        <td>集中時にUIを最小化する。終了は<code>Esc</code>を2回押す。</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3 id="習得の順序">習得の順序</h3>
+            <ol>
+                <li><code>Ctrl+Shift+P</code>を入口にし、マウスでメニューを探す代わりにコマンド名を検索する。</li>
+                <li><code>F12</code>、<code>Alt+Left</code>、<code>Alt+Right</code>でコードをたどり、戻る操作までを一組で使う。</li>
+                <li><code>Ctrl+Backtick</code>でターミナルを出し、<code>Ctrl+J</code>で必要に応じてパネル全体を隠す。</li>
+                <li><code>Ctrl+Shift+M</code>と<code>F8</code>で問題を順番に確認・修正する。</li>
+                <li>使用頻度が高い未割り当て操作だけを<code>Ctrl+K Ctrl+S</code>から追加する。</li>
+            </ol>
+            <h3 id="カスタマイズ時の注意">カスタマイズ時の注意</h3>
+            <p><strong>事実:</strong> VS CodeではKeyboard Shortcutsエディターから、コマンドまたはキーを 検索し、既定キーの変更、削除、リセットができる。ユーザー定義は <code>keybindings.json</code>にも保存でき、<code>when</code>条件を使って適用場面を限定できる。</p>
+            <p><strong>判断:</strong> 最初から多くの既定キーを変更するより、既定キーで困る操作だけを 変更する方が、ドキュメント、他の環境、ペア作業とのずれを抑えやすい。 <code>Ctrl+Alt+Up</code> / <code>Ctrl+Alt+Down</code>が効かない場合は、グラフィックスドライバー等との 競合を先に確認する。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://code.visualstudio.com/docs/configure/keybindings">Keyboard shortcuts for Visual Studio Code</a></li>
+                <li>参照日: 2026-09-08</li>
+                <li><a href="https://code.visualstudio.com/docs/editing/codebasics">Basic editing</a></li>
+                <li>参照日: 2026-09-08</li>
+                <li><a href="https://code.visualstudio.com/docs/editing/getting-started/tips-and-tricks">Visual Studio Code tips and tricks</a></li>
+                <li>参照日: 2026-09-08</li>
+                <li><a href="https://code.visualstudio.com/shortcuts/keyboard-shortcuts-windows.pdf">Keyboard shortcuts for Windows PDF reference</a></li>
+                <li>参照日: 2026-09-08</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-08: Windows版の既定ショートカット、習得順、競合時の確認方法を整理して初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

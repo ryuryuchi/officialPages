@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>静的サイトジェネレーターの基本</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">静的サイトジェネレーターの基本</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>静的サイトジェネレーター（Static Site Generator、SSG）が何をするものか、 通常のHTML手書き、サーバーでページを生成するWebアプリ、CMSとどう違うかを 初心者向けに整理する。また、SSGを自作できる範囲と、最初に試す方法を確認する。</p>
+            <h2 id="結論">結論</h2>
+            <p>静的サイトジェネレーターは、Markdownやデータファイル、テンプレートから、 公開前に完成済みのHTMLファイルをまとめて生成するツールである。利用者が ページを開くたびにHTMLを作るのではなく、あらかじめ作ったHTML、CSS、 JavaScript、画像などをWebサーバーやCDNが配信する。</p>
+            <p>典型的な流れは次のとおりである。</p>
+            <pre><code class="language-text">記事・データ + レイアウト・テンプレート
+                    |
+                  build
+                    v
+       HTML / CSS / JavaScript / 画像
+                    |
+             公開先へ配置・配信</code></pre>
+            <p>したがって、SSGが特に得意なのはブログ、技術文書、会社紹介、ポートフォリオ、 製品紹介、変更頻度が極端に高くないサイトである。生成後のファイルは GitHub Pagesなどの静的ホスティングへ配置でき、常時動くアプリケーション サーバーやデータベースを必須としない。</p>
+            <p>自作も可能である。最小構成なら、入力ファイルを読み、共通レイアウトへ 差し込み、出力先へHTMLを書き出すだけで成立する。ただし、Markdownの解釈、 テンプレート、URL設計、一覧・タグ・サイトマップ、リンク検査、画像処理、 差分ビルド、開発用サーバーなどを追加すると、既存のSSGを使う価値が大きくなる。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="静的-とは何か">「静的」とは何か</h3>
+            <p>ここでいう静的とは、ページのHTMLをリクエストごとにサーバー側で作らず、 ビルド時に作ったファイルをそのまま返すという意味である。JavaScriptを 含められないという意味ではない。生成されたページにJavaScriptを含めて、 ブラウザーからAPIを呼ぶ、検索を動かす、フォームサービスを使う、といった 動作を追加することはできる。</p>
+            <p>一方、ログイン中の利用者ごとの表示、現在の在庫、個人別の請求情報などを 毎回変えるページは、SSGだけでは扱いにくい。クライアント側のJavaScript、 外部API、サーバーサイドレンダリング（SSR）などを組み合わせるか、動的な Webアプリケーションとして作る。</p>
+            <h3 id="ssgが実際に行う処理">SSGが実際に行う処理</h3>
+            <p>SSGは製品ごとに機能が異なるが、概ね次の処理を担当する。</p>
+            <ol>
+                <li>Markdown、HTML、JSON、YAMLなどの入力ファイルを読み込む。</li>
+                <li>タイトル、日付、カテゴリ、URL用の識別子などのメタデータを読む。</li>
+                <li>本文をHTMLへ変換する。</li>
+                <li>ヘッダー、フッター、サイドバー、記事レイアウトなどのテンプレートを</li>
+            </ol>
+            <p>適用する。</p>
+            <ol>
+                <li>記事一覧、カテゴリ一覧、前後の記事リンクなどを生成する。</li>
+                <li>CSS、JavaScript、画像などの静的ファイルをコピーまたは最適化する。</li>
+                <li><code>dist</code>、<code>public</code>、<code>_site</code>などの出力フォルダーへ完成ファイルを書き出す。</li>
+                <li>ローカル開発サーバーで確認し、出力フォルダーをホスティングへ配置する。</li>
+            </ol>
+            <p>Eleventyの公式チュートリアルでは、MarkdownとHTMLのテンプレートから <code>_site</code>へ<code>index.html</code>などを生成し、<code>--serve</code>でローカル確認を行う。 Hugoでは、コンテンツを<code>content</code>へ置き、ビルド成果物を<code>public</code>へ出力する。 出力先の名前はツールごとに異なるが、考え方は同じである。</p>
+            <h3 id="手書きhtmlとの違い">手書きHTMLとの違い</h3>
+            <p>ページが少ないうちは、HTMLを直接書く方が簡単である。しかしページ数が 増えると、全ページへ同じヘッダーやフッターを貼り付けることになり、 デザイン変更時の修正漏れが起こりやすい。</p>
+            <p>SSGでは、記事本文と共通レイアウトを分ける。例えばタイトル部分だけを Markdownで書き、HTMLの骨組みやナビゲーションはテンプレートに置く。 テンプレートを1か所直して再ビルドすれば、全ページへ反映できる。</p>
+            <h3 id="cmsや動的webアプリとの違い">CMSや動的Webアプリとの違い</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>方式</th>
+                        <th>ページを作るタイミング</th>
+                        <th>得意なもの</th>
+                        <th>注意点</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>手書きHTML</td>
+                        <td>人がファイルを直接作成</td>
+                        <td>小規模な固定ページ</td>
+                        <td>共通部分の重複が増える</td>
+                    </tr>
+                    <tr>
+                        <td>SSG</td>
+                        <td>公開前のビルド時</td>
+                        <td>ブログ、文書、紹介サイト</td>
+                        <td>更新後に再ビルドが必要</td>
+                    </tr>
+                    <tr>
+                        <td>CMS</td>
+                        <td>管理画面への投稿時またはアクセス時</td>
+                        <td>複数人での編集、投稿管理</td>
+                        <td>運用、更新、セキュリティが必要</td>
+                    </tr>
+                    <tr>
+                        <td>SSRなどの動的アプリ</td>
+                        <td>多くはアクセス時</td>
+                        <td>ログイン、個人別表示、リアルタイム情報</td>
+                        <td>サーバーや実行環境が必要</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>SSGとCMSは排他的ではない。ヘッドレスCMSやAPIからビルド時にデータを 取得してSSGする構成もある。また、Astroのように、基本は静的生成にしつつ、 必要なページだけリクエスト時に生成する構成も選べる。</p>
+            <h3 id="自作できる最小構成">自作できる最小構成</h3>
+            <p>「SSGそのものを理解する」目的なら、次のような小さな構成を自作できる。</p>
+            <pre><code class="language-text">my-generator/
+├─ content/
+│  ├─ index.txt
+│  └─ about.txt
+├─ templates/
+│  └─ page.html
+└─ build.py</code></pre>
+            <p><code>build.py</code>で行う処理は、最初は次の程度でよい。</p>
+            <ol>
+                <li><code>content</code>内のファイルを列挙する。</li>
+                <li>本文を読み込む。</li>
+                <li><code>{{ title }}</code>や<code>{{ content }}</code>のような置換文字列へ値を入れる。</li>
+                <li>ファイル名をURLに対応する出力先へ変換する。</li>
+                <li><code>dist</code>へHTMLを書き出す。</li>
+            </ol>
+            <p>この段階ならPythonの<code>pathlib</code>と文字列処理だけでも作れる。Markdownも扱う 場合は、Markdownパーサーを利用するか、最初は入力をHTMLとして割り切ると 実装量を抑えられる。入力をHTMLとして扱う場合でも、外部から受け取った 信頼できない文字列をそのままHTMLへ埋め込まないなど、エスケープの設計は 必要である。</p>
+            <p>ただし、実用的なSSGにするには、次の機能が必要になる。</p>
+            <ul>
+                <li>Markdownの見出し、リンク、コードブロック、画像などの変換</li>
+                <li>YAMLなどのフロントマターの解析と入力値の検証</li>
+                <li>HTMLエスケープ、URLの正規化、パス区切りの扱い</li>
+                <li>共通レイアウト、部品、テンプレートの継承</li>
+                <li>記事一覧、タグ、カテゴリ、ページネーションの生成</li>
+                <li>下書き、公開日、更新日、タイムゾーンの扱い</li>
+                <li>画像・CSS・JavaScriptのコピーと最適化</li>
+                <li>変更監視、ローカルサーバー、エラーの行番号表示</li>
+                <li>壊れたリンク、重複URL、未設定メタデータの検査</li>
+            </ul>
+            <p>そのため、学習では小さく自作し、実際のサイト公開ではEleventy、Hugo、 Astroなどを使う、という使い分けが現実的である。</p>
+            <h3 id="初心者が試すなら">初心者が試すなら</h3>
+            <p>目的別には次の選び方が分かりやすい。</p>
+            <ul>
+                <li>HTMLとMarkdownの変換を理解したい: Eleventy</li>
+                <li>大量の文書を高速に生成したい: Hugo</li>
+                <li>コンポーネントやJavaScriptとの組み合わせも学びたい: Astro</li>
+                <li>まず仕組みだけ確認したい: Pythonで「本文をテンプレートへ差し込む」最小版</li>
+            </ul>
+            <p>最初の練習では、トップページ1枚と記事2枚を作り、次の変化を確認すると SSGの役割がつかみやすい。</p>
+            <ol>
+                <li>記事をMarkdownで追加する。</li>
+                <li>同じレイアウトから記事ページを複数生成する。</li>
+                <li>テンプレートのフッターを1か所変更する。</li>
+                <li>再ビルドして全ページへ変更が反映されることを確認する。</li>
+                <li>出力フォルダーだけを静的ホスティングへ公開する。</li>
+            </ol>
+            <h3 id="何を選べばよいか">何を選べばよいか</h3>
+            <p>次のような場合はSSGが向いている。</p>
+            <ul>
+                <li>内容をGitで管理したい。</li>
+                <li>ページの大部分が誰に対しても同じである。</li>
+                <li>表示速度、キャッシュ、運用の単純さを重視する。</li>
+                <li>GitHub Pagesなど、静的ファイルを置くだけの公開先を使いたい。</li>
+            </ul>
+            <p>反対に、管理画面から頻繁に投稿する編集者が多い、利用者ごとに内容が 異なる、アクセス時点のデータが重要、といった場合は、CMSや動的処理を 組み合わせる方が適している。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://nextjs.org/docs/pages/building-your-application/rendering/static-site-generation">Next.js: Static Site Generation (SSG)</a></li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://docs.astro.build/en/guides/on-demand-rendering/">Astro: On-demand rendering</a></li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://docs.astro.build/en/guides/content-collections/">Astro: Content collections</a></li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://www.11ty.dev/docs/">Eleventy: Get Started</a></li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://gohugo.io/getting-started/quick-start/">Hugo: Quick start</a></li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://docs.github.com/ja/pages/getting-started-with-github-pages/what-is-github-pages">GitHub Docs: GitHub Pagesについて</a></li>
+                <li>参照日: 2026-09-15</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-15: 静的サイトジェネレーターの定義、処理の流れ、自作の最小構成、既存ツールとの使い分けを整理</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

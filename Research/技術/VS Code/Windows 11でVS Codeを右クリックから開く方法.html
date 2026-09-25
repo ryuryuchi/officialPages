@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows 11でVS Codeを右クリックから開く方法</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">Windows 11でVS Codeを右クリックから開く方法</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>Windows 11のエクスプローラーで、ファイルやフォルダーを右クリックしたときに Visual Studio Code（VS Code）で開く項目を表示する手順を整理する。VS Codeをすでに インストール済みで、インストール時の選択を忘れた場合の復旧方法も対象にする。</p>
+            <h2 id="結論">結論</h2>
+            <p>初回インストール時は、セットアップの追加タスクで次の2項目を選択する。</p>
+            <ul>
+                <li><code>Add "Open with Code" action to Windows Explorer file context menu</code></li>
+                <li><code>Add "Open with Code" action to Windows Explorer directory context menu</code></li>
+            </ul>
+            <p>すでにインストール済みの場合は、アンインストールせず、最初に使ったものと同じ User setupまたはSystem setupの公式インストーラーをもう一度実行し、上記の項目を 選択して上書きインストールする。設定や拡張機能を消すためのアンインストールは 通常必要ない。</p>
+            <p>Windows 11の新しい右クリックメニューに表示されない場合は、右クリック後に 「その他のオプションを表示」を選ぶ。<code>Shift+F10</code>でも従来のコンテキストメニューを 表示できる。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="1-これからvs-codeをインストールする場合">1. これからVS Codeをインストールする場合</h3>
+            <ol>
+                <li><a href="https://code.visualstudio.com/docs/setup/windows">VS Code公式Windowsセットアップ</a>から</li>
+            </ol>
+            <p>User setupまたはSystem setupをダウンロードする。</p>
+            <ol>
+                <li>インストーラーを起動し、通常どおりインストール先などを進める。</li>
+                <li>追加タスクの画面で、次の2項目にチェックを入れる。</li>
+            </ol>
+            <ul>
+                <li><code>Add "Open with Code" action to Windows Explorer file context menu</code></li>
+                <li><code>Add "Open with Code" action to Windows Explorer directory context menu</code></li>
+            </ul>
+            <ol>
+                <li>必要に応じて<code>Add to PATH</code>も選択する。これは右クリックメニューとは別に、</li>
+            </ol>
+            <p>ターミナルで<code>code .</code>を使うための設定である。</p>
+            <ol>
+                <li>インストールを完了する。</li>
+                <li>エクスプローラーでファイルまたはフォルダーを右クリックし、<code>Open with Code</code>を</li>
+            </ol>
+            <p>選ぶ。Windows 11で見当たらなければ「その他のオプションを表示」を開く。</p>
+            <h3 id="2-すでにvs-codeをインストール済みの場合">2. すでにVS Codeをインストール済みの場合</h3>
+            <ol>
+                <li>VS Codeで<code>ヘルプ</code> &gt; <code>バージョン情報</code>を開き、現在のインストール形態を確認する。</li>
+            </ol>
+            <p>判断できない場合は、既存のインストール先を確認する。</p>
+            <ul>
+                <li>User setupの標準的な場所: <code>%LOCALAPPDATA%\Programs\Microsoft VS Code</code></li>
+                <li>System setupの標準的な場所: <code>C:\Program Files\Microsoft VS Code</code></li>
+            </ul>
+            <ol>
+                <li><a href="https://code.visualstudio.com/download">VS Code公式ダウンロードページ</a>から、</li>
+            </ol>
+            <p>既存の形態に合うUser setupまたはSystem setupを入手する。</p>
+            <ol>
+                <li>VS Codeを終了して、ダウンロードしたインストーラーを実行する。</li>
+                <li>追加タスクで、ファイル用とフォルダー用の<code>Open with Code</code>を両方選択する。</li>
+                <li>セットアップを完了し、エクスプローラーで右クリックメニューを確認する。</li>
+            </ol>
+            <p>既存のインストールと異なる形態のインストーラーを選ぶと、別の場所へインストール することがある。そのため、User setupを使っていたならUser setup、System setupを 使っていたならSystem setupを再実行する。うまく反映されない場合は、エクスプローラー を再起動するか、Windowsへサインインし直してから確認する。</p>
+            <h3 id="3-表示されない場合の確認順">3. 表示されない場合の確認順</h3>
+            <ol>
+                <li>ファイルとフォルダーの両方の追加タスクを選んだか確認する。</li>
+                <li>右クリックメニューの「その他のオプションを表示」を確認する。</li>
+                <li><code>Shift+F10</code>で従来のメニューを開いて確認する。</li>
+                <li>User setupとSystem setupを取り違えていないか確認する。</li>
+                <li>エクスプローラーを再起動し、必要ならWindowsを再起動する。</li>
+                <li>公式インストーラーを最新版に更新して、同じ手順を再実行する。</li>
+            </ol>
+            <p>レジストリを直接編集する方法もあるが、VS Codeのインストーラーが登録する内容と 食い違う可能性があり、通常の復旧方法としては推奨しない。</p>
+            <h3 id="4-user-setupとsystem-setupの違い">4. User setupとSystem setupの違い</h3>
+            <p>User setupは通常、管理者権限なしでユーザー単位にインストールでき、標準のインストール 先は<code>%LOCALAPPDATA%\Programs\Microsoft VS Code</code>である。System setupは全ユーザー向け で、管理者権限が必要になり、標準のインストール先は<code>Program Files</code>である。</p>
+            <p>右クリックメニューを使うだけなら、どちらでも追加タスクを選択すればよい。会社PCなどで 全ユーザーに同じ設定を適用したい場合はSystem setupが候補になるが、管理者権限が必要で ある。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://code.visualstudio.com/docs/setup/windows">Installing Visual Studio Code on Windows</a></li>
+                <li>参照日: 2026-09-14</li>
+                <li><a href="https://code.visualstudio.com/download">Download Visual Studio Code</a></li>
+                <li>参照日: 2026-09-14</li>
+                <li><a href="https://raw.githubusercontent.com/microsoft/vscode/main/build/win32/code.iss">VS Code Windows installer definition</a></li>
+                <li>参照日: 2026-09-14</li>
+                <li><a href="https://support.microsoft.com/en-au/windows/experience/fileexplorer/file-explorer-in-windows">File Explorer in Windows</a></li>
+                <li>参照日: 2026-09-14</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-14: Windows 11の右クリックメニュー、初回インストール、既存インストールへの</li>
+            </ul>
+            <p>上書き適用、User setupとSystem setupの違いを公式資料で整理</p>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

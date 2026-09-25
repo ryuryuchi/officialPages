@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VS Code GitHub Copilot ChatでAutopilotを既定にする方法</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">VS Code GitHub Copilot ChatでAutopilotを既定にする方法</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>VS CodeのGitHub Copilot Chatで、新しいエージェントセッションの標準モードを Autopilotにする設定方法を調査した。</p>
+            <h2 id="結論">結論</h2>
+            <p>現行のAgent Hostを使う新しいエージェントセッションでは、ユーザー設定 <code>settings.json</code> に次を追加する。</p>
+            <pre><code class="language-json">{
+  &quot;chat.defaultConfiguration&quot;: {
+    &quot;mode&quot;: &quot;autopilot&quot;
+  }
+}</code></pre>
+            <p>設定画面を使う場合は、設定検索で <code>chat.defaultConfiguration</code> または <code>Default Configuration</code> を検索し、<code>Mode</code> を <code>Autopilot</code> にする。</p>
+            <p>Localハーネスなど拡張機能ホスト上のChatではAutopilotが「モード」ではなく 「権限レベル」として扱われるため、次の設定を使う。</p>
+            <pre><code class="language-json">{
+  &quot;chat.permissions.default&quot;: &quot;autopilot&quot;
+}</code></pre>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="現行のagent-hostの場合">現行のAgent Hostの場合</h3>
+            <p>VS Code本体の設定定義では、<code>chat.defaultConfiguration</code> は新しいエージェント セッションの初期構成を指定するオブジェクトである。<code>mode</code> には <code>interactive</code>、<code>plan</code>、<code>autopilot</code> を指定できる。したがって、 <code>mode: "autopilot"</code> とすると、新規セッションがAutopilotで始まる。</p>
+            <p>この設定は新規セッションの開始値であり、既に開いているセッションのモードを 一括変更するものではない。既存セッションでは、チャット入力欄のモード選択から Autopilotへ切り替える。</p>
+            <h3 id="従来の拡張機能ホストの場合">従来の拡張機能ホストの場合</h3>
+            <p>公式ドキュメントでは、Agent Host上のAutopilotはエージェントモード、 拡張機能ホスト上のAutopilotは権限レベルとして区別されている。 拡張機能ホストの新規Chatで既定の権限レベルを指定する設定は <code>chat.permissions.default</code> であり、値 <code>autopilot</code> を指定できる。</p>
+            <p>VS Code 1.124のリリースノートは、当時のAutopilotを権限レベルとして説明し、 新規Chatの既定値を <code>chat.permissions.default</code> で変更できると案内されている。 利用中のVS Codeで <code>chat.defaultConfiguration</code> が設定候補に出ない場合は、 この従来設定を使用する。</p>
+            <h3 id="設定手順">設定手順</h3>
+            <ol>
+                <li><code>Ctrl+,</code> で設定画面を開く。</li>
+                <li><code>chat.defaultConfiguration</code> を検索する。</li>
+                <li><code>Mode</code> を <code>Autopilot</code> に変更する。</li>
+                <li>新しいエージェントセッションを作成し、Autopilotで開始されることを確認する。</li>
+                <li>設定が見つからない場合は、<code>chat.permissions.default</code> を検索して</li>
+            </ol>
+            <p><code>Autopilot</code> を選ぶ。</p>
+            <p><code>settings.json</code> を直接編集する場合は、コマンドパレットから <code>Preferences: Open User Settings (JSON)</code> を実行する。全ワークスペースで 既定にしたい場合はユーザー設定へ追加し、特定ワークスペースだけに適用したい 場合はワークスペース設定へ追加する。</p>
+            <h3 id="注意点">注意点</h3>
+            <ul>
+                <li>Autopilotは、すべてのツール呼び出しを自動承認し、タスク完了まで自律的に</li>
+            </ul>
+            <p>反復する。エラーの自動再試行や、確認質問への自動回答も行う。ファイル編集、 ターミナルコマンド、外部ツールも承認なしで実行される可能性がある。</p>
+            <ul>
+                <li>ワークスペース外のローカルファイルを <code>file:</code> URI で取得する場合、VS Codeの</li>
+            </ul>
+            <p>組み込み <code>fetch</code> ツールは原則として確認対象にする。ただし、ユーザーがチャットの プロンプトでその URI を明示した場合、現行実装では自動承認される。この挙動を Autopilotの既定化だけで無条件に許可する設定として扱わない。</p>
+            <ul>
+                <li>ワークスペース外の読み取りを運用上許可する場合は、対象をタスクに必要な</li>
+            </ul>
+            <p>最小限のファイルに限定し、読み取り専用とする。認証情報、秘密鍵、トークン、 個人情報を含む可能性があるファイルは、不可欠でユーザーが明示指定した場合以外は 読み取らない。外部ファイルの作成・更新・削除は、対象パスと操作を明示指定された 場合だけにする。</p>
+            <ul>
+                <li>初回選択時には警告ダイアログが表示される場合がある。</li>
+                <li>組織管理ポリシーはユーザー設定より優先される。組織で</li>
+            </ul>
+            <p><code>chat.tools.global.autoApprove</code> が無効化されている場合、Autopilotを利用または 表示できないことがある。管理対象の細粒度ルールはAutopilotより優先される。</p>
+            <ul>
+                <li>既定化しても、各セッションの入力欄から別のモードへ随時変更できる。</li>
+            </ul>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://code.visualstudio.com/docs/agents/run/approvals">Manage approvals for agent tools in Visual Studio Code</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://code.visualstudio.com/updates/v1_124">Visual Studio Code 1.124 Release Notes</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://github.com/microsoft/vscode/blob/main/src/vs/workbench/contrib/chat/browser/chat.shared.contribution.ts">VS Code setting registration for chat.defaultConfiguration</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://code.visualstudio.com/docs/agents/concepts/agent-host">Agent Host behavior in Visual Studio Code</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://github.com/microsoft/vscode/blob/main/src/vs/workbench/contrib/chat/electron-browser/builtInTools/fetchPageTool.ts">VS Code built-in fetch tool implementation</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: 全参考URLと現行設定定義を再確認し、Agent HostとLocalハーネスの</li>
+            </ul>
+            <p>区別、Autopilotの自動再試行・質問応答、管理対象ルールの優先を反映</p>
+            <ul>
+                <li>2026-08-25: ワークスペース外のファイル読み取りに関する確認挙動と安全な運用規定を追記</li>
+                <li>2026-08-25: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

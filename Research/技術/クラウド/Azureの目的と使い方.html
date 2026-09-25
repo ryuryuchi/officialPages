@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azureの目的と使い方</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">Azureの目的と使い方</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>Microsoft Azureが何のために作られ、何に使われるサービスなのかを整理する。 Azure自体をプログラミング言語と誤解しやすいため、利用できる代表的な言語と、 Azureのリソースを操作・定義する構文も区別して説明する。</p>
+            <h2 id="結論">結論</h2>
+            <p>Azureは、Microsoftが提供する<strong>クラウドコンピューティング基盤</strong>である。 データセンターのサーバー、ストレージ、ネットワーク、データベース、AIなどを 必要な分だけ利用し、アプリケーションを開発、公開、運用するために作られた。</p>
+            <p>Azureはプログラミング言語ではない。そのため「有名な言語で何に似ているか」に 対する答えは、対象によって異なる。</p>
+            <ul>
+                <li>Azure上のアプリは、Python、JavaScript/TypeScript、Java、C#などで作れる。</li>
+                <li>Azure CLIは、BashやPowerShellから実行するコマンドラインツールに近い。</li>
+                <li>Azure PowerShellは、PowerShellのコマンドレットを使う管理ツールである。</li>
+                <li>ARMテンプレートはJSON形式の宣言的な構成ファイルである。</li>
+                <li>BicepはAzureリソースを宣言的に記述する、Azure Resource Manager用のDSLである。</li>
+            </ul>
+            <p>一般的な命令型言語より、TerraformなどのIaC（Infrastructure as Code）記述に近い。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="何のために作られたか">何のために作られたか</h3>
+            <p>Azureの目的は、利用者が自分で物理サーバーやデータセンターを用意せずに、 コンピューティング資源や各種マネージドサービスを使えるようにすることである。 代表的な効果は次のとおり。</p>
+            <ul>
+                <li>必要なときに仮想マシンやアプリ実行環境を作成・削除できる。</li>
+                <li>利用量や負荷に応じて、計算資源や保存容量を増減しやすい。</li>
+                <li>複数の地域にアプリやデータを配置し、可用性や利用地域を考慮した構成を作れる。</li>
+                <li>OS更新、バックアップ、データベース運用などの一部をマネージドサービスに任せられる。</li>
+                <li>認証、監視、ネットワーク、セキュリティ、AIなどを組み合わせてシステムを構築できる。</li>
+            </ul>
+            <p>ただし、可用性、セキュリティ、コスト、データ所在地が自動的に最適化されるわけではない。 サービスの選択、権限設計、監視、バックアップ、料金管理は利用者の責任範囲として 検討が必要である。</p>
+            <h3 id="何に使うか">何に使うか</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>分野</th>
+                        <th>Azureで使う代表例</th>
+                        <th>用途</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>アプリ実行</td>
+                        <td>Virtual Machines、App Service、Azure Functions、コンテナー</td>
+                        <td>Webアプリ、API、バッチ、イベント処理</td>
+                    </tr>
+                    <tr>
+                        <td>保存</td>
+                        <td>Blob Storage、Disk Storage、Azure Files</td>
+                        <td>ファイル、画像、バックアップ、仮想ディスク</td>
+                    </tr>
+                    <tr>
+                        <td>データベース</td>
+                        <td>Azure SQL Database、Cosmos DBなど</td>
+                        <td>リレーショナルデータ、NoSQLデータ</td>
+                    </tr>
+                    <tr>
+                        <td>ネットワーク</td>
+                        <td>Virtual Network、Load Balancer、各種接続サービス</td>
+                        <td>通信経路の分離、負荷分散、拠点接続</td>
+                    </tr>
+                    <tr>
+                        <td>分析とAI</td>
+                        <td>分析サービス、AzureのAI関連サービス</td>
+                        <td>データ分析、機械学習、生成AIアプリ</td>
+                    </tr>
+                    <tr>
+                        <td>運用</td>
+                        <td>Azure Monitor、Microsoft Entra ID、Resource Manager</td>
+                        <td>監視、認証・認可、リソース管理</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>例えば、会社のWebシステムなら、App ServiceでWeb/APIを動かし、Azure SQL Databaseに業務データを保存し、Blob Storageに画像を置き、Microsoft Entra IDで 利用者を認証する、といった構成にできる。</p>
+            <h3 id="azureはどの言語に似ているか">Azureはどの言語に似ているか</h3>
+            <p>Azure全体に対応する「似たプログラミング言語」はない。比較対象は操作方法や 構成定義の種類ごとに考える必要がある。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>対象</th>
+                        <th>似ているもの</th>
+                        <th>説明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Azure CLI</td>
+                        <td>Bash、PowerShell、cmdのコマンド実行</td>
+                        <td><code>az</code>から始まるコマンドを端末やスクリプトで実行する</td>
+                    </tr>
+                    <tr>
+                        <td>Azure PowerShell</td>
+                        <td>PowerShell</td>
+                        <td><code>New-AzResourceGroup</code>のような動詞-名詞型のコマンドレットを使う</td>
+                    </tr>
+                    <tr>
+                        <td>ARMテンプレート</td>
+                        <td>JSON、宣言的な設定ファイル</td>
+                        <td>作りたいリソースと設定をJSONで記述する</td>
+                    </tr>
+                    <tr>
+                        <td>Bicep</td>
+                        <td>IaC用DSL、Terraformの記述</td>
+                        <td>リソースの状態を宣言し、Azure Resource Managerへデプロイする</td>
+                    </tr>
+                    <tr>
+                        <td>Azure SDK</td>
+                        <td>利用する言語そのもの</td>
+                        <td>PythonならPython、C#ならC#の文法でAzure APIを呼び出す</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>したがって、アプリケーション開発者は既存の得意な言語を使い、インフラ管理者は CLI、PowerShell、Bicep、ARMテンプレートなどを選ぶ、という使い分けが基本になる。 Microsoftの開発者向け資料では、.NET、Python、JavaScript、Java、Go、C++、Rustの SDKや開発者向け資料が案内されている。</p>
+            <h3 id="代表的な構文">代表的な構文</h3>
+            <h4 id="azure-cli">Azure CLI</h4>
+            <p>Azure CLIは端末からAzureリソースを操作するコマンドラインツールである。基本形は 「参照名 - コマンド - パラメーター - 値」で、シェルの文法（変数、パイプ、条件分岐 など）は実行するBashやPowerShellに従う。</p>
+            <pre><code class="language-bash">az login
+az group create --name myResourceGroup --location japaneast
+az account list --output table</code></pre>
+            <p><code>az</code>の後に操作対象（<code>group</code>など）、操作（<code>create</code>など）、オプションを並べる。 JSONが標準出力形式で、<code>--output table</code>のように形式を変更できる。</p>
+            <h4 id="azure-powershell">Azure PowerShell</h4>
+            <p>Azure PowerShellはPowerShellからAzureを操作するためのモジュールである。 PowerShellのパイプやオブジェクト処理を使える。</p>
+            <pre><code class="language-powershell">Connect-AzAccount
+New-AzResourceGroup -Name myResourceGroup -Location japaneast
+Get-AzResourceGroup</code></pre>
+            <h4 id="bicep">Bicep</h4>
+            <p>BicepはAzureリソースを宣言するDSLで、BicepファイルをAzure Resource Managerへ デプロイする。変数、パラメーター、リソース、モジュール、出力などを記述できる。 命令を上から実行するというより、最終的に必要なリソースの状態を表す。</p>
+            <pre><code class="language-bicep">param location string = resourceGroup().location
+
+resource storageAccount &#x27;Microsoft.Storage/storageAccounts@2023-05-01&#x27; = {
+  name: &#x27;examplestorage12345&#x27;
+  location: location
+  sku: {
+    name: &#x27;Standard_LRS&#x27;
+  }
+  kind: &#x27;StorageV2&#x27;
+}</code></pre>
+            <p>リソース名、リソースの種類とAPIバージョン、リージョン、SKUなどを記述する。 実際に利用するAPIバージョン、名前の制約、リージョンでの提供状況は対象サービスの 公式ドキュメントで確認する必要がある。</p>
+            <h4 id="armテンプレート">ARMテンプレート</h4>
+            <p>ARMテンプレートは、Azure Resource Managerが解釈するJSON形式のテンプレートである。 <code>parameters</code>、<code>variables</code>、<code>resources</code>、<code>outputs</code>などを使って、再利用可能な デプロイ定義を作れる。BicepはARMテンプレートJSONより簡潔に書け、デプロイ時には ARMテンプレートに変換される。</p>
+            <pre><code class="language-json">{
+  &quot;$schema&quot;: &quot;https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#&quot;,
+  &quot;contentVersion&quot;: &quot;1.0.0.0&quot;,
+  &quot;resources&quot;: []
+}</code></pre>
+            <p>空の<code>resources</code>は例示用であり、実運用では対象リソースの種類、APIバージョン、 名前、場所、プロパティなどを定義する。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://azure.microsoft.com/en-us/resources/cloud-computing-dictionary/what-is-azure">What is Azure? - Microsoft Azure</a></li>
+                <li>参照日: 2026-09-10</li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/developer/">Azure developer documentation - Microsoft Learn</a></li>
+                <li>参照日: 2026-09-10</li>
+                <li><a href="https://learn.microsoft.com/en-us/cli/azure/what-is-azure-cli">What is the Azure CLI? - Microsoft Learn</a></li>
+                <li>参照日: 2026-09-10</li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/overview">What is Azure Resource Manager? - Microsoft Learn</a></li>
+                <li>参照日: 2026-09-10</li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/overview">What is Bicep? - Microsoft Learn</a></li>
+                <li>参照日: 2026-09-10</li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/overview">Templates overview - Microsoft Learn</a></li>
+                <li>参照日: 2026-09-10</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-10: Azureの目的、用途、対応言語、Azure CLI・PowerShell・Bicep・ARMテンプレートの構文を初版作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

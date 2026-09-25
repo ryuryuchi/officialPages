@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub CopilotのRubber Duck機能</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">GitHub CopilotのRubber Duck機能</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>VS Code 1.135で追加されたRubber Duckについて、機能の目的、仕組み、 使い方、利用条件、注意点を公式資料から整理する。</p>
+            <h2 id="結論">結論</h2>
+            <p>Rubber Duckは、Copilotの計画、実装、テストを別系統のAIモデルに批評させる、 読み取り専用の組み込みレビューエージェントである。一般的な 「ラバーダック・デバッグ」のように考えを言語化するだけでなく、別モデルが 問題点と修正案を返す点が特徴である。</p>
+            <p>VS Codeでは、2026年8月26日公開の1.135でCopilot Agent Hostセッションから 利用できる実験的機能として追加された。チャット入力欄で <code>/rubber-duck &lt;質問&gt;</code>を実行する。複雑な作業ではCopilotが自動的に呼び出すこともある。 VS Code 1.135のリリースノートではVS Code統合を実験的機能としている一方、 Copilot CLI版は2026年6月2日に一般提供された。</p>
+            <p>Rubber Duck自身はファイルを編集せず、環境を変更するコマンドも実行しない。 ただし、別モデルによる追加の推論処理が発生するため、待ち時間とモデル使用量は 増える。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="追加時期と位置付け">追加時期と位置付け</h3>
+            <ul>
+                <li>GitHub Copilot CLIでは、2026年6月2日にRubber Duckの一般提供が告知された。</li>
+                <li>VS Codeでは、2026年8月26日公開のバージョン1.135で、Copilot Agent Host</li>
+            </ul>
+            <p>のCopilotハーネス向け実験的機能として追加された。</p>
+            <ul>
+                <li>VS CodeのCopilot Agent HostはCopilot SDKを使用しており、Copilot CLIや</li>
+            </ul>
+            <p>GitHub Copilotアプリなどと動作や機能をそろえる仕組みである。このため、 CLIで先に提供されたRubber DuckをVS Code内でも利用できるようになったと 理解できる。</p>
+            <p>CLIでは一般提供、VS Code統合では実験的機能という位置付けの違いに注意する。</p>
+            <h3 id="何をする機能か">何をする機能か</h3>
+            <p>メインのCopilotエージェントが現在の計画、設計、実装、テストをRubber Duckへ 渡すと、Rubber Duckは次のような実質的な問題を探す。</p>
+            <ul>
+                <li>バグやロジックエラー</li>
+                <li>セキュリティ上の脆弱性</li>
+                <li>設計上の欠陥やアンチパターン</li>
+                <li>性能上のボトルネック</li>
+                <li>テスト範囲の不足</li>
+                <li>見落とされた前提やエッジケース</li>
+            </ul>
+            <p>指摘は、作業を成功させるために修正必須の「Blocking issues」、品質向上のため 修正すべき「Non-blocking issues」、優先度の低い改善案である「Suggestions」に 分類される。スタイル、書式、命名、軽微なリファクタリングなど、成否に影響しない 指摘は原則として対象外である。</p>
+            <p>Rubber Duckは指摘内容、影響、具体的な修正案を返す。メインエージェントが その批評を要約し、採用するかを判断して作業を続ける。Rubber Duck自身には コードベースを調査する読み取り専用ツールへのアクセスがあるが、ファイル編集や 環境を変更するコマンドの実行はできない。</p>
+            <h3 id="別モデルを使う理由">別モデルを使う理由</h3>
+            <p>Rubber Duckは、メインセッションとは異なる系統のモデルを批評役として自動選択 する。たとえばメインがClaude系なら、GPT系が選ばれる場合がある。同じモデルに 自己評価させるよりも、学習傾向、バイアス、失敗パターンが異なる視点を得ることが 目的である。</p>
+            <p>公式ドキュメント上、メインセッションがClaudeまたはGPTの大規模言語モデルを 使用し、適切な補完モデルを利用できる場合に限って動作する。セッション途中で メインモデルを変更した場合、次回の呼び出し時に新しい組み合わせが自動選択される。</p>
+            <h3 id="vs-codeでの使い方">VS Codeでの使い方</h3>
+            <ol>
+                <li>VS Code 1.135以降で新しいエージェントセッションを開く。</li>
+                <li>Session Targetで<code>Copilot</code>ハーネスを選ぶ。<code>Local</code>ハーネスでは利用しない。</li>
+                <li>メインモデルとしてClaude系またはGPT系を選ぶ。</li>
+                <li>チャット入力欄で、たとえば次のように入力する。</li>
+            </ol>
+            <pre><code class="language-text">/rubber-duck What edge cases are missing?</code></pre>
+            <p>自然言語で「ここまでの変更について別の視点でレビューして」のように依頼する こともできる。コマンドが候補に表示されない場合は、次を確認する。</p>
+            <ul>
+                <li>VS Codeが1.135以降か</li>
+                <li>Local、Claude、CodexではなくCopilot Agent Hostセッションを使っているか</li>
+                <li>メインモデルがClaude系またはGPT系か</li>
+                <li>組み合わせ可能な補完モデルへのアクセスがあるか</li>
+                <li>実験的機能の段階的提供対象になっているか</li>
+            </ul>
+            <p>最後の項目は、VS Code 1.135のリリースノートが全ユーザーへの段階的展開を 案内しており、Rubber Duckも実験的機能とされていることからの実務上の確認事項 である。公式資料はRubber Duck専用の有効化設定名を案内していない。</p>
+            <h3 id="自動的に呼び出される場面">自動的に呼び出される場面</h3>
+            <p>複雑な作業では、Copilotが効果の高いタイミングを選んでRubber Duckを自動的に 呼び出す場合がある。</p>
+            <ul>
+                <li>複雑な変更の計画後、実装を始める前</li>
+                <li>複雑な実装の途中または直後</li>
+                <li>テスト作成後</li>
+                <li>失敗の繰り返しや予期しない結果が発生したとき</li>
+            </ul>
+            <p>小規模で明確な変更では通常スキップされる。常にレビューしてほしい場合は <code>/rubber-duck</code>または自然言語で明示的に依頼する。</p>
+            <h3 id="従来機能との違い">従来機能との違い</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>対象</th>
+                        <th>主な役割</th>
+                        <th>ファイル変更</th>
+                        <th>特徴</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>メインのCopilotエージェント</td>
+                        <td>計画、実装、テスト、修正</td>
+                        <td>する</td>
+                        <td>タスクを最後まで進める実行役</td>
+                    </tr>
+                    <tr>
+                        <td>Rubber Duck</td>
+                        <td>メインエージェントの成果を批評</td>
+                        <td>しない</td>
+                        <td>別系統モデルによる第二の意見</td>
+                    </tr>
+                    <tr>
+                        <td>一般的なラバーダック・デバッグ</td>
+                        <td>人が説明して自分で気付く</td>
+                        <td>人が行う</td>
+                        <td>原則として相手から回答はない</td>
+                    </tr>
+                    <tr>
+                        <td>コードレビュー</td>
+                        <td>変更済みコードを検査</td>
+                        <td>通常しない</td>
+                        <td>Rubber Duckは計画やテストも途中段階で検査できる</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>Autopilotは承認待ちを減らしてメインエージェントが自律的に作業を続けるための モードであり、批評役を追加するRubber Duckとは目的が異なる。</p>
+            <h3 id="効果に関する公式評価">効果に関する公式評価</h3>
+            <p>GitHubがSWE-Bench Proで行った評価では、Claude Sonnet 4.6とGPT-5.4の Rubber Duckを組み合わせると、Sonnet単体とClaude Opus 4.6単体の性能差の 74.7%を埋めたとしている。3ファイル以上かつ70ステップ以上を要する難しい問題 では、Sonnet単体より3.8%高く、3回の試行で特定した最難関問題では4.8%高かった。</p>
+            <p>これはGitHub自身による特定モデル、特定ベンチマークでの評価である。すべての モデル構成や実務タスクで同じ改善率になることを保証する結果ではない。</p>
+            <h3 id="向いている用途">向いている用途</h3>
+            <ul>
+                <li>複数ファイルにまたがる変更や大規模リファクタリング</li>
+                <li>アーキテクチャや設計方針を確定する前のレビュー</li>
+                <li>見落としの影響が大きい重要な変更</li>
+                <li>テストケースやエッジケースの不足確認</li>
+                <li>エージェントが同じ失敗を繰り返しているときの打開</li>
+            </ul>
+            <h3 id="注意点">注意点</h3>
+            <ul>
+                <li>追加のモデル呼び出しにより、応答時間とモデル使用量が増える。</li>
+                <li>適切な補完モデルが利用できなければ動作しない。</li>
+                <li>指摘は助言であり、正しさは保証されない。重要な変更ではテストや人による</li>
+            </ul>
+            <p>レビューも必要である。</p>
+            <ul>
+                <li>読み取り専用なのはRubber Duckであり、批評を受け取ったメインエージェントは</li>
+            </ul>
+            <p>権限設定に応じてファイル変更やコマンド実行を行える。</p>
+            <ul>
+                <li>VS Codeでは実験的機能のため、仕様、提供条件、UIが変更される可能性がある。</li>
+            </ul>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://code.visualstudio.com/updates/v1_135">Visual Studio Code 1.135</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://code.visualstudio.com/docs/agents/run/agent-harnesses">Choose and use an agent harness</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.github.com/en/copilot/concepts/agents/copilot-cli/rubber-duck">About the rubber duck agent</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://github.blog/changelog/2026-06-02-copilot-cli-improved-ui-rubber-duck-prompt-scheduling-and-voice-input/">Copilot CLI: Improved UI, rubber duck, prompt scheduling, and voice input</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://github.blog/ai-and-ml/github-copilot/github-copilot-cli-combines-model-families-for-a-second-opinion/">GitHub Copilot CLI combines model families for a second opinion</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: 全参考URLを再確認し、VS Code統合とCLI版の提供状態の違い、</li>
+            </ul>
+            <p>Copilotハーネス限定、対応モデルとベンチマークの適用範囲を明確化</p>
+            <ul>
+                <li>2026-08-27: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

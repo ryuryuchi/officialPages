@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VS Codeでブラウザを開く方法</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">VS Codeでブラウザを開く方法</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>VS Code内でWebページを開く方法と、HTMLのプレビュー、外部ブラウザへの切り替えを整理する。</p>
+            <h2 id="結論">結論</h2>
+            <p>URLをVS Code内で開くだけなら、拡張機能は不要である。<code>Ctrl+Shift+P</code>でコマンドパレットを開き、<code>Browser: Open Integrated Browser</code>を実行してURLを入力する。</p>
+            <p>HTMLファイルは、エクスプローラーまたはエディターのタブを右クリックし、<code>Open in Integrated Browser</code>を選ぶとプレビューできる。外部ブラウザでローカル開発サーバーを確認したい場合は、設定でlocalhostリンクの動作を切り替えるか、ライブリロードが必要ならLive Server拡張機能を使う。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="webページをvs-code内で開く">WebページをVS Code内で開く</h3>
+            <ol>
+                <li><code>Ctrl+Shift+P</code>または<code>F1</code>でコマンドパレットを開く。</li>
+                <li><code>Browser: Open Integrated Browser</code>を選ぶ。</li>
+                <li>アドレスバーに<code>https://example.com</code>などのURLを入力し、<code>Enter</code>を押す。</li>
+            </ol>
+            <p>メニューバーの<code>View</code> &gt; <code>Browser</code>や、タイトルバーの地球儀ボタンからも開ける。Integrated Browserは<code>http://</code>、<code>https://</code>、<code>file://</code>に対応し、複数のブラウザータブをVS Code内に開ける。</p>
+            <p>通常のブラウザより機能が限定される場合があり、ポップアップはブロックされる。普段のWeb閲覧よりも、開発中の画面確認やデバッグに向いている。</p>
+            <h3 id="htmlファイルをプレビューする">HTMLファイルをプレビューする</h3>
+            <ol>
+                <li>VS CodeでHTMLファイルを開く。</li>
+                <li>エクスプローラー上のファイル、またはエディターのタブを右クリックする。</li>
+                <li><code>Open in Integrated Browser</code>を選ぶ。</li>
+            </ol>
+            <p>HTMLファイルを開いているときは、エディター右上の<code>Show Preview</code>アイコンからも表示できる。HTMLを変更すると、プレビューへリアルタイムに反映される。</p>
+            <p><code>file://</code>での表示では、JavaScriptモジュール、<code>fetch</code>、ルーティングなどがブラウザのセキュリティ制約で正しく動かない場合がある。その場合は、プロジェクトの開発サーバーを起動して<code>http://localhost:ポート番号</code>を開く。</p>
+            <h3 id="localhostを外部ブラウザで開く">localhostを外部ブラウザで開く</h3>
+            <p>現行のVS Codeでは、ターミナルやチャットに表示されたlocalhostリンクは、既定でIntegrated Browserに開く。</p>
+            <p>OSの既定ブラウザで開くようにするには、設定画面で<code>workbench.browser.openLocalhostLinks</code>を無効にする。使用する外部ブラウザを固定する場合は、<code>workbench.externalBrowser</code>に<code>edge</code>、<code>chrome</code>、<code>firefox</code>、またはブラウザ実行ファイルの絶対パスを設定する。</p>
+            <p>設定例:</p>
+            <pre><code class="language-json">{
+  &quot;workbench.browser.openLocalhostLinks&quot;: false,
+  &quot;workbench.externalBrowser&quot;: &quot;edge&quot;
+}</code></pre>
+            <p>この設定後、ターミナルなどの<code>http://localhost:3000</code>といったリンクを選択すると外部ブラウザで開く。Integrated Browserは、コマンドパレットから引き続き明示的に開ける。</p>
+            <h3 id="live-server拡張機能を使う場合">Live Server拡張機能を使う場合</h3>
+            <p>静的なHTML、CSS、JavaScriptを外部ブラウザで確認し、保存時に自動再読み込みしたい場合は、サードパーティー製のLive Server拡張機能を利用できる。</p>
+            <ol>
+                <li>拡張機能ビューを開き、<code>Live Server</code>を検索してインストールする。</li>
+                <li>HTMLファイルを開く。</li>
+                <li>ステータスバーの<code>Go Live</code>、または右クリックメニューの<code>Open with Live Server</code>を選ぶ。</li>
+            </ol>
+            <p>単にHTMLをVS Code内で確認するだけなら、標準のIntegrated Browserを先に試す。React、Vue、Viteなどのプロジェクトでは、Live Serverではなく、そのプロジェクトが用意する開発サーバーを使う。</p>
+            <h3 id="コマンドが見つからない場合">コマンドが見つからない場合</h3>
+            <p><code>Browser: Open Integrated Browser</code>や<code>Open in Integrated Browser</code>が見つからない場合は、VS Codeを最新版へ更新して再確認する。古い環境では、組み込みのSimple Browserが提供する簡易プレビューを利用できる場合もあるが、現行の公式ドキュメントではIntegrated Browserが案内されている。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://code.visualstudio.com/docs/debugtest/integrated-browser">Integrated browser</a></li>
+                <li>参照日: 2026-09-01</li>
+                <li><a href="https://code.visualstudio.com/docs/languages/html">HTML in Visual Studio Code</a></li>
+                <li>参照日: 2026-09-01</li>
+                <li><a href="https://github.com/microsoft/vscode/blob/main/extensions/simple-browser/README.md">Simple Browser README</a></li>
+                <li>参照日: 2026-09-01</li>
+                <li><a href="https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer">Live Server - Visual Studio Marketplace</a></li>
+                <li>参照日: 2026-09-01</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-01: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

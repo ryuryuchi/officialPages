@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECHONET LiteとDA・UA仕様</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">ECHONET LiteとDA・UA仕様</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>ECHONET Liteの基本仕様と、DA（Device Authentication）仕様、ならびに「UA仕様」と呼ばれるものの公式上の位置付けを、2026-08-31時点の公開一次資料で確認した。</p>
+            <h2 id="結論">結論</h2>
+            <ul>
+                <li>ECHONET Liteは、住宅設備・家電などの相互接続を目的とする通信規格である。基本規格の公開版はVer.1.14（2022-09-30）であり、通信ミドルウェア、通信装置、機器オブジェクトなどを部ごとに規定する。</li>
+                <li>DA仕様は<strong>Device Authentication（機器認証）</strong>の略である。ECHONET Lite機器間で通信相手を適切に限定し、暗号通信、メッセージ認証、送信元認証、ペアリングを提供する追加の通信仕様である。</li>
+                <li>2026年の公式発表資料では、<code>ECHONET Lite DA仕様書 Ver.1.00 Ready版</code>とDA仕様適合性認証試験仕様書Ready版が会員向けに公開済みで、正式版の一般公開および認証制度の開始は予定段階である。2026年8月31日に公開規格一覧を再確認したが、DA正式版の一般公開ページ及び認証開始告知は確認できなかった。従って、Ready版を一般公開済みの完成仕様として扱わない。</li>
+                <li>公開中のECHONET Lite Ver.1.14規格書群、および上記DA公式資料には、<strong>UAを名称とする独立したECHONET Lite仕様</strong>は確認できない。UAを「User Authentication」「User Application」「Universal Adapter」等と展開して断定することはできない。</li>
+                <li>UAが「アプリケーション通信インターフェース」を指している場合、公式名称は<strong>AIF仕様</strong>である。AIF仕様は特定の重要機器と(H)EMSコントローラ間の具体的な通信を定め、ECHONET Lite規格そのものとは別に適合性認証の対象となる。</li>
+            </ul>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="echonet-liteの範囲">ECHONET Liteの範囲</h3>
+            <p>ECHONET Liteは、異なるメーカーの住宅設備・家電・センサー等をホームネットワークで相互接続するための通信規格である。規格書Ver.1.14の公開ページでは、ECHONET Lite規格書Ver.1.14（日本語版）が提供されている。総則は2022-09-30付で、規格書は通信ミドルウェア仕様、通信装置仕様、機器オブジェクトの詳細規定などの部で構成される。</p>
+            <p>規格だけでは、製品間でどの機器・プロパティをどの手順で扱うかを十分に一意化できない場合がある。そこでAIF仕様は、エネルギーマネジメント上重要な機器と(H)EMSコントローラとの具体的な通信を定め、相互接続性を高める位置付けである。</p>
+            <h3 id="da仕様">DA仕様</h3>
+            <p>DA仕様は、既存のECHONET Liteプロトコルを利用できることを前提に、機器相互の識別と通信対象の限定を行う機器認証機能を追加する通信仕様である。2026年のエコーネットコンソーシアム資料では、次を機能として示している。</p>
+            <ul>
+                <li>ペアリングにより、ユーザーが意図した接続相手であることを確認する。</li>
+                <li>グループマネージャ（GM）が、セキュアドメイン内の参加ノードとグループを管理する。</li>
+                <li>ペアリング済み参加ノードへグループ鍵を配布・更新し、グループセッション鍵でECHONET Liteフレームを保護する。</li>
+                <li>AES-CCM（128ビット鍵長）によるフレーム暗号化と、ECDSAによる送信元認証を用いる。</li>
+                <li>ペアリングの相互認証にはX.509 v3電子証明書とPANA/EAP-TLSを用い、ECDSAおよびECDHE（secp256r1）を採用する。</li>
+            </ul>
+            <p>同資料は、セキュアドメインをGM 1台と参加ノード1台以上で構成すると説明している。また、DA対応状態で従来の試験を行う認証案として、<code>ECHONET Lite Secure</code>および<code>ECHONET Lite AIF Secure</code>の名称を示している。ただし、認証局、証明書運用、認証制度は資料作成時点で検討・計画中の事項を含む。</p>
+            <h4 id="公開-適用状況">公開・適用状況</h4>
+            <p>2026-01-22に、DA仕様書Ver.1.00 Ready版およびDA仕様適合性認証試験仕様書第1版Ready版が会員向けに公開された。公式資料上の予定では、DA仕様書の正式版は一般公開、試験仕様書は会員公開とされ、2026年秋の認証開始を目途としている。公開規格一覧には2026年8月31日時点でもDA仕様の項目がなく、予定が実施済みになったとは確認できない。</p>
+            <p>このため、製品要件、認証の可否、鍵・証明書の運用要件を決める際は、Ready版だけで確定とせず、エコーネットコンソーシアムが公開する正式版・認証制度文書を確認する必要がある。</p>
+            <h3 id="ua仕様の確認結果">UA仕様の確認結果</h3>
+            <p>「UA仕様」は、今回確認した公開一次資料では正式な規格名として確認できなかった。公開中のVer.1.14規格書（総則、通信ミドルウェア仕様、通信装置仕様、システム設計指針）を対象に、<code>UA</code>、<code>User Application</code>、<code>ユーザーアプリケーション</code>、<code>Device Authentication</code>、<code>機器認証</code>を検索したが、UAを独立仕様として示す記載は見つからなかった。</p>
+            <p>したがって、UAについては以下を区別する。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>呼称</th>
+                        <th>今回確認した公式上の扱い</th>
+                        <th>判断</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>DA仕様</td>
+                        <td>Device Authentication仕様</td>
+                        <td>公式資料で確認済み</td>
+                    </tr>
+                    <tr>
+                        <td>AIF仕様</td>
+                        <td>アプリケーション通信インターフェース仕様書</td>
+                        <td>公式資料で確認済み</td>
+                    </tr>
+                    <tr>
+                        <td>UA仕様</td>
+                        <td>略語の展開・文書名・策定主体が不明</td>
+                        <td>ECHONET Liteの公式仕様名と断定不可</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>UAが社内用語、個別ベンダー仕様、または特定資料中の略称である可能性は残る。正確に特定するには、その表記がある資料名、版、発行者、または該当ページを確認する。</p>
+            <h3 id="実務上の参照順">実務上の参照順</h3>
+            <ol>
+                <li>相互接続用の基礎実装は、ECHONET Lite規格書Ver.1.14と機器オブジェクト詳細規定（APPENDIX）を確認する。</li>
+                <li>(H)EMSと重点機器の具体的な相互接続を扱う場合は、対象機器のAIF仕様と適合性試験・認証要件を確認する。</li>
+                <li>機器認証と通信路保護が必要な場合は、DA仕様の正式版、試験仕様、認証局・証明書運用の公開状況を確認する。</li>
+                <li>UAという要求がある場合は、略称を推測せず、要求元の原資料で名称と対象範囲を確認する。</li>
+            </ol>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://echonet.jp/spec<em>v114</em>lite/">ECHONET Lite規格書Ver.1.14（日本語版）のダウンロード ファイルリスト</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://echonet.jp/spec_g/">規格書・仕様書など - ECHONET</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://echonet.jp/wp/wp-content/uploads/pdf/General/Standard/ECHONET<em>lite</em>V1<em>14</em>jp/ECHONET-Lite_Ver.1.14(00">ECHONET Lite SPECIFICATION Ver.1.14 Part 0 総則</a>.pdf)</li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://echonet.jp/wp/wp-content/uploads/pdf/General/Download/2026<em>symposium/Symposium2026</em>4_Murakami.pdf">JC-STARと連携したECHONET Lite DA仕様のご紹介</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://www.jemic.go.jp/kousei/technicalcolumn-202003.html">ECHONET Lite規格とECHONET Lite AIF仕様について（日本電気計器検定所）</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://www.jet.or.jp/renewable/smart<em>house/echonet</em>lite/">ECHONET Lite規格／AIF仕様適合性試験・認証（電気安全環境研究所）</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: 全参考URLと公開規格一覧を再確認し、DA正式版・認証開始が未確認であることを明記</li>
+                <li>2026-08-27: ECHONET Lite、DA仕様、UA仕様の調査メモを初版として作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

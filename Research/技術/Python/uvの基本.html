@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pythonのuvの基本</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">Pythonのuvの基本</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>Python開発ツールの <code>uv</code> について、何をするものなのか、従来の <code>pip</code> や <code>venv</code> とどう違うのか、主な使い道と基本操作を初心者向けに整理する。</p>
+            <h2 id="結論">結論</h2>
+            <p><code>uv</code> は、Python本体、仮想環境、ライブラリ、プロジェクト、Python製CLIツールを まとめて扱える、高速なパッケージ・プロジェクト管理ツールである。Rustで実装され、 Ruffを開発するAstralが提供している。</p>
+            <p>一言でいえば、従来は <code>pyenv</code>、<code>venv</code>、<code>pip</code>、<code>pip-tools</code>、<code>pipx</code>、 Poetryなどに分かれていた役割の多くを、1つの <code>uv</code> コマンドで扱えるようにしたもの。 ただし、それらすべてと完全に同じ挙動ではない。</p>
+            <p>新しくPythonプロジェクトを始めるなら、まず次の流れを覚えればよい。</p>
+            <pre><code class="language-powershell">uv init --app --no-package my-app
+cd my-app
+uv add requests
+uv run python main.py</code></pre>
+            <p>この操作で、プロジェクト定義、仮想環境、依存関係の記録と固定、プログラムの実行を 一貫して管理できる。仮想環境を手作業で有効化しなくても <code>uv run</code> から実行可能である。 2026年8月31日時点の最新安定版は<code>0.12.7</code>（2026年8月27日公開）である。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="uvは何を解決するものか">uvは何を解決するものか</h3>
+            <p>Pythonでは、従来は目的ごとに複数の操作やツールを使うことが多かった。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>やりたいこと</th>
+                        <th>従来の代表例</th>
+                        <th>uvでの代表例</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Python本体を入れる・切り替える</td>
+                        <td>公式インストーラー、pyenv</td>
+                        <td><code>uv python install</code>、<code>uv python pin</code></td>
+                    </tr>
+                    <tr>
+                        <td>仮想環境を作る</td>
+                        <td><code>python -m venv .venv</code></td>
+                        <td><code>uv venv</code>、またはプロジェクト操作時に自動作成</td>
+                    </tr>
+                    <tr>
+                        <td>ライブラリを追加する</td>
+                        <td><code>pip install requests</code></td>
+                        <td><code>uv add requests</code></td>
+                    </tr>
+                    <tr>
+                        <td>依存バージョンを固定する</td>
+                        <td><code>pip-tools</code>など</td>
+                        <td><code>uv.lock</code>を自動生成</td>
+                    </tr>
+                    <tr>
+                        <td>環境を同じ状態にそろえる</td>
+                        <td><code>pip install -r requirements.txt</code></td>
+                        <td><code>uv sync</code></td>
+                    </tr>
+                    <tr>
+                        <td>環境内でコマンドを実行する</td>
+                        <td>仮想環境を有効化して実行</td>
+                        <td><code>uv run ...</code></td>
+                    </tr>
+                    <tr>
+                        <td>Python製CLIを一時実行する</td>
+                        <td><code>pipx run</code></td>
+                        <td><code>uvx</code></td>
+                    </tr>
+                    <tr>
+                        <td>Python製CLIを常用できるように入れる</td>
+                        <td><code>pipx install</code></td>
+                        <td><code>uv tool install</code></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p><code>uv</code> の利点は単にインストールが速いことだけではない。プロジェクトで必要なPythonの バージョンとライブラリをファイルに記録し、別のPCや他の開発者でも同じ環境を 再現しやすくする点が重要である。</p>
+            <h3 id="用語をざっくり理解する">用語をざっくり理解する</h3>
+            <h4 id="パッケージ">パッケージ</h4>
+            <p><code>requests</code>、<code>pandas</code>、<code>pytest</code>など、Pythonへ追加して使うライブラリやツール。</p>
+            <h4 id="仮想環境">仮想環境</h4>
+            <p>プロジェクトごとにパッケージを分離する仕組み。プロジェクトAとBで異なるバージョンの 同じライブラリを使っても衝突しにくくなる。<code>uv</code> のプロジェクトでは通常、 <code>pyproject.toml</code> と同じ場所の <code>.venv</code> に作られる。</p>
+            <h4 id="pyproject-toml"><code>pyproject.toml</code></h4>
+            <p>プロジェクト名、対応するPythonの範囲、直接利用する依存パッケージなどを記録する 標準的な設定ファイル。<code>uv add</code> や <code>uv remove</code> によって更新される。</p>
+            <h4 id="uv-lock"><code>uv.lock</code></h4>
+            <p>間接依存も含め、実際に解決したパッケージの正確なバージョンを記録する <code>uv</code> 専用のロックファイル。異なるOS、CPU、Pythonバージョンにまたがる解決結果を 保持できる。手で編集せず、通常はGitへコミットする。</p>
+            <p>Python標準の解決結果形式<code>pylock.toml</code>（PEP 751）も、<code>uv export -o pylock.toml</code>、 <code>uv pip compile ... -o pylock.toml</code>、<code>uv pip sync pylock.toml</code>などで扱える。ただし、 uvのプロジェクト機能には<code>pylock.toml</code>で表現できない情報があるため、プロジェクトの 正本は引き続き<code>uv.lock</code>である。</p>
+            <p><code>.venv</code> は各PCで作り直せるため、通常はGitへコミットしない。</p>
+            <h3 id="主な使い道">主な使い道</h3>
+            <h4 id="1-新しいpythonプロジェクトを管理する">1. 新しいPythonプロジェクトを管理する</h4>
+            <p>最も基本的な用途である。</p>
+            <p>現在の<code>uv init</code>はパッケージ型アプリを既定とし、<code>src</code>レイアウトとコマンド入口を 生成する。1ファイルの<code>main.py</code>から始める例では、意図を明確にするため <code>--app --no-package</code>を指定する。ライブラリなら<code>uv init --lib</code>を使う。</p>
+            <pre><code class="language-powershell"># main.pyを持つ非パッケージ型アプリを新規作成
+uv init --app --no-package my-app
+cd my-app
+
+# ライブラリを追加
+uv add requests
+
+# 開発時だけ使うライブラリを追加
+uv add --dev pytest
+
+# プログラムやテストをプロジェクト環境内で実行
+uv run python main.py
+uv run pytest</code></pre>
+            <p><code>uv add</code> はパッケージをその場で入れるだけでなく、<code>pyproject.toml</code> と <code>uv.lock</code> に依存関係を記録する。<code>uv run</code> は必要に応じてロックと同期を行い、 <code>.venv</code> がなければ作成する。そのため、通常は毎回 <code>.venv\Scripts\Activate.ps1</code> を実行しなくてもよい。</p>
+            <p>既存プロジェクトを取得した側は、次のコマンドでロックファイルに基づく環境を作れる。</p>
+            <pre><code class="language-powershell">git clone &lt;repository-url&gt;
+cd &lt;repository&gt;
+uv sync
+uv run python main.py</code></pre>
+            <p>よく使う関連コマンドは次のとおり。</p>
+            <pre><code class="language-powershell">uv remove requests  # 依存パッケージを削除
+uv tree             # 依存関係をツリー表示
+uv lock             # ロックファイルを明示的に更新
+uv sync             # 環境をロックファイルに同期</code></pre>
+            <h4 id="2-python本体をインストール-切り替えする">2. Python本体をインストール・切り替えする</h4>
+            <pre><code class="language-powershell">uv python install 3.13
+uv python list
+uv python pin 3.13</code></pre>
+            <p><code>uv python pin 3.13</code> は通常、カレントディレクトリに <code>.python-version</code> を作り、 そのプロジェクトで使うPythonを指定する。対応するPythonが見つからない場合、 設定やコマンドに応じて <code>uv</code> が管理対象のPythonをダウンロードできる。</p>
+            <h4 id="3-単発のpythonスクリプトを実行する">3. 単発のPythonスクリプトを実行する</h4>
+            <p>依存パッケージのないスクリプトなら、次のように実行できる。</p>
+            <pre><code class="language-powershell">uv run script.py</code></pre>
+            <p>1ファイルだけで配布したいスクリプトでは、依存情報をファイル内のメタデータへ 追加できる。</p>
+            <pre><code class="language-powershell">uv add --script script.py requests
+uv run script.py</code></pre>
+            <p>これにより、利用者が仮想環境を手で作って <code>pip install</code> する手間を減らせる。</p>
+            <h4 id="4-ruffやblackなどのcliツールを使う">4. RuffやBlackなどのCLIツールを使う</h4>
+            <p>一度だけ、または試しに実行する場合は <code>uvx</code> を使う。</p>
+            <pre><code class="language-powershell">uvx ruff check .</code></pre>
+            <p><code>uvx</code> は <code>uv tool run</code> の短縮形で、プロジェクトの環境とは分離された一時環境で ツールを実行する。常用するツールはユーザー環境へインストールできる。</p>
+            <pre><code class="language-powershell">uv tool install ruff
+ruff --version
+uv tool list</code></pre>
+            <p>プロジェクトごとにバージョンを固定したい開発ツールは、グローバルな <code>uv tool install</code> より <code>uv add --dev</code> と <code>uv run</code> を使う方が再現しやすい。</p>
+            <h4 id="5-既存のpip中心の手順を高速化する">5. 既存のpip中心の手順を高速化する</h4>
+            <p>既存プロジェクトが <code>requirements.txt</code> を使っている場合、すぐに <code>pyproject.toml</code> 方式へ移行せず、pip互換インターフェースを使うこともできる。</p>
+            <pre><code class="language-powershell">uv venv
+uv pip install -r requirements.txt
+uv pip freeze</code></pre>
+            <p>ただし <code>uv pip</code> は、一般的な <code>pip</code> と <code>pip-tools</code> のワークフローを置き換えるための インターフェースであり、<code>pip</code> の完全なクローンではない。特殊なオプションや 細かな挙動に依存している場合は、公式の互換性ガイドを確認する。</p>
+            <h3 id="windowsでの導入">Windowsでの導入</h3>
+            <p>公式スタンドアロンインストーラーを使う場合は、PowerShellで次を実行する。</p>
+            <pre><code class="language-powershell">powershell -ExecutionPolicy ByPass -c &quot;irm https://astral.sh/uv/install.ps1 | iex&quot;</code></pre>
+            <p>WinGetを使う方法もある。</p>
+            <pre><code class="language-powershell">winget install --id=astral-sh.uv -e</code></pre>
+            <p>インストール後に新しいPowerShellを開き、確認する。</p>
+            <pre><code class="language-powershell">uv --version
+uv --help</code></pre>
+            <p>スタンドアロンインストーラーで導入した場合は、次のコマンドで自身を更新できる。 WinGetやpipなど別の方法で導入した場合は、そのパッケージマネージャー側で更新する。</p>
+            <pre><code class="language-powershell">uv self update</code></pre>
+            <h3 id="最初に試す最小チュートリアル">最初に試す最小チュートリアル</h3>
+            <pre><code class="language-powershell"># 1. サンプルプロジェクトを作る
+uv init --app --no-package uv-sample
+cd uv-sample
+
+# 2. HTTP通信用ライブラリを追加する
+uv add requests
+
+# 3. main.pyを編集した後、uv管理環境で実行する
+uv run python main.py</code></pre>
+            <p><code>main.py</code> の例:</p>
+            <pre><code class="language-python">import requests
+
+response = requests.get(&quot;https://example.com&quot;, timeout=10)
+print(response.status_code)</code></pre>
+            <p>終わった後に確認すると、主に次のファイルとフォルダが作られている。</p>
+            <ul>
+                <li><code>pyproject.toml</code>: プロジェクト情報と直接依存</li>
+                <li><code>uv.lock</code>: 解決された正確な依存バージョン</li>
+                <li><code>.venv</code>: このPC上の仮想環境</li>
+                <li><code>.python-version</code>: <code>uv init</code> の設定やバージョンにより作成されるPython指定</li>
+            </ul>
+            <h3 id="pipやpoetryとの使い分け">pipやPoetryとの使い分け</h3>
+            <h4 id="pipとの関係">pipとの関係</h4>
+            <p><code>pip</code> は主に「現在のPython環境へパッケージをインストールする」ツールである。 一方、<code>uv</code> のプロジェクト機能は、仮想環境の作成、依存の追加、ロック、同期、 実行までまとめて扱う。新規プロジェクトなら <code>uv add</code> と <code>uv run</code> を中心に使い、 <code>uv pip install</code> は既存のrequirements方式を維持したい場合に使うと理解しやすい。</p>
+            <h4 id="poetryとの関係">Poetryとの関係</h4>
+            <p>どちらも <code>pyproject.toml</code> を中心に依存関係とプロジェクトを管理できる。 既にPoetryで安定運用しているプロジェクトは、<code>uv</code> が存在するという理由だけで 急いで移行する必要はない。新規開発で、Python本体の管理やCLIツールの実行まで 1つの高速なツールにまとめたいなら <code>uv</code> が有力な選択肢になる。</p>
+            <h3 id="注意点">注意点</h3>
+            <ul>
+                <li><code>uv.lock</code> は <code>uv</code> 専用形式であり、他ツールがそのまま利用できるとは限らない。</li>
+                <li>標準形式との受け渡しが必要なら<code>pylock.toml</code>への書き出しを検討するが、</li>
+            </ul>
+            <p>uvプロジェクト内の<code>uv.lock</code>を置き換えるものではない。</p>
+            <ul>
+                <li><code>uv.lock</code> と <code>pyproject.toml</code> は原則としてGitへコミットし、<code>.venv</code> はしない。</li>
+                <li><code>uv</code> 管理プロジェクトの <code>.venv</code> を <code>uv pip install</code> で直接変更するのではなく、</li>
+            </ul>
+            <p>プロジェクト依存には <code>uv add</code>、一時的な追加には <code>uvx</code> または <code>uv run --with</code> を使うことが公式に推奨されている。</p>
+            <ul>
+                <li><code>uv sync</code> は環境をロック結果へそろえる操作である。手作業で追加したパッケージは</li>
+            </ul>
+            <p>管理対象外となり、同期時に削除される可能性がある。</p>
+            <ul>
+                <li>pip互換インターフェースにも挙動差があるため、複雑な既存環境では段階的に試す。</li>
+                <li>会社のプロキシ、プライベートパッケージ、独自の認証がある環境では、</li>
+            </ul>
+            <p>インデックスと認証の設定を別途確認する。</p>
+            <h3 id="迷ったときの選び方">迷ったときの選び方</h3>
+            <ul>
+                <li><strong>新しいアプリやライブラリを作る</strong>: <code>uv init</code>、<code>uv add</code>、<code>uv run</code>を使う。</li>
+                <li><strong>単一の<code>main.py</code>から始める</strong>: <code>uv init --app --no-package</code>を使う。</li>
+                <li><strong>既存のrequirements方式を保つ</strong>: <code>uv venv</code>、<code>uv pip install</code>から試す。</li>
+                <li><strong>Ruffなどを一度だけ実行する</strong>: <code>uvx</code>を使う。</li>
+                <li><strong>Pythonのバージョンもまとめて管理したい</strong>: <code>uv python install</code>と</li>
+            </ul>
+            <p><code>uv python pin</code>を使う。</p>
+            <ul>
+                <li><strong>既存のPoetryプロジェクトが問題なく動いている</strong>: 無理に移行せず、</li>
+            </ul>
+            <p>移行効果とCI・デプロイへの影響を先に検証する。</p>
+            <p>初心者が最初に覚えるべき中心コマンドは、 <code>uv init</code>、<code>uv add</code>、<code>uv run</code>、<code>uv sync</code> の4つである。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://docs.astral.sh/uv/">uv - An extremely fast Python package and project manager</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.astral.sh/uv/getting-started/features/">Features</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.astral.sh/uv/getting-started/installation/">Installing uv</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.astral.sh/uv/guides/projects/">Working on projects</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.astral.sh/uv/concepts/projects/layout/">Project structure and files</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.astral.sh/uv/guides/scripts/">Running scripts</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.astral.sh/uv/guides/tools/">Using tools</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.astral.sh/uv/pip/compatibility/">Compatibility with pip and pip-tools</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.astral.sh/uv/reference/cli/#uv-init">uv CLI Reference</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://github.com/astral-sh/uv/releases/tag/0.12.7">uv 0.12.7 release</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://pypi.org/project/uv/">uv - PyPI</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: 全参考URLを再確認し、uv 0.12.7、<code>uv init</code>の現行既定、PEP 751の<code>pylock.toml</code>対応を反映</li>
+                <li>2026-08-26: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

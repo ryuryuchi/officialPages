@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LINE WORKS APIでできることと料金</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">LINE WORKS APIでできることと料金</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>LINE WORKSと外部システムをAPIで連携すると何ができるか、無料で利用できる範囲、 料金以外に発生し得る制約を、2026-09-04時点の公式情報を中心に整理する。</p>
+            <h2 id="結論">結論</h2>
+            <ul>
+                <li>LINE WORKS APIは、Bot、ユーザー・組織、トーク以外にも、掲示板、カレンダー、</li>
+            </ul>
+            <p>アンケート、タスク、Drive、メール、ワークフロー、監査などを操作するWeb APIである。</p>
+            <ul>
+                <li><strong>フリープランは0円で、30名まで、共有ストレージ5GB</strong>。公式の料金・機能比較では、</li>
+            </ul>
+            <p>トーク、カレンダー、タスク、掲示板、アドレス帳、アンケートが利用できる。</p>
+            <ul>
+                <li>公式APIドキュメントにはフリープランのRate Limit（1 APIあたり60 requests/min）が</li>
+            </ul>
+            <p>明記されているため、少なくとも一部APIを無料プランで利用できることは確認できる。 ただし、利用できるScope（権限）やサービスはプランごとに異なるため、使いたいAPIの Scope一覧を事前に確認する必要がある。</p>
+            <ul>
+                <li>API呼び出し自体の従量課金は、確認した公式料金ページ・APIドキュメントには記載がない。</li>
+            </ul>
+            <p>したがって「APIを呼ぶたびに別料金」とは確認できないが、契約プラン、外部サーバー、 データベース、監視などの連携側コストは別に発生し得る。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="apiでできること">APIでできること</h3>
+            <p>公式のAPIカテゴリを、用途が分かるようにまとめる。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>APIカテゴリ</th>
+                        <th>できることの概要</th>
+                        <th>代表的な用途</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Bot</td>
+                        <td>メッセージ送信、メニュー設定、Bot管理</td>
+                        <td>自動通知、FAQ、申請受付</td>
+                    </tr>
+                    <tr>
+                        <td>Directory</td>
+                        <td>ユーザー、組織、グループの取得・更新</td>
+                        <td>入社・異動・退社の反映</td>
+                    </tr>
+                    <tr>
+                        <td>Contact</td>
+                        <td>連絡先、連絡先タグの管理</td>
+                        <td>顧客・担当者の整理</td>
+                    </tr>
+                    <tr>
+                        <td>Board / Note</td>
+                        <td>掲示板、投稿、コメント、組織・グループノートの管理</td>
+                        <td>社内情報の投稿・検索</td>
+                    </tr>
+                    <tr>
+                        <td>Calendar</td>
+                        <td>予定やカレンダーの取得・作成・編集・削除</td>
+                        <td>会議予約、予定の同期</td>
+                    </tr>
+                    <tr>
+                        <td>Form / Task</td>
+                        <td>アンケート、タスク、タスクカテゴリーの管理</td>
+                        <td>回収状況や進捗の自動化</td>
+                    </tr>
+                    <tr>
+                        <td>Drive</td>
+                        <td>マイドライブ、共有ドライブ、組織・グループフォルダの管理</td>
+                        <td>ファイル連携、保存</td>
+                    </tr>
+                    <tr>
+                        <td>Mail</td>
+                        <td>メールの送信・閲覧・削除、フォルダ・フィルタの管理</td>
+                        <td>定型メール、メール処理</td>
+                    </tr>
+                    <tr>
+                        <td>Workflow</td>
+                        <td>決裁文書、申請フォーマットなどの管理</td>
+                        <td>申請・承認システム連携</td>
+                    </tr>
+                    <tr>
+                        <td>Audit / Monitoring</td>
+                        <td>監査データ、モニタリングデータの取得</td>
+                        <td>管理・監査レポート</td>
+                    </tr>
+                    <tr>
+                        <td>CXTalk / AiNote / PaperOn / Security</td>
+                        <td>各サービスの履歴・ノート・ファイル・設定などの管理</td>
+                        <td>周辺サービスとの統合</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>Botはテキストだけでなくボタンやスタンプなどのメッセージ形式にも対応し、 グループのトークルームへ参加させることもできる。APIの各操作には、必要な OAuth Scopeを付与したAccess Tokenが必要である。</p>
+            <h3 id="料金と無料利用の範囲">料金と無料利用の範囲</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>項目</th>
+                        <th>フリープラン</th>
+                        <th>有償プランの主な扱い</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>利用料金</td>
+                        <td>0円</td>
+                        <td>スタンダード、アドバンストなど。公式料金ページの契約・表示条件を確認</td>
+                    </tr>
+                    <tr>
+                        <td>ユーザー数</td>
+                        <td>30名まで</td>
+                        <td>制限なし</td>
+                    </tr>
+                    <tr>
+                        <td>共有ストレージ</td>
+                        <td>5GB</td>
+                        <td>スタンダード1TB、アドバンスト100TB（公式比較表）</td>
+                    </tr>
+                    <tr>
+                        <td>API Rate Limit</td>
+                        <td>1 APIあたり60 requests/min</td>
+                        <td>スタンダード・アドバンストは1 APIあたり240 requests/min</td>
+                    </tr>
+                    <tr>
+                        <td>通話・画面共有</td>
+                        <td>複数人は最大4名、最長60分</td>
+                        <td>複数人は最大200名、時間制限なし</td>
+                    </tr>
+                    <tr>
+                        <td>APIに関係する主な機能</td>
+                        <td>トーク、カレンダー、タスク、掲示板、アドレス帳、アンケート</td>
+                        <td>アドバンストではメール、Driveなども利用可能</td>
+                    </tr>
+                    <tr>
+                        <td>サポート・SLA</td>
+                        <td>なし</td>
+                        <td>あり</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>無料で始める場合の判断は、次のように分けるとよい。</p>
+            <ol>
+                <li>Bot通知や小規模なカレンダー・アンケート連携を試すだけなら、フリープランで</li>
+            </ol>
+            <p>開発検証を始められる可能性が高い。</p>
+            <ol>
+                <li>30名超、5GB超、メール・Drive、監査データの継続取得、より高いAPI呼び出し頻度が</li>
+            </ol>
+            <p>必要なら、有償プランまたは対象サービスのプラン条件を確認する。</p>
+            <ol>
+                <li>無料でも、Botを動かすサーバー、HTTPSのWebhook受信先、データベース、ログ保存、</li>
+            </ol>
+            <p>通知基盤などを外部に用意する場合は、その費用が別途かかる。</p>
+            <h3 id="利用時の制約と開発の流れ">利用時の制約と開発の流れ</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>確認項目</th>
+                        <th>公式仕様・注意点</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>認証</td>
+                        <td>Developer Consoleでアプリを設定し、認可サーバーからAccess Tokenを取得してAPIを呼び出す</td>
+                    </tr>
+                    <tr>
+                        <td>権限</td>
+                        <td>APIごとに必要なOAuth Scopeが異なる。必要最小限のScopeを設定する</td>
+                    </tr>
+                    <tr>
+                        <td>Rate Limit</td>
+                        <td>ドメイン単位・API単位で適用。フリーは60 requests/min、超過時はHTTP 429</td>
+                    </tr>
+                    <tr>
+                        <td>個別制限</td>
+                        <td>トークルーム登録は10 requests/min、<code>audit.read</code>・<code>monitoring.read</code>は10 requests/minなど</td>
+                    </tr>
+                    <tr>
+                        <td>同時接続</td>
+                        <td>ドメイン全体で最大5スレッド。超過時はHTTP 429</td>
+                    </tr>
+                    <tr>
+                        <td>長時間運転</td>
+                        <td>30分以上連続して呼び出す場合は、Rate Limitの半分以下が目安</td>
+                    </tr>
+                    <tr>
+                        <td>エラー対応</td>
+                        <td>429時は直ちに連打せず、リセット後に再試行。キャッシュで不要な呼び出しを減らす</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>標準的な導入手順は、(1) Developer Consoleでアプリ・Bot・Scopeを設定、(2) 認証して Access Tokenを取得、(3) APIリファレンスで対象APIの入力・権限・レスポンスを確認、 (4) 外部システムから呼び出す、(5) 429や権限エラーを監視する、という流れになる。</p>
+            <h3 id="料金についての読み方">料金についての読み方</h3>
+            <p>上表の「API利用可能」は、公式ドキュメントがフリープランのRate Limitを定義している こと、およびAPI Scopeがサービス・プランで異なると説明していることから判断したもの。 すべてのカテゴリ・Scopeがフリープランで使えるという意味ではない。</p>
+            <p>また、公式料金ページの表示価格は税抜きであり、契約期間や購入形態によって表示が 変わる場合がある。導入判断時は、必要なAPIのScopeと最新の料金表を同時に確認する。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://developers.worksmobile.com/jp/docs/api">LINE WORKS API（公式APIカテゴリ一覧）</a></li>
+                <li>参照日: 2026-09-04</li>
+                <li><a href="https://developers.worksmobile.com/jp/docs/rate-limits">API 使用の上限（公式）</a></li>
+                <li>参照日: 2026-09-04</li>
+                <li><a href="https://developers.worksmobile.com/jp/docs/auth">認可・認証（公式）</a></li>
+                <li>参照日: 2026-09-04</li>
+                <li><a href="https://developers.worksmobile.com/jp/docs/auth-scope">OAuth Scopes（公式）</a></li>
+                <li>参照日: 2026-09-04</li>
+                <li><a href="https://line-works.com/line-works/pricing/">利用料金（LINE WORKS公式）</a></li>
+                <li>参照日: 2026-09-04</li>
+                <li><a href="https://help.worksmobile.com/ja/faqs/services/line-works/free-plan/faq/difference-between-free-plan-and-paid-plan/">フリープランと有償プランの違い（公式ヘルプ）</a></li>
+                <li>参照日: 2026-09-04</li>
+                <li><a href="https://line-works.com/line-works/feature/bot/">Bot（LINE WORKS公式）</a></li>
+                <li>参照日: 2026-09-04</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-04: LINE WORKS APIの機能カテゴリ、無料プラン、料金以外の制約を公式情報で初版作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

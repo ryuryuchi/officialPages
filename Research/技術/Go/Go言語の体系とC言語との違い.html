@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go言語の体系とC言語との違い</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">Go言語の体系とC言語との違い</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>Go（一般にGolangとも呼ばれる）がどのような設計思想と構成を持つ言語かを整理し、C言語との共通点・相違点、および開発された経緯を確認する。</p>
+            <h2 id="結論">結論</h2>
+            <p>GoはCと同じく、静的型付けでコンパイルして実行する汎用言語であり、システム寄りのソフトウェアにも使える。そのため、構文や実行性能の説明で「Cに近い」と表現されることはある。</p>
+            <p>ただし、GoはCの後継互換言語ではない。Cよりも大きな標準ライブラリ、パッケージ・モジュール、ガベージコレクション、組み込みの並行処理、統一された開発ツールを備え、開発者がメモリ管理やビルド手順の細部を直接扱う範囲を減らしている。一方、ポインタ演算や手動メモリ解放など、Cが提供する低レベル制御は限定される。</p>
+            <p>位置付けを短く言えば、Goは「C系の効率・静的型付けを保ちながら、大規模なネットワークサービスを作りやすくするために設計された、簡潔なコンパイル言語」である。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="goの言語体系">Goの言語体系</h3>
+            <ul>
+                <li><strong>用途</strong>: 汎用言語。仕様書はシステムプログラミングを意識した言語と説明しているが、Webサーバー、API、CLI、開発ツール、クラウド基盤などにも使われる。</li>
+                <li><strong>型</strong>: 強い静的型付け。変数や式の型をコンパイル時に検査する。構造体、配列、スライス、マップ、関数、インターフェースなどを持つ。</li>
+                <li><strong>実行方式</strong>: 通常はコンパイラでネイティブ実行形式を生成する。実行時にはランタイムが動作し、ガベージコレクションやgoroutineのスケジューリングなどを担う。</li>
+                <li><strong>メモリ管理</strong>: ガベージコレクションを採用する。<code>new</code>や複合リテラルなどで確保した値を、通常は<code>free</code>で明示的に解放しない。</li>
+                <li><strong>構成単位</strong>: ソースはパッケージで構成し、複数パッケージをモジュールとして管理する。<code>go.mod</code>にモジュールのパスと依存関係を記録できる。</li>
+                <li><strong>並行処理</strong>: <code>go</code>文で軽量な実行単位であるgoroutineを起動し、channelや<code>sync</code>、<code>sync/atomic</code>で通信・同期する。これは言語と標準ライブラリの中心的な特徴である。</li>
+                <li><strong>記述規約とツール</strong>: <code>gofmt</code>による標準フォーマット、<code>go test</code>、<code>go vet</code>、<code>go doc</code>、<code>go build</code>などを標準の<code>go</code>コマンド群で利用できる。チームごとの書式差を小さくしやすい。</li>
+                <li><strong>設計上のトレードオフ</strong>: 言語機能を増やしすぎず、読みやすさ・ビルド速度・大規模コードの保守性を重視する。ジェネリクスは後から追加されたため、古い公式文書だけでは現在のGo全体を説明できない。</li>
+            </ul>
+            <h3 id="cと似ている点">Cと似ている点</h3>
+            <ol>
+                <li>どちらも静的型付けで、コンパイル後の実行性能を重視する。</li>
+                <li><code>if</code>、<code>for</code>、関数、構造体、配列など、手続き型・命令型プログラミングの基本要素が共通する。</li>
+                <li>OSやネットワークに近い処理を記述でき、CのライブラリをGoから呼び出す仕組みとして<code>cgo</code>もある。</li>
+                <li>Goの設計者にはCやUnixの開発で知られるKen ThompsonとRob Pikeが含まれるため、C/Unix文化の影響がある。</li>
+            </ol>
+            <h3 id="cと大きく違う点">Cと大きく違う点</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>観点</th>
+                        <th>C</th>
+                        <th>Go</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>メモリ</td>
+                        <td><code>malloc</code>/<code>free</code>などで原則として手動管理</td>
+                        <td>ガベージコレクション。解放の責任をランタイムが担う</td>
+                    </tr>
+                    <tr>
+                        <td>ポインタ</td>
+                        <td>ポインタ演算が可能で、メモリを細かく操作できる</td>
+                        <td>ポインタはあるが、通常のポインタ演算は行わない</td>
+                    </tr>
+                    <tr>
+                        <td>配列・文字列</td>
+                        <td>配列と終端<code>NUL</code>の文字列を低レベルに扱う</td>
+                        <td>配列、長さを持つスライス、長さを持つ文字列を区別する</td>
+                    </tr>
+                    <tr>
+                        <td>エラー処理</td>
+                        <td>戻り値、<code>errno</code>、規約などを組み合わせる</td>
+                        <td>通常の戻り値として<code>error</code>を明示的に返す</td>
+                    </tr>
+                    <tr>
+                        <td>オブジェクト指向</td>
+                        <td>言語組み込みのクラスやインターフェースはない</td>
+                        <td>クラス継承ではなく、メソッドと暗黙実装のインターフェースを使う</td>
+                    </tr>
+                    <tr>
+                        <td>並行処理</td>
+                        <td>C言語仕様の中心機能ではなく、OSやライブラリに依存</td>
+                        <td>goroutine、channel、同期パッケージを標準で提供</td>
+                    </tr>
+                    <tr>
+                        <td>依存関係</td>
+                        <td>ヘッダ、ライブラリ、Makefileなどの組合せが一般的</td>
+                        <td>Go Modulesと<code>go</code>コマンドで依存関係を記録・取得</td>
+                    </tr>
+                    <tr>
+                        <td>移植性</td>
+                        <td>プラットフォーム差や未定義動作の影響を受けやすい</td>
+                        <td>コンパイラと標準ライブラリが多くの差を吸収するが、完全な抽象化ではない</td>
+                    </tr>
+                    <tr>
+                        <td>速度・資源</td>
+                        <td>ランタイムの介入が少なく、制御と予測可能性に強み</td>
+                        <td>GCやランタイムのコストがある一方、安全性と生産性を得やすい</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>Cでもライブラリを使ってスレッドやメモリ管理を安全に設計でき、Goでも<code>unsafe</code>や<code>cgo</code>で低レベル処理に近づけられる。そのため表の違いは絶対的な能力差ではなく、言語が標準で促す設計と開発者の負担の違いである。</p>
+            <h3 id="開発された経緯">開発された経緯</h3>
+            <p>GoはGoogleで2007年に設計が始まり、Robert Griesemer、Rob Pike、Ken Thompsonが中心となって開発した。公式FAQによれば、当時の大規模開発ではC++やJavaが中心で、増大するコードベースの複雑さ、長いビルド時間、マルチプロセッサやネットワークサービス向けの開発上の負担が背景にあった。</p>
+            <p>2009年11月にオープンソースとして公表され、2012年3月にGo 1.0がリリースされた。Go 1以降は互換性を重視する方針が示され、長期運用するサービスやツールで採用しやすい基盤になった。</p>
+            <p>開発経緯を設計目標に結び付けると、次のように整理できる。</p>
+            <ul>
+                <li>C/C++に近い実行効率と静的型付けを維持する。</li>
+                <li>大規模コードを読みやすくし、ビルドやレビューを速くする。</li>
+                <li>マルチコア・ネットワーク環境での並行処理を、低レベルスレッド操作より簡潔にする。</li>
+                <li>言語仕様、標準ライブラリ、フォーマッタ、テスト、ビルドを一体化する。</li>
+            </ul>
+            <h3 id="簡単な構文イメージ">簡単な構文イメージ</h3>
+            <pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+    messages := make(chan string)
+    go func() {
+        messages &lt;- &quot;hello&quot;
+    }()
+    fmt.Println(&lt;-messages)
+}</code></pre>
+            <p>この例では<code>go func()</code>がgoroutineを起動し、channelを介して文字列を渡す。Cで同様の処理を行う場合は、通常、使用するスレッドAPI、同期プリミティブ、メモリ寿命、エラー処理を別途設計する必要がある。</p>
+            <h3 id="使い分けの目安">使い分けの目安</h3>
+            <ul>
+                <li><strong>Cが向く場面</strong>: 組み込み機器の限られた資源を直接制御する、ABIや既存Cライブラリとの互換性が最優先、GC停止やランタイムを避けたい。</li>
+                <li><strong>Goが向く場面</strong>: HTTP/APIやネットワークサービス、CLI、並行処理の多いバックエンド、単一バイナリとして配布する開発ツール、チームで統一したビルド・テストを行いたい。</li>
+                <li><strong>注意点</strong>: GoはCより安全・簡単になる部分が多いが、GCの特性、goroutineのリーク、channelのデッドロック、データ競合を自動的に全て解決するわけではない。共有データは適切に同期し、必要に応じてrace detectorなどを使う。</li>
+            </ul>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://go.dev/ref/spec">The Go Programming Language Specification</a></li>
+                <li>参照日: 2026-09-10</li>
+                <li><a href="https://go.dev/doc/faq#Origins">Frequently Asked Questions (FAQ) - Origins</a></li>
+                <li>参照日: 2026-09-10</li>
+                <li><a href="https://go.dev/ref/mem">The Go Memory Model</a></li>
+                <li>参照日: 2026-09-10</li>
+                <li><a href="https://go.dev/doc/modules/managing-dependencies">Managing dependencies - The Go Programming Language</a></li>
+                <li>参照日: 2026-09-10</li>
+                <li><a href="https://go.dev/doc/devel/release">Release History - The Go Programming Language</a></li>
+                <li>参照日: 2026-09-10</li>
+                <li><a href="https://go.dev/talks/2012/splash.article">Go at Google: Language Design in the Service of Software Engineering</a></li>
+                <li>参照日: 2026-09-10</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-10: Goの言語体系、C言語との比較、開発経緯、使い分けを初版作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

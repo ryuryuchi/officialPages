@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ローカルLLMのPC要件と15人利用の構成</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">ローカルLLMのPC要件と15人利用の構成</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>GPT-5.6程度の能力を持つLLMをローカルで動かす場合に必要なPCの規模を、 15人程度が共有する前提で調査した。モデルの重みを置くためのVRAM・RAMと、 複数人が同時に使うときのKVキャッシュ、推論サーバーの選び方を整理する。</p>
+            <h2 id="結論">結論</h2>
+            <ul>
+                <li>**GPT-5.6 Sol/Terra/Lunaそのものは、公式に重みが配布されているローカル実行モデル</li>
+            </ul>
+            <p>ではない。** OpenAIの公式ページはAPIのモデルID、エンドポイント、スナップショットを 掲載しているが、ダウンロード可能な重みは掲載していない。</p>
+            <ul>
+                <li>代替候補として、OpenAIが公開しているオープンウェイトの</li>
+            </ul>
+            <p><strong>gpt-oss-120b</strong> は117Bパラメーター（推論時に有効なのは5.1B）で、 公式モデルカード上はMXFP4量子化により単一80GB GPUに収まる。 ただし、GPT-5.6と同一性能という意味ではなく、ベンチマークや用途ごとの検証が必要である。</p>
+            <ul>
+                <li>**15人が使う共有サーバーの現実的な初期構成は、96GB級GPU 1枚または80GB級GPU 1枚、</li>
+            </ul>
+            <p>システムRAM 128GB、NVMe 2TB以上**である。短い会話を数人が順番に使うなら、 gpt-oss-120b級を試せる。</p>
+            <ul>
+                <li>15人のうち<strong>同時に3〜5人が長いコンテキストで待たずに使う</strong>なら、</li>
+            </ul>
+            <p>80〜96GB GPUを2枚以上、RAM 256GB程度へ増やすほうが安全である。 <strong>15人全員が常時同時利用する低遅延サービス</strong>は、1台の一般的なデスクトップではなく、 複数GPUサーバーまたはAPI/クラウドを前提にする。</p>
+            <ul>
+                <li>予算と運用を抑えるなら、まずは**gpt-oss-20b級を16GB以上のGPUで提供し、</li>
+            </ul>
+            <p>高品質・高負荷の要求だけ大きいモデルへ振り分ける**構成が現実的である。</p>
+            <ul>
+                <li>APIの料金、利用ティア、データ保持を比較する場合は、</li>
+            </ul>
+            <p><a href="../API/OpenAI%20APIの料金プランとデータ管理.html">OpenAI APIの料金プランとデータ管理</a>も参照する。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="1-gpt-5-6とローカルモデルの関係">1. GPT-5.6とローカルモデルの関係</h3>
+            <p>OpenAIのGPT-5.6 Solは「複雑な専門業務向けの旗艦モデル」、Terraは知能とコストの バランス型、Lunaはコスト重視のモデルとしてAPIで提供されている。公式ページに ダウンロード用重みやパラメーター数は記載されていないため、GPT-5.6の重みを PCへ置いてローカル実行することはできない。</p>
+            <p>したがって、「GPT-5.6くらい」を次のどちらとして考えるかを分ける必要がある。</p>
+            <ol>
+                <li><strong>GPT-5.6をそのまま使う</strong>: OpenAI APIを利用する。</li>
+                <li><strong>同程度の用途をローカルで行う</strong>: オープンウェイトの大規模モデルを選び、</li>
+            </ol>
+            <p>量子化と実測で品質・速度を確認する。</p>
+            <p>後者の具体例として、OpenAIのgpt-oss-120bはApache 2.0のオープンウェイトモデルで、 一般用途・高い推論用途向けと説明されている。モデルカードはGPT-5.6との同等性を 主張していないため、「GPT-5.6のローカル版」ではなく「ローカルで使える有力な 大規模推論モデル」と扱うべきである。</p>
+            <h3 id="2-メモリー容量の考え方">2. メモリー容量の考え方</h3>
+            <p>重みだけを概算する場合、パラメーター数を <code>P</code> とすると、FP16/BF16はおおむね <code>P × 2バイト</code>、4bit系量子化はおおむね <code>P × 0.5バイト</code>になる。実際には量子化の メタデータ、ランタイム、テンソルの一時領域、KVキャッシュが追加で必要になるため、 計算結果ぎりぎりのVRAMでは動かない。</p>
+            <p>MoE（Mixture of Experts）は、1回の推論で計算する有効パラメーター数が少なくても、 モデルの全専門家の重みを保持する必要がある。したがって、gpt-oss-120bの 「5.1B active」は、必要な保存容量が5.1Bになるという意味ではない。</p>
+            <h3 id="3-モデル規模別の目安">3. モデル規模別の目安</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>想定モデル</th>
+                        <th>実用的なメモリー目安</th>
+                        <th>共有サーバーの目安</th>
+                        <th>用途</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>7〜14B級</td>
+                        <td>VRAM 8〜16GB、RAM 32GB</td>
+                        <td>GPU 16〜24GB、RAM 64GB</td>
+                        <td>個人利用、軽い社内チャット</td>
+                    </tr>
+                    <tr>
+                        <td>20〜32B級</td>
+                        <td>VRAM 16〜32GB、RAM 64〜128GB</td>
+                        <td>GPU 24〜48GB、RAM 128GB</td>
+                        <td>コーディング、文書要約、少人数共有</td>
+                    </tr>
+                    <tr>
+                        <td>70B級</td>
+                        <td>VRAM 48GB前後、RAM 96〜128GB</td>
+                        <td>GPU 80〜96GB、RAM 128〜256GB</td>
+                        <td>品質重視の共有利用</td>
+                    </tr>
+                    <tr>
+                        <td>120B級・MoE</td>
+                        <td>VRAM 80GB級以上、RAM 128〜256GB</td>
+                        <td>GPU 80〜96GBを1枚以上、同時利用なら2枚以上</td>
+                        <td>GPT-5.6級を目指す検証</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>表の値は、モデル重みを量子化してGPUへ載せ、通常のコンテキスト長で推論する ための目安である。正確な必要量はモデルの量子化形式、コンテキスト長、バッチサイズ、 バックエンドで変わる。GPUに収まらない部分をRAMへ載せるCPUオフロードも可能だが、 PCIe転送が増え、応答速度は大きく低下する。</p>
+            <p>OpenAI公式のgpt-ossモデルカードにある具体例では、gpt-oss-20bは16GBメモリー内で 動作するよう設計され、gpt-oss-120bは単一80GB GPUに収まる。これは「モデルを起動 できる」条件であり、15人が同時に快適に使える性能を保証する条件ではない。</p>
+            <h3 id="4-15人共有時の推奨構成">4. 15人共有時の推奨構成</h3>
+            <p>ここでは、15人がアカウントを持ち、ピーク時の同時利用は3〜5人、チャットの コンテキストは4K〜16Kトークン程度、ファインチューニングは行わない前提とする。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>構成</th>
+                        <th>ハードウェア例</th>
+                        <th>想定する使い方</th>
+                        <th>評価</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>低コスト構成</td>
+                        <td>GPU 16〜24GB、RAM 64GB、12〜16コアCPU、NVMe 1〜2TB</td>
+                        <td>gpt-oss-20b級を15人で共有。待ち時間を許容し、同時利用は1〜2人</td>
+                        <td>最初の検証向け</td>
+                    </tr>
+                    <tr>
+                        <td>実用構成</td>
+                        <td>GPU 80〜96GB、RAM 128〜256GB、16〜32コアCPU、NVMe 2TB以上</td>
+                        <td>gpt-oss-120b級を1モデル常駐。短い要求を数人で共有</td>
+                        <td>品質と費用のバランス</td>
+                    </tr>
+                    <tr>
+                        <td>同時利用重視</td>
+                        <td>GPU 80〜96GBを2枚以上、RAM 256GB、24〜48コアCPU、NVMe 4TB以上</td>
+                        <td>3〜5人以上の同時生成、長めの文脈、待ち時間の削減</td>
+                        <td>サーバー用途</td>
+                    </tr>
+                    <tr>
+                        <td>15人が常時同時利用</td>
+                        <td>80〜96GB GPUを複数枚追加し、負荷試験で台数決定</td>
+                        <td>全員が同時に長文生成</td>
+                        <td>一般的なデスクトップの範囲外</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>RTX 5090は32GB VRAM、RTX PRO 6000 Blackwellは96GB VRAMの製品例である。 ただし、gpt-oss-120bを公式条件どおり80GB級GPUへ載せる用途では、32GB GPUを 1枚だけ使う構成は対象外になる。複数のコンシューマーGPUを使う場合は、マザーボードの PCIeスロット、電源、冷却、GPU間通信、推論ソフトのテンソル並列対応を事前に確認する。</p>
+            <h3 id="5-15人利用でモデル容量以外に効く要素">5. 15人利用でモデル容量以外に効く要素</h3>
+            <ul>
+                <li><strong>同時実行数</strong>: Ollamaでは、同じモデルへの並列リクエスト数を増やすと、</li>
+            </ul>
+            <p>リクエストごとのコンテキストが増え、必要メモリーも増える。15人全員を登録する だけならモデル容量は15倍にならないが、15人が同時に生成するとKVキャッシュが 大きくなる。</p>
+            <ul>
+                <li><strong>コンテキスト長</strong>: 4Kと32KではKVキャッシュの負担が大きく異なる。長いPDFや</li>
+            </ul>
+            <p>リポジトリを毎回投入する設計では、人数よりコンテキスト設計が先にボトルネックになる。</p>
+            <ul>
+                <li><strong>生成速度</strong>: 同じGPUでも、量子化形式、推論バックエンド、入力長、出力長で</li>
+            </ul>
+            <p>tokens/sは変わる。導入前に実際のプロンプトで同時実行負荷試験を行う。</p>
+            <ul>
+                <li><strong>サーバーソフト</strong>: 個人の試行はOllamaやLM Studioでよいが、15人向けには</li>
+            </ul>
+            <p>認証、キュー、レート制限、ログ、タイムアウトを別途設ける。高スループットが 必要なら、連続バッチ処理に対応したvLLMなどを候補にする。</p>
+            <ul>
+                <li><strong>運用と安全性</strong>: Ollamaをネットワークへ公開する場合は、認証・TLS・アクセス制御を</li>
+            </ul>
+            <p>リバースプロキシ側で用意する。機密文書を扱うなら、外部APIへ送信されないローカル 構成の利点を活かし、ログとモデルファイルのアクセス権も管理する。</p>
+            <h3 id="6-最初に選ぶなら">6. 最初に選ぶなら</h3>
+            <p>目的が「15人で社内チャットを試す」なら、次の順序が失敗しにくい。</p>
+            <ol>
+                <li>GPU 16〜24GB、RAM 64GBでgpt-oss-20b級を使い、代表的な質問を集める。</li>
+                <li>15人のうち同時に何人が使うか、4K・16K・32Kのどの文脈が必要かを測る。</li>
+                <li>品質不足が確認された場合だけ、80〜96GB GPUのgpt-oss-120b級へ移行する。</li>
+                <li>同時利用が増えたら、GPUの増設だけでなく、推論サーバーのキュー・連続バッチ・</li>
+            </ol>
+            <p>レート制限を設定してから負荷試験を行う。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://developers.openai.com/api/docs/models/gpt-5.6-sol">GPT-5.6 Sol（OpenAI公式モデル資料）</a></li>
+                <li>参照日: 2026-09-17</li>
+                <li><a href="https://developers.openai.com/api/docs/models/gpt-5.6-terra">GPT-5.6 Terra（OpenAI公式モデル資料）</a></li>
+                <li>参照日: 2026-09-17</li>
+                <li><a href="https://developers.openai.com/api/docs/models/gpt-5.6-luna">GPT-5.6 Luna（OpenAI公式モデル資料）</a></li>
+                <li>参照日: 2026-09-17</li>
+                <li><a href="https://huggingface.co/openai/gpt-oss-120b">gpt-oss-120bモデルカード（OpenAI、Hugging Face）</a></li>
+                <li>参照日: 2026-09-17</li>
+                <li><a href="https://huggingface.co/openai/gpt-oss-20b">gpt-oss-20bモデルカード（OpenAI、Hugging Face）</a></li>
+                <li>参照日: 2026-09-17</li>
+                <li><a href="https://docs.ollama.com/faq">FAQ（Ollama公式）</a></li>
+                <li>参照日: 2026-09-17</li>
+                <li><a href="https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5090/">GeForce RTX 5090（NVIDIA公式）</a></li>
+                <li>参照日: 2026-09-17</li>
+                <li><a href="https://www.nvidia.com/en-us/products/workstations/professional-desktop-gpus/rtx-pro-6000/">RTX PRO 6000 Blackwell（NVIDIA公式）</a></li>
+                <li>参照日: 2026-09-17</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-17: GPT-5.6のローカル実行可否、gpt-ossの公式要件、15人共有時の構成目安を調査して初版を作成</li>
+                <li>2026-09-17: OpenAI APIの料金・データ管理メモへの関連リンクを追加</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

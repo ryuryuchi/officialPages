@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MACアドレスのOUI</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">MACアドレスのOUI</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>MACアドレスに関連して使われるOUIの意味、アドレス内での位置、用途と判別上の注意点を調べた。</p>
+            <h2 id="結論">結論</h2>
+            <p>OUI（Organizationally Unique Identifier、組織固有識別子）は、IEEE Registration Authorityが組織へ割り当てる24ビット（3オクテット）の識別子である。</p>
+            <p>一般的な48ビットのMACアドレス（EUI-48）をMA-L割り当てから作る場合、先頭24ビットがOUI、後半24ビットが割り当てを受けた組織の管理部分になる。このため、グローバルに管理されたMACアドレスでは、先頭6桁の16進数から登録組織を調べられることが多い。</p>
+            <p>ただし、ローカル管理アドレスやWi-Fiなどで使われるランダム化MACアドレスは、先頭部分が機器メーカーのOUIとは限らない。OUI検索の結果だけで、実際の機器メーカーや機種を必ず特定できるわけではない。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="ouiの位置">OUIの位置</h3>
+            <p>MACアドレスは通常、次のように12桁の16進数で表す。</p>
+            <pre><code class="language-text">00:1A:2B:3C:4D:5E
+└─ OUI ─┘└ 組織が管理する部分 ┘</code></pre>
+            <ul>
+                <li><code>00:1A:2B</code>：先頭24ビット、すなわち6桁の16進数に相当するOUI</li>
+                <li><code>3C:4D:5E</code>：後半24ビット。割り当てを受けた組織が機器ごとに管理する部分</li>
+            </ul>
+            <p>上の値は構造を説明するための例であり、特定組織の登録情報を示すものではない。</p>
+            <p>IEEEでは、従来OUI割り当てと呼ばれていた大規模なMACアドレス割り当てをMA-L（MAC Address Block Large）と呼んでいる。MA-LにはOUIが含まれ、OUIへ組織管理の24ビットを付加するとEUI-48を生成できる。後半24ビットには理論上、約1,677万通りの値がある。</p>
+            <h3 id="何のためにあるか">何のためにあるか</h3>
+            <p>OUIは、異なる組織が生成する識別子の重複を避けるための名前空間になる。主な用途は次のとおり。</p>
+            <ul>
+                <li>EthernetやWi-Fiで使うEUI-48形式のMACアドレスを生成する</li>
+                <li>EUI-64など、ほかの拡張識別子を生成する</li>
+                <li>一部のプロトコルで会社識別子として使用する</li>
+                <li>IEEEの公開登録一覧から割り当て先の組織を確認する</li>
+            </ul>
+            <h3 id="ouiから分かることと分からないこと">OUIから分かることと分からないこと</h3>
+            <p>IEEEの公開登録情報を検索すれば、OUIの割り当てを受けた組織名を確認できる。ただし、確認できるのは基本的に「その番号範囲の登録先」である。</p>
+            <p>次の理由から、OUIだけで端末の正確なメーカー、製品名、利用者を断定することはできない。</p>
+            <ul>
+                <li>委託製造や部品供給により、登録組織名と製品ブランドが異なる場合がある</li>
+                <li>仮想マシンやソフトウェアがMACアドレスを設定する場合がある</li>
+                <li>ローカル管理アドレスは、組織へ割り当てられたOUIを前提としない</li>
+                <li>プライバシー保護のため、端末がランダム化したMACアドレスを使う場合がある</li>
+                <li>MACアドレスは技術的に変更または偽装できる</li>
+            </ul>
+            <p>したがって、OUI検索はネットワーク調査の手掛かりにはなるが、機器の本人確認に相当する証拠にはならない。</p>
+            <h3 id="現在の割り当て区分">現在の割り当て区分</h3>
+            <p>IEEEは必要なアドレス数に応じて、MACアドレスブロックを次の3種類で提供している。</p>
+            <ul>
+                <li>MA-L（Large）</li>
+                <li>MA-M（Medium）</li>
+                <li>MA-S（Small）</li>
+            </ul>
+            <p>日常的に「OUI」と呼ぶ場合は、特にMA-Lに含まれる24ビットのOUIを指すことが多い。MA-MやMA-Sは割り当て範囲の大きさと境界が異なるため、すべてのMACアドレスについて「先頭24ビットがメーカー固有のOUI」と単純化するのは正確ではない。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://standards.ieee.org/products-programs/regauth/oui/">IEEE SA - MA-L</a></li>
+                <li>参照日: 2026-09-03</li>
+                <li><a href="https://standards.ieee.org/products-programs/regauth/mac/">IEEE SA - MAC Addresses</a></li>
+                <li>参照日: 2026-09-03</li>
+                <li><a href="https://standards-support.ieee.org/hc/en-us/articles/25905790346260-MAC-address-options">IEEE Standards Support - MAC address options</a></li>
+                <li>参照日: 2026-09-03</li>
+                <li><a href="https://standards-support.ieee.org/hc/en-us/articles/4888705676564-Guidelines-for-Use-of-Extended-Unique-Identifier-EUI-Organizationally-Unique-Identifier-OUI-and-Company-ID-CID">IEEE Standards Support - Guidelines for Use of Extended Unique Identifier, Organizationally Unique Identifier, and Company ID</a></li>
+                <li>参照日: 2026-09-03</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-03: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

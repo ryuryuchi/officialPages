@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQLiteで完全一致する行を抽出して一括削除するSQL</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">SQLiteで完全一致する行を抽出して一括削除するSQL</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>SQLiteのテーブルから、指定した値と完全一致する行を検索するSQLと、検索条件をそのまま使って該当行を一括削除するSQLを整理する。</p>
+            <h2 id="結論">結論</h2>
+            <p>1列の完全一致なら <code>WHERE 列名 = ?</code> を使う。複数列の値がすべて一致する行なら、各列を <code>AND</code> でつなぐ。</p>
+            <pre><code class="language-sql">-- 抽出
+SELECT *
+FROM table_name
+WHERE column_a = ?
+  AND column_b = ?;
+
+-- 削除（同じ条件の行をすべて削除）
+DELETE FROM table_name
+WHERE column_a = ?
+  AND column_b = ?;</code></pre>
+            <p>削除前に同じ <code>WHERE</code> 条件で <code>SELECT</code> を実行して対象を確認し、必要ならトランザクション内で削除する。<code>NULL</code> は <code>=</code> では一致判定できないため、<code>IS NULL</code> を使う。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="1列の値が完全一致する行を抽出する">1列の値が完全一致する行を抽出する</h3>
+            <pre><code class="language-sql">SELECT *
+FROM users
+WHERE email = &#x27;user@example.com&#x27;;</code></pre>
+            <p>アプリケーションから値を渡す場合は、文字列をSQLへ連結せず、プレースホルダーへバインドする。</p>
+            <pre><code class="language-sql">SELECT *
+FROM users
+WHERE email = ?;</code></pre>
+            <p><code>LIKE '%値%'</code> は部分一致なので、完全一致には使わない。<code>=</code> で比較する場合も、前後の空白を自動的に除去するわけではないため、保存値と検索値を意図せず変換しない。</p>
+            <h3 id="複数列がすべて一致する行を抽出する">複数列がすべて一致する行を抽出する</h3>
+            <pre><code class="language-sql">SELECT *
+FROM products
+WHERE product_code = &#x27;A001&#x27;
+  AND product_name = &#x27;サンプル&#x27;
+  AND price = 1000;</code></pre>
+            <p>「テーブルの1行全体が完全一致」を条件にする場合は、比較したい列をすべて列挙する。主キーが分かる場合は、誤削除を避けるため主キーで対象を特定する方が安全なことがある。</p>
+            <h3 id="完全一致する行を一括削除する">完全一致する行を一括削除する</h3>
+            <p>削除前に対象件数と内容を確認する。</p>
+            <pre><code class="language-sql">SELECT COUNT(*) AS target_count
+FROM products
+WHERE product_code = &#x27;A001&#x27;
+  AND product_name = &#x27;サンプル&#x27;
+  AND price = 1000;
+
+SELECT *
+FROM products
+WHERE product_code = &#x27;A001&#x27;
+  AND product_name = &#x27;サンプル&#x27;
+  AND price = 1000;</code></pre>
+            <p>確認後、同じ条件で一括削除する。</p>
+            <pre><code class="language-sql">DELETE FROM products
+WHERE product_code = &#x27;A001&#x27;
+  AND product_name = &#x27;サンプル&#x27;
+  AND price = 1000;</code></pre>
+            <p><code>WHERE</code> 句を省略するとテーブルの全行が削除されるため、完全一致の削除では省略しない。</p>
+            <h3 id="削除を取り消せる形で実行する">削除を取り消せる形で実行する</h3>
+            <pre><code class="language-sql">BEGIN TRANSACTION;
+
+DELETE FROM products
+WHERE product_code = &#x27;A001&#x27;
+  AND product_name = &#x27;サンプル&#x27;
+  AND price = 1000;
+
+-- 対象が正しければ
+COMMIT;
+
+-- 間違っていれば、COMMITの代わりに実行
+-- ROLLBACK;</code></pre>
+            <p>SQLiteでは <code>BEGIN</code> から <code>COMMIT</code> または <code>ROLLBACK</code> までを明示的なトランザクションにできる。削除結果を確認してから <code>COMMIT</code> する運用が安全である。</p>
+            <h3 id="null-を含む行を比較する"><code>NULL</code> を含む行を比較する</h3>
+            <p><code>NULL</code> は通常の値ではなく、「不明・値なし」を表すため、次の条件では一致しない。</p>
+            <pre><code class="language-sql">-- 不適切
+WHERE note = NULL</code></pre>
+            <p><code>NULL</code> と一致させる場合は次のように書く。</p>
+            <pre><code class="language-sql">WHERE note IS NULL</code></pre>
+            <p>「値が指定値、かつ別の列がNULL」のように条件が混在する場合は、列ごとに <code>=</code> と <code>IS NULL</code> を使い分ける。</p>
+            <pre><code class="language-sql">WHERE product_code = ?
+  AND note IS NULL;</code></pre>
+            <h3 id="重複データを抽出する">重複データを抽出する</h3>
+            <p>重複とみなす列を <code>GROUP BY</code> に列挙し、<code>HAVING COUNT(*) &gt; 1</code> で2行以上あるグループに絞る。主キーや登録日時など、重複判定に含めない列は列挙しない。</p>
+            <pre><code class="language-sql">SELECT
+    product_code,
+    product_name,
+    price,
+    COUNT(*) AS duplicate_count
+FROM products
+GROUP BY product_code, product_name, price
+HAVING COUNT(*) &gt; 1;</code></pre>
+            <p>重複グループに属する実際の行を一覧する場合は、次のように結合する。<code>NULL</code> を含む列を重複判定に使う場合でも、<code>GROUP BY</code> では同じグループとして扱われる。</p>
+            <pre><code class="language-sql">SELECT p.*
+FROM products AS p
+JOIN (
+    SELECT product_code, product_name, price
+    FROM products
+    GROUP BY product_code, product_name, price
+    HAVING COUNT(*) &gt; 1
+) AS d
+  ON p.product_code = d.product_code
+ AND p.product_name = d.product_name
+ AND p.price = d.price;</code></pre>
+            <p>ただし、この結合例は判定列に <code>NULL</code> があると通常の <code>=</code> では結合できない。<code>NULL</code> も同じ値として扱う必要がある場合は、SQLiteの <code>IS</code> を使う。</p>
+            <pre><code class="language-sql">  ON p.product_code IS d.product_code
+ AND p.product_name IS d.product_name
+ AND p.price IS d.price</code></pre>
+            <h3 id="重複を1件残して余分な行を一括削除する">重複を1件残して余分な行を一括削除する</h3>
+            <p>通常のSQLiteテーブルには <code>rowid</code> があるため、<code>rowid</code> が最も小さい1件を残し、それ以外を削除できる。ここでは <code>product<em>code</code>、<code>product</em>name</code>、<code>price</code> の組み合わせを重複判定のキーとする。</p>
+            <p>まず削除対象だけを確認する。</p>
+            <pre><code class="language-sql">SELECT *
+FROM products
+WHERE rowid NOT IN (
+    SELECT MIN(rowid)
+    FROM products
+    GROUP BY product_code, product_name, price
+);</code></pre>
+            <p>内容が正しいことを確認した後、同じ条件で削除する。</p>
+            <pre><code class="language-sql">BEGIN TRANSACTION;
+
+DELETE FROM products
+WHERE rowid NOT IN (
+    SELECT MIN(rowid)
+    FROM products
+    GROUP BY product_code, product_name, price
+);
+
+-- 削除対象が正しければ
+COMMIT;
+
+-- 間違っていれば、COMMITの代わりに実行
+-- ROLLBACK;</code></pre>
+            <p>この方法では各重複グループの代表1件を残す。残す行を登録日時などで選びたい場合は、<code>MIN(rowid)</code> ではなく、主キーと <code>ROW_NUMBER() OVER (PARTITION BY ... ORDER BY ...)</code> を使って残す順序を明示する。</p>
+            <p><code>WITHOUT ROWID</code> テーブルやビューには <code>rowid</code> がないため、この方法は使えない。その場合は主キーを使い、SQLiteのウィンドウ関数で削除対象を選ぶ。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://sqlite.org/lang_select.html">SQLite Documentation: SELECT</a></li>
+                <li>参照日: 2026-09-10</li>
+                <li><code>SELECT</code> が行を問い合わせる文であることと、<code>WHERE</code> を含む構文を確認した。</li>
+                <li><a href="https://sqlite.org/lang_delete.html">SQLite Documentation: DELETE</a></li>
+                <li>参照日: 2026-09-10</li>
+                <li><code>DELETE FROM</code> と <code>WHERE</code> 条件による削除構文を確認した。</li>
+                <li><a href="https://sqlite.org/lang_expr.html">SQLite Documentation: SQL Language Expressions</a></li>
+                <li>参照日: 2026-09-10</li>
+                <li>比較演算子、<code>IS</code>、<code>IS NULL</code>、バインドパラメーターを含む式の構文を確認した。</li>
+                <li><a href="https://sqlite.org/lang_transaction.html">SQLite Documentation: Transactions</a></li>
+                <li>参照日: 2026-09-10</li>
+                <li><code>BEGIN</code>、<code>COMMIT</code>、<code>ROLLBACK</code> と、削除が書き込みトランザクションであることを確認した。</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-10: 重複行の抽出と代表1件を残す一括削除を追記</li>
+                <li>2026-09-10: SQLiteの完全一致検索、一括削除、NULL比較、トランザクションを整理した初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

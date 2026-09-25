@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大量データの傾向を調べる方法</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">大量データの傾向を調べる方法</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>行数の多い表形式データから、全体の傾向、グループごとの差、時系列変化、 外れ値などを調べる方法を整理する。ローカルPCで始める場合を中心に、 データがメモリへ収まらない場合や、さらに規模が大きくなった場合の選択肢も扱う。</p>
+            <h2 id="結論">結論</h2>
+            <ul>
+                <li>最初に行うのは、機械学習ではなく<strong>探索的データ分析（EDA）</strong>である。</li>
+            </ul>
+            <p>件数、欠損率、分布、中央値・分位点、グループ別集計、時系列推移を確認する。</p>
+            <ul>
+                <li>ローカルPCでCSVやParquetを分析するなら、まず</li>
+            </ul>
+            <p><strong>DuckDBで必要な列・行だけを読み、集計結果をpandasやグラフへ渡す方法</strong>が扱いやすい。 全データを最初からpandasへ読み込む必要はない。ただし、DuckDBもすべての処理を 必ずメモリ外で完了できるわけではない。</p>
+            <ul>
+                <li>データは可能ならCSVから<strong>Parquet</strong>へ変換する。Parquetは列指向形式なので、</li>
+            </ul>
+            <p>必要な列だけを読む分析や圧縮に向いている。</p>
+            <ul>
+                <li>グラフへ数百万行をそのまま描かない。全件で集計した結果を描くか、</li>
+            </ul>
+            <p>目的に合った無作為抽出・層化抽出を使う。</p>
+            <ul>
+                <li>重要なのはデータ量そのものより、目的、PCのメモリ、処理内容、更新頻度である。</li>
+            </ul>
+            <p>単一PCで足りなければPolarsのストリーミング、複数台での分散処理が必要なら Sparkやクラウドのデータウェアハウスを検討する。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="傾向-を具体的な問いにする">「傾向」を具体的な問いにする</h3>
+            <p>分析前に、何を傾向と呼ぶかを決める。問いが曖昧なままでは、目立つグラフを 偶然見つけただけになりやすい。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>知りたいこと</th>
+                        <th>主な方法</th>
+                        <th>代表的な出力</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>全体像</td>
+                        <td>記述統計、度数分布</td>
+                        <td>件数、欠損率、平均、中央値、分位点</td>
+                    </tr>
+                    <tr>
+                        <td>グループ差</td>
+                        <td>グループ別集計、クロス集計</td>
+                        <td>地域別・商品別の件数、率、中央値</td>
+                    </tr>
+                    <tr>
+                        <td>時間変化</td>
+                        <td>時系列集計、移動平均、前年同期比</td>
+                        <td>日次・週次・月次の折れ線</td>
+                    </tr>
+                    <tr>
+                        <td>値の偏り</td>
+                        <td>ヒストグラム、箱ひげ図</td>
+                        <td>山の数、裾の長さ、外れ値</td>
+                    </tr>
+                    <tr>
+                        <td>2変数の関係</td>
+                        <td>散布図、相関、ビニング</td>
+                        <td>相関係数、区間別平均</td>
+                    </tr>
+                    <tr>
+                        <td>継続や離脱</td>
+                        <td>コホート分析、ファネル分析</td>
+                        <td>開始月別の継続率、段階別到達率</td>
+                    </tr>
+                    <tr>
+                        <td>普段と違う動き</td>
+                        <td>ルール、分位点、異常検知</td>
+                        <td>急増・急減した期間や対象</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>割合を見る場合は、分子だけでなく分母も保存する。例えば購入数が増えていても、 訪問者数がそれ以上に増えていれば購入率は下がっている可能性がある。</p>
+            <h3 id="基本的な進め方">基本的な進め方</h3>
+            <ol>
+                <li><strong>分析単位を決める</strong></li>
+            </ol>
+            <ul>
+                <li>1行が利用者、注文、アクセス、センサー測定のどれなのかを確認する。</li>
+                <li>対象期間、タイムゾーン、重複の定義、集計の分母を決める。</li>
+            </ul>
+            <ol>
+                <li><strong>品質を確認する</strong></li>
+            </ol>
+            <ul>
+                <li>行数、列型、欠損率、重複率、最小値・最大値、カテゴリ数を調べる。</li>
+                <li>日付の範囲外、負にならない値の負数、単位違いなどを検査する。</li>
+            </ul>
+            <ol>
+                <li><strong>全体の分布を確認する</strong></li>
+            </ol>
+            <ul>
+                <li>平均だけでなく中央値、四分位点、上位・下位の分位点も見る。</li>
+                <li>外れ値を無条件に削除せず、入力ミスか実際の事象かを切り分ける。</li>
+            </ul>
+            <ol>
+                <li><strong>切り口を変えて集計する</strong></li>
+            </ol>
+            <ul>
+                <li>時間、地域、商品、利用者属性などでグループ分けする。</li>
+                <li>件数の少ないグループは偶然の振れが大きいので、件数も併記する。</li>
+            </ul>
+            <ol>
+                <li><strong>可視化して仮説を作る</strong></li>
+            </ol>
+            <ul>
+                <li>時系列は折れ線、分布はヒストグラムや箱ひげ図、2変数は散布図を使う。</li>
+                <li>データ点が多い散布図は、透過、ビニング、hexbin、密度図を使う。</li>
+            </ul>
+            <ol>
+                <li><strong>別の切り口と元データで検証する</strong></li>
+            </ol>
+            <ul>
+                <li>集計期間を変えて同じ傾向が残るかを確認する。</li>
+                <li>サンプルで発見した傾向は、最後に全件集計で確認する。</li>
+            </ul>
+            <p>NISTの説明でも、EDAはグラフィカルな手法を中心に、生データ、単純な統計量、 複数の図を組み合わせて構造や予想外の特徴を探るものとされている。</p>
+            <h3 id="データ量別の選び方">データ量別の選び方</h3>
+            <p>次の境界は固定的な行数ではない。列数、文字列の多さ、結合や並べ替えの有無、 PCのメモリによって必要資源が大きく変わる。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>状況</th>
+                        <th>向く方法</th>
+                        <th>判断の目安</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>メモリへ余裕を持って収まる</td>
+                        <td>pandas + JupyterLab</td>
+                        <td>対話的に加工・可視化したい</td>
+                    </tr>
+                    <tr>
+                        <td>単一PCだがメモリへ収まらない</td>
+                        <td>DuckDB、Polars Lazy/Streaming</td>
+                        <td>CSV・Parquetを直接集計したい</td>
+                    </tr>
+                    <tr>
+                        <td>DBにすでに保存されている</td>
+                        <td>SQLで先に絞り込み・集計</td>
+                        <td>生データをPCへ全件転送しない</td>
+                    </tr>
+                    <tr>
+                        <td>複数台が必要、定期的に大規模処理</td>
+                        <td>Spark、データウェアハウス</td>
+                        <td>分散処理、共同利用、運用管理が必要</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>pandasはインメモリ分析を前提としており、メモリより大きいデータは扱いにくい。 公式資料では、必要列だけの読み込み、効率的な型、チャンク処理が案内されている。 ただし、複雑な<code>groupby</code>のようにチャンク間の調整が必要な処理は難しいため、 その場合はDuckDBやPolarsなどに任せる方がよい。</p>
+            <p>PolarsのLazy APIは、述語・射影プッシュダウンなどの最適化を行える。ストリーミング 実行はクエリをバッチに分け、メモリへ収まらないデータを処理できる。ただし、すべての 演算がストリーミング対応ではなく、非対応の演算はインメモリエンジンへ切り替わる。 <code>explain</code>や物理プランのグラフで、実行計画とメモリ負荷を事前確認する。</p>
+            <p>Spark SQLは構造化データを分散処理する仕組みで、SQLとDataFrame APIを使える。 ただし、環境構築と運用の負担が増えるため、ローカルで終わる分析へ最初から 導入する必要はない。</p>
+            <h3 id="ローカルpcでの実用的な構成">ローカルPCでの実用的な構成</h3>
+            <p>既存の<a href="../Python/uvの基本.html">Pythonのuvの基本</a>に沿って、次の構成から始められる。</p>
+            <pre><code class="language-powershell">uv init data-trend-analysis
+Set-Location data-trend-analysis
+uv add duckdb pandas matplotlib jupyterlab
+uv run jupyter lab</code></pre>
+            <p>DuckDBはParquetをテーブルへ全件取り込まずに直接SQLで読める。次の例では、 全件から月・カテゴリ別の集計を行い、小さくなった結果だけをpandasへ渡す。</p>
+            <pre><code class="language-python">import duckdb
+
+summary = duckdb.sql(
+    &quot;&quot;&quot;
+    SELECT
+        date_trunc(&#x27;month&#x27;, event_time) AS month,
+        category,
+        count(*) AS record_count,
+        avg(value) AS mean_value,
+        median(value) AS median_value,
+        quantile_cont(value, 0.25) AS p25,
+        quantile_cont(value, 0.75) AS p75
+    FROM read_parquet(&#x27;data/*.parquet&#x27;)
+    WHERE event_time IS NOT NULL
+    GROUP BY 1, 2
+    ORDER BY 1, 2
+    &quot;&quot;&quot;
+).df()
+
+ax = summary.pivot(
+    index=&quot;month&quot;,
+    columns=&quot;category&quot;,
+    values=&quot;median_value&quot;,
+).plot()
+ax.set_ylabel(&quot;median value&quot;)</code></pre>
+            <p>CSVしかない場合も<code>read<em>csv</em>auto('data/*.csv')</code>で同様に読める。繰り返し分析するなら、 型を確認してParquetへ変換しておくと、必要列だけの読み込みと圧縮を利用しやすい。</p>
+            <p>DuckDBはメモリを超える処理でディスクへ退避できるが、複数のブロッキング演算、 一部の集約、<code>PIVOT</code>などではメモリ不足が起こり得る。データ量だけで安全と判断せず、 十分な空きディスク、<code>memory_limit</code>、一時ディレクトリ容量を監視し、本番相当データで 試験する。</p>
+            <h3 id="大量データを扱う工夫">大量データを扱う工夫</h3>
+            <ul>
+                <li><strong>必要な列と行だけ読む</strong>: <code>SELECT *</code>を避け、期間や対象を早い段階で絞る。</li>
+                <li><strong>先に集計する</strong>: 全件をPythonへ渡さず、SQLで日次・カテゴリ別などへまとめる。</li>
+                <li><strong>列指向形式を使う</strong>: 分析用途ではCSVよりParquetを優先する。</li>
+                <li><strong>段階的に調べる</strong>: 小さなサンプルでコードを作り、集計結果を確認してから全件で実行する。</li>
+                <li><strong>再現可能にする</strong>: サンプリングの乱数シード、抽出条件、SQL、データ期間を記録する。</li>
+                <li><strong>母集団と不確実性を残す</strong>: サンプル件数、抽出確率、信頼区間を併記し、小標本の差を</li>
+            </ul>
+            <p>確定的に扱わない。</p>
+            <ul>
+                <li><strong>中間結果を保存する</strong>: 重い集計はParquetやテーブルへ保存し、グラフ調整のたびに</li>
+            </ul>
+            <p>全件を再計算しない。</p>
+            <ul>
+                <li><strong>実行計画を確認する</strong>: 不要な全件ソート、大きな結合、列の読み過ぎを見つける。</li>
+            </ul>
+            <h3 id="サンプリングの使い分け">サンプリングの使い分け</h3>
+            <p>全件集計が可能でも、可視化や試行錯誤ではサンプルが役立つ。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>方法</th>
+                        <th>向く場面</th>
+                        <th>注意点</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>単純無作為抽出</td>
+                        <td>全体を代表する概観</td>
+                        <td>少数グループがほぼ消えることがある</td>
+                    </tr>
+                    <tr>
+                        <td>層化抽出</td>
+                        <td>地域・カテゴリごとに比較</td>
+                        <td>元の構成比と異なる場合は重み付けが必要</td>
+                    </tr>
+                    <tr>
+                        <td>系統抽出</td>
+                        <td>並びに周期性がないデータ</td>
+                        <td>周期と抽出間隔が一致すると偏る</td>
+                    </tr>
+                    <tr>
+                        <td>時間窓抽出</td>
+                        <td>特定期間の詳細調査</td>
+                        <td>季節性やイベントの影響を全体傾向と誤認しやすい</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>先頭から一定件数を取る方法は無作為抽出ではない。データが時刻、地域、ファイル順で 並んでいると強く偏る可能性がある。希少な事象を探す場合は、通常データと希少データを 分けて抽出し、最終的な発生率は全件の分母で計算する。</p>
+            <h3 id="読み違いを防ぐ注意点">読み違いを防ぐ注意点</h3>
+            <ul>
+                <li><strong>相関は因果関係ではない</strong>: 同時に動く第三の要因がある可能性を残す。</li>
+                <li><strong>平均だけを見ない</strong>: 歪んだ分布では中央値や分位点も併記する。</li>
+                <li><strong>季節性を除かないまま比較しない</strong>: 曜日、月、祝日、キャンペーンの影響を確認する。</li>
+                <li><strong>集計単位を変えて確認する</strong>: 全体とグループ別で結論が逆転する</li>
+            </ul>
+            <p>シンプソンのパラドックスに注意する。</p>
+            <ul>
+                <li><strong>欠損をゼロ扱いしない</strong>: 未観測、不明、該当なしを区別する。</li>
+                <li><strong>何度も探索した結果を確定的に扱わない</strong>: 多数の切り口を試すほど、</li>
+            </ul>
+            <p>偶然それらしい差を見つけやすい。重要な仮説は別期間や別データで再検証する。</p>
+            <ul>
+                <li><strong>データ収集の偏りを確認する</strong>: 観測された利用者だけから、離脱者や未利用者を含む</li>
+            </ul>
+            <p>全体の傾向を断定しない。</p>
+            <h3 id="最初に作るとよい出力">最初に作るとよい出力</h3>
+            <p>最初の分析では、次を1つのノートブックまたはレポートに揃えると全体像を掴みやすい。</p>
+            <ol>
+                <li>データ期間、総行数、分析単位</li>
+                <li>列名、型、欠損率、ユニーク数</li>
+                <li>数値列の中央値、四分位点、最小値、最大値</li>
+                <li>主要カテゴリ別の件数と割合</li>
+                <li>日次または月次の件数・主要指標</li>
+                <li>主要指標のヒストグラムと箱ひげ図</li>
+                <li>気付いた点、未確認事項、次に検証する仮説</li>
+            </ol>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://www.itl.nist.gov/div898/handbook/eda/section1/eda11.htm">1.3.1.1. What is EDA? - NIST/SEMATECH e-Handbook of Statistical Methods</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://pandas.pydata.org/docs/user_guide/scale.html">Scaling to large datasets - pandas documentation</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.pola.rs/user-guide/concepts/streaming/">Streaming - Polars user guide</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.pola.rs/user-guide/concepts/lazy-api/">Lazy API - Polars user guide</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://duckdb.org/docs/current/data/parquet/overview.html">Reading and Writing Parquet Files - DuckDB documentation</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://duckdb.org/docs/current/guides/performance/how<em>to</em>tune_workloads.html">Tuning Workloads - DuckDB documentation</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://duckdb.org/docs/current/guides/troubleshooting/oom_errors">Out of Memory Errors - DuckDB documentation</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://parquet.apache.org/docs/overview/">Overview - Apache Parquet</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://spark.apache.org/docs/latest/sql-programming-guide.html">Spark SQL, DataFrames and Datasets Guide - Apache Spark</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: 全参考URLを再確認し、Polarsの実行計画確認、DuckDBのメモリ外処理の限界、サンプリングの不確実性を追記</li>
+                <li>2026-08-26: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

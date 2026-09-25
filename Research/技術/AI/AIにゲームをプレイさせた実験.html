@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIにゲームをプレイさせた実験</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">AIにゲームをプレイさせた実験</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>Claude Fable 5の『Slay the Spire』実験に似た、汎用LLMやマルチモーダルAIへ 実際のゲームを長時間・自律的にプレイさせる実験を調べた。従来のゲーム専用AIとは 分けて、推論、計画、視覚操作、外部メモリ、未知環境への汎化を評価した事例を中心に 整理する。</p>
+            <h2 id="結論">結論</h2>
+            <ul>
+                <li>類似実験は複数ある。<strong>最も直接的に近いのはAgenticSTS</strong>で、同じゲーム系列の</li>
+            </ul>
+            <p>『Slay the Spire 2』を使い、永続メモリの層を切り替えて成績を比較している。</p>
+            <ul>
+                <li>長時間の進行と記憶を見る実演では、<strong>Claude Plays Pokémon</strong>、</li>
+            </ul>
+            <p><strong>Gemini Plays Pokémon</strong>、Minecraftの<strong>Voyager</strong>が特に近い。</p>
+            <ul>
+                <li>画面だけを見てキーボード・マウスを操作する条件では、複数の市販ゲームを扱う</li>
+            </ul>
+            <p><strong>Cradle</strong>が近い。</p>
+            <ul>
+                <li><strong>BALROG</strong>や<strong>VideoGameBench</strong>は、派手な成功例よりも「現在のモデルがどこで</li>
+            </ul>
+            <p>失敗するか」を複数モデルで比較できる公開ベンチマークである。</p>
+            <ul>
+                <li>ただし、実験ごとにハーネスが大きく異なる。画面だけを見る方式、ゲーム内部状態を</li>
+            </ul>
+            <p>読む方式、コードを生成して操作する方式の成績を、そのままモデル性能として 横並びにはできない。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="特に近い事例">特に近い事例</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>実験</th>
+                        <th>年</th>
+                        <th>ゲーム</th>
+                        <th>主な評価対象</th>
+                        <th>公開状況</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>AgenticSTS</td>
+                        <td>2026</td>
+                        <td>Slay the Spire 2</td>
+                        <td>長期計画、層別の永続メモリ</td>
+                        <td>論文、コード、軌跡データ</td>
+                    </tr>
+                    <tr>
+                        <td>Claude Plays Pokémon</td>
+                        <td>2025</td>
+                        <td>Pokémon Red</td>
+                        <td>拡張思考、長期継続、メモリ</td>
+                        <td>公式説明と配信。コード非公開</td>
+                    </tr>
+                    <tr>
+                        <td>Gemini Plays Pokémon</td>
+                        <td>2025</td>
+                        <td>Pokémon Blue</td>
+                        <td>長文脈、要約メモリ、自己批評</td>
+                        <td>技術報告と制作者記事。コード非公開</td>
+                    </tr>
+                    <tr>
+                        <td>Voyager</td>
+                        <td>2023</td>
+                        <td>Minecraft</td>
+                        <td>自動カリキュラム、スキル記憶、転移</td>
+                        <td>論文、コード</td>
+                    </tr>
+                    <tr>
+                        <td>Cradle</td>
+                        <td>2024</td>
+                        <td>複数の市販ゲーム</td>
+                        <td>視覚による汎用PC操作、反省、メモリ</td>
+                        <td>論文、コード</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h4 id="agenticsts">AgenticSTS</h4>
+            <p>2026年公開のAgenticSTSは、『Slay the Spire 2』を長期LLMエージェントの テストベッドにした実験である。ゲームModから状態を取得し、LLMの行動をゲームへ 戻す。プロンプト、ゲーム知識、ラン後のエピソード要約、再利用可能なスキルなどを 別々のメモリ層として扱い、どの層が成績に効くかを切り替えて調べている。</p>
+            <p>固定難易度A0、各条件10試行では、スキャフォールドなしが3勝、スキル層ありの 条件が6勝だった。ただし著者は、標本が小さく統計的に有意ではない （Fisherの正確確率検定で約0.37）と明記している。公開軌跡は298件で、コード、 凍結したメモリ、分析スクリプトも公開されている。</p>
+            <p>Fable 5実験と「同じゲーム系列」「永続メモリの効果を見る」という点で最も近く、 Fable 5側では非公開だった試行数やメモリ構造を確認できる。一方、Fable 5の 再現実験ではなく、ゲームも初代ではなく続編である。</p>
+            <h4 id="claude-plays-pokémon">Claude Plays Pokémon</h4>
+            <p>AnthropicはClaude 3.7 Sonnetに、基本的なメモリ、画面ピクセル、ボタン入力用の function callを与え、『Pokémon Red』を通常のコンテキスト上限を超えて 数万回のインタラクションにわたりプレイさせた。公式説明では、Claude 3.0 Sonnetが 最初の家から出られなかったのに対し、3.7 Sonnetはジムリーダー3人を倒して バッジを3個得た。</p>
+            <p>後のClaude 4発表では、Opus 4がプレイ中に自ら「Navigation Guide」という メモリファイルを作成・維持したことも紹介された。Fable 5のファイルベースメモリ 評価につながる実演と見られるが、ハーネス、全ログ、試行回数は公開されていない。</p>
+            <h4 id="gemini-plays-pokémon">Gemini Plays Pokémon</h4>
+            <p>独立開発者Joel ZhangがGemini 2.5 Pro用のハーネスを作り、『Pokémon Blue』を 自律プレイさせた。Google DeepMind自身の企画ではないが、API提供を受け、後に Gemini 2.5技術報告の事例として分析された。</p>
+            <p>エミュレータの画面を注釈・テキスト化し、RAMから得た情報、外部マップ、 100ターンごとのコンテキスト要約、別エージェントによる自己批評を利用する。 開発と同時進行だった最初の走行は813時間、ハーネスを固定した完全自律の2回目は 406.5時間で殿堂入りしたと技術報告に記載されている。</p>
+            <p>長文脈をそのまま伸ばすと、10万トークンを超えた付近から過去の行動を繰り返す 場合があった。制作者は、約8時間同じ場所を回り続けた事例を受けて、定期的な 要約リセットを導入した。長いコンテキストだけでなく、情報の圧縮と外部記憶が 長期プレイに必要だと示す事例である。</p>
+            <h4 id="voyager">Voyager</h4>
+            <p>VoyagerはGPT-4を使ってMinecraftを探索するオープンエンド型エージェントである。 次に挑む課題を自動生成するカリキュラム、環境のフィードバックを使う反復改善、 成功したJavaScriptコードを保存するスキルライブラリを組み合わせる。</p>
+            <p>公式プロジェクトページでは、比較手法に対して発見したユニークアイテム数が 3.3倍、木の道具段階への到達が15.3倍高速で、ダイヤモンド段階へ到達した唯一の 手法だったとしている。保存したスキルを別のワールドの未知タスクにも転用できた。</p>
+            <p>スキルライブラリは、経験を次の試行へ持ち越す永続メモリに相当する。ただし画面を 直接操作せず、Mineflayer経由でコードを実行するため、視覚能力の評価ではない。</p>
+            <h4 id="cradle">Cradle</h4>
+            <p>CradleはGPT-4oを中核に、スクリーンショットだけを入力し、キーボードとマウスで ゲームや一般ソフトを操作する公開フレームワークである。情報収集、自己反省、 タスク推論、スキル整理、行動計画、メモリの6モジュールを持つ。</p>
+            <p>『Red Dead Redemption 2』のミッションのほか、『Cities: Skylines』、 『Stardew Valley』、『Dealer's Life 2』などで評価された。公式結果では、 『Dealer's Life 2』で取引機会の93.6%を成立させ、総利益率39.6%を記録した。 一方、リアルタイム戦闘、細かな物体位置、配管接続などでは失敗が多い。</p>
+            <p>市販ゲームを改造せず、画面と通常の入力だけで動かす点は、最小限の視覚ハーネスで ゲームをプレイさせる実験に近い。ただし主目的はメモリ単体の比較ではなく、 汎用コンピュータ操作である。</p>
+            <h3 id="複数モデルを比較するベンチマーク">複数モデルを比較するベンチマーク</h3>
+            <h4 id="balrog">BALROG</h4>
+            <p>BALROGはNetHack、MiniHack、Crafter、BabyAI、TextWorldを使い、LLMや マルチモーダルモデルの長期的・対話的な意思決定を比較するベンチマークである。 論文は、簡単な課題では部分的に成功する一方、難しい課題では大きく苦戦し、 モデルによってはテキスト表現より視覚表現を与えた方が性能が下がると報告している。 コードとリーダーボードが公開されている。</p>
+            <h4 id="videogamebench">VideoGameBench</h4>
+            <p>VideoGameBenchは1990年代の実ゲーム10本を、生の画面入力とコントローラ操作だけで 進めさせる評価である。ゲーム固有の攻略用スキャフォールドを避け、未知のゲームも 含めて汎化を測る。論文の集計では、上位のGemini 2.5 ProやClaude 3.7 Sonnetでも、 到達できたゲーム全体の進行度はリアルタイム設定で0.48%、軽量設定で1.6%だった。</p>
+            <p>成功例だけを見るとゲームAIがかなり進んだように見えるが、共通条件で多種類の ゲームをプレイさせると、現在の汎用モデルはまだ序盤で止まりやすいことを示す。</p>
+            <h3 id="広義の先行例">広義の先行例</h3>
+            <p>AlphaGo、AlphaStar、OpenAI FiveもAIにゲームをさせた代表例である。ただし、 これらは囲碁、StarCraft II、Dota 2向けに大量の対戦から専用方策を学習した 強化学習システムである。学習済みの汎用モデルへ薄いハーネスと外部メモリを与える 近年の実験とは、目的と仕組みが異なる。</p>
+            <h3 id="比較するときの注意点">比較するときの注意点</h3>
+            <ol>
+                <li><strong>AIが見られる情報が違う。</strong> 生の画面だけ、注釈付き画面、RAMや構造化された</li>
+            </ol>
+            <p>ゲーム状態、ゲームAPIでは難易度が大きく異なる。</p>
+            <ol>
+                <li><strong>操作の細かさが違う。</strong> 1回ずつボタンを押す方式と、数十手の経路やコードを</li>
+            </ol>
+            <p>一度に生成する方式は比較できない。</p>
+            <ol>
+                <li><strong>モデルとハーネスを分けて考える。</strong> 成功はモデル本体だけでなく、地図、</li>
+            </ol>
+            <p>要約、攻略知識、自己批評、スキル検索などの設計にも依存する。</p>
+            <ol>
+                <li><strong>単発デモとベンチマークを分ける。</strong> 配信での1回のクリアは長期継続の実例には</li>
+            </ol>
+            <p>なるが、勝率やモデル間の優劣を確定する統計にはならない。</p>
+            <ol>
+                <li><strong>公開度に差がある。</strong> AgenticSTS、Voyager、Cradle、BALROGは追試しやすい。</li>
+            </ol>
+            <p>Claude/GeminiのPokémon実演は観察材料は多いが、完全な再現は難しい。</p>
+            <h3 id="2026年8月31日の再確認">2026年8月31日の再確認</h3>
+            <p>全14件の参考URLを再確認した。AgenticSTSの公開ページは固定A0・各条件10試行の 表と統計的非有意という留保を維持しており、他の論文・プロジェクトにも本メモの 主要数値を覆す訂正や後継版は確認できなかった。したがって比較結論は変更しない。 AlphaStarの記事は旧<code>/discover/blog/</code>から現行<code>/blog/</code>へ転送されるため、参考資料を 現行の正規URLへ更新した。</p>
+            <h3 id="関連メモ">関連メモ</h3>
+            <ul>
+                <li><a href="Slay%20the%20Spire実験.html">Slay the Spire実験</a></li>
+                <li>Claude Fable 5の実験内容と、公開情報だけでは判断できない点を詳しく整理</li>
+            </ul>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://arxiv.org/abs/2607.02255">AgenticSTS: A Bounded-Memory Testbed for Long-Horizon LLM Agents</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://alayalab.github.io/AgenticSTS/">AgenticSTSプロジェクトページ</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://www.anthropic.com/research/visible-extended-thinking">Visible extended thinking（Anthropic）</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://www.anthropic.com/news/claude-4">Introducing Claude 4（Anthropic）</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://arxiv.org/abs/2507.06261">Gemini 2.5: Pushing the Frontier with Advanced Reasoning, Multimodality, Long Context, and Next Generation Agentic Capabilities</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://blog.jcz.dev/the-making-of-gemini-plays-pokemon">The Making of Gemini Plays Pokémon（Joel Zhang）</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://arxiv.org/abs/2305.16291">Voyager: An Open-Ended Embodied Agent with Large Language Models</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://voyager.minedojo.org/">Voyagerプロジェクトページ</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://arxiv.org/abs/2403.03186">Cradle: Empowering Foundation Agents Towards General Computer Control</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://baai-agents.github.io/Cradle/">Cradleプロジェクトページ</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://arxiv.org/abs/2411.13543">BALROG: Benchmarking Agentic LLM and VLM Reasoning On Games</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://arxiv.org/abs/2505.18134">VideoGameBench: Can Vision-Language Models complete popular video games?</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://deepmind.google/blog/alphastar-grandmaster-level-in-starcraft-ii-using-multi-agent-reinforcement-learning/">AlphaStar: Grandmaster level in StarCraft II using multi-agent reinforcement learning（Google DeepMind）</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://openai.com/index/openai-five/">OpenAI Five</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: 全14参考URL、公開結果、訂正・後継版の有無を再確認し、AlphaStarの</li>
+            </ul>
+            <p>URLを現行の正規URLへ更新</p>
+            <ul>
+                <li>2026-08-26: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

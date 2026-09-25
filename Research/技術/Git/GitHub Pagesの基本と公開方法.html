@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Pagesの基本と公開方法</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">GitHub Pagesの基本と公開方法</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>GitHub Pagesについて、サービスの仕組み、サイトの種類、公開方法、独自ドメイン、 制約、用途上の注意点をGitHub公式資料に基づいて整理する。</p>
+            <h2 id="結論">結論</h2>
+            <p>GitHub Pagesは、GitHubリポジトリに置いたHTML・CSS・JavaScriptなどを公開する 静的サイトホスティングサービスである。個人・組織のサイト、プロジェクトの紹介、 ドキュメント、ブログ、ポートフォリオなど、サーバー側の処理を必要としないサイトに 向いている。</p>
+            <p>公開方法は、少量の静的ファイルをそのまま公開するならブランチの指定、ビルド処理や Jekyll以外の静的サイトジェネレーターを使うならGitHub Actionsが扱いやすい。 データベース、サーバーサイドプログラム、ログイン処理などをGitHub Pagesだけで 実行することはできないため、その部分は別のAPIやホスティングサービスに分ける。</p>
+            <p>個人・組織サイトは <code>__RAW<em>HTML</em>0<strong>.github.io</code> リポジトリから公開し、プロジェクトサイトは 通常のリポジトリから <code></strong>RAW<em>HTML</em>1<strong>.github.io/</strong>RAW<em>HTML</em>2__</code> の形式で公開する。独自ドメイン、 HTTPS、Jekyll、カスタムGitHub Actionsワークフローにも対応するが、サイト容量1 GB、 デプロイ10分、帯域のソフト上限100 GB/月などの制約がある。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="仕組みとサイトの種類">仕組みとサイトの種類</h3>
+            <p>GitHub Pagesは、リポジトリ内の静的ファイルを配信し、設定によっては公開前にビルドを 実行する。訪問者からのリクエストごとにアプリケーションサーバーで処理するサービス ではない。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>種類</th>
+                        <th>リポジトリ</th>
+                        <th>標準URL</th>
+                        <th>用途</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>ユーザーサイト</td>
+                        <td><code>__RAW<em>HTML</em>0__.github.io</code></td>
+                        <td><code>https://__RAW<em>HTML</em>0__.github.io</code></td>
+                        <td>個人のホームページ、ポートフォリオ</td>
+                    </tr>
+                    <tr>
+                        <td>組織サイト</td>
+                        <td><code>__RAW<em>HTML</em>0__.github.io</code></td>
+                        <td><code>https://__RAW<em>HTML</em>0__.github.io</code></td>
+                        <td>組織のホームページ、公式ドキュメント</td>
+                    </tr>
+                    <tr>
+                        <td>プロジェクトサイト</td>
+                        <td>任意のプロジェクトリポジトリ</td>
+                        <td><code>https://__RAW<em>HTML</em>0<strong>.github.io/</strong>RAW<em>HTML</em>1__</code></td>
+                        <td>プロジェクト紹介、製品ドキュメント、デモ</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>ユーザーサイトと組織サイトはアカウントごとに1サイト、プロジェクトサイトはリポジトリ ごとに1サイトである。プロジェクトサイトのURLにはリポジトリ名が含まれるため、Reactや Vueなどのアプリを公開する場合は、ビルドツールのベースパスも確認する必要がある。</p>
+            <h3 id="公開方法の比較">公開方法の比較</h3>
+            <h4 id="ブランチから公開する方法">ブランチから公開する方法</h4>
+            <p>リポジトリのSettingsで <strong>Pages</strong> を開き、<strong>Build and deployment</strong> の <strong>Source</strong> を <strong>Deploy from a branch</strong> に設定する。公開対象のブランチとフォルダー（ルートまたは <code>/docs</code>）を選ぶと、対象ブランチへのpushを契機に公開される。</p>
+            <p>次のようなサイトに向いている。</p>
+            <ul>
+                <li><code>index.html</code>、CSS、画像などをそのまま公開する小規模サイト</li>
+                <li>ビルド済み成果物をリポジトリで管理したいサイト</li>
+                <li>GitHub Actionsを追加せず、設定を簡単にしたいサイト</li>
+            </ul>
+            <h4 id="github-actionsでビルドして公開する方法">GitHub Actionsでビルドして公開する方法</h4>
+            <p>GitHub Actionsのワークフローで、チェックアウト、依存関係のインストール、静的サイトの ビルド、Pages用アーティファクトのアップロード、デプロイを行う。GitHub公式の <code>actions/configure-pages</code>、<code>actions/upload-pages-artifact</code>、<code>actions/deploy-pages</code>を 利用できる。</p>
+            <p>Jekyll以外の静的サイトジェネレーターや、npmなどを使うビルド処理を組み込みたい場合は この方法が適している。デプロイジョブには通常、<code>pages: write</code> と <code>id-token: write</code> を含む権限設定、<code>github-pages</code>環境、ビルドジョブとの <code>needs</code> 関係が必要になる。 実際のアクションのバージョンや権限は、公式のスターターワークフローを基準に確認する。</p>
+            <h3 id="jekyllとの関係">Jekyllとの関係</h3>
+            <p>JekyllはMarkdownなどから静的HTMLを生成する静的サイトジェネレーターで、GitHub Pagesに 組み込みサポートがある。テーマ、レイアウト、Front Matterを使うサイトには便利である。</p>
+            <p>ただし、GitHub公式資料では、Jekyllを使う場合もGitHub Actionsによるデプロイと自動化が 推奨されている。Jekyllを使わない場合も、Actionsのカスタムワークフローを使えば任意の 静的サイトジェネレーターで生成した成果物を公開できる。</p>
+            <h3 id="最小構成の公開手順">最小構成の公開手順</h3>
+            <ol>
+                <li>新規または既存のGitHubリポジトリに <code>index.html</code> を用意する。</li>
+                <li>ユーザーサイトならリポジトリ名を <code>__RAW<em>HTML</em>0__.github.io</code> にする。プロジェクトサイト</li>
+            </ol>
+            <p>なら任意のリポジトリを使う。</p>
+            <ol>
+                <li>リポジトリの <strong>Settings</strong> → <strong>Pages</strong> を開く。</li>
+                <li>単純な静的ファイルなら <strong>Deploy from a branch</strong> を選び、ブランチとフォルダーを指定</li>
+            </ol>
+            <p>する。ビルドが必要ならGitHub ActionsのPages用ワークフローを選ぶ。</p>
+            <ol>
+                <li>保存後、表示されたURLを開く。変更の反映には最大10分かかる場合がある。</li>
+            </ol>
+            <p>公開前に、リンク先や画像パスがプロジェクトサイトのサブパスに対応していること、 公開対象に秘密情報や不要な設定ファイルが含まれていないことを確認する。</p>
+            <h3 id="独自ドメインとhttps">独自ドメインとHTTPS</h3>
+            <p>GitHub Pagesでは、<code>www.example.com</code> や <code>blog.example.com</code> のサブドメインと、 <code>example.com</code> のようなアペックスドメインを使える。</p>
+            <ul>
+                <li>サブドメインはDNSプロバイダーに <code>CNAME</code> レコードを設定する。</li>
+                <li>アペックスドメインは <code>A</code>、<code>ALIAS</code>、<code>ANAME</code> のいずれかをDNSプロバイダーで設定する。</li>
+                <li>独自ドメインをリポジトリに設定する前に、GitHubでドメインを検証することが推奨される。</li>
+            </ul>
+            <p>検証しないままPagesを無効化すると、ドメインテイクオーバーのリスクがある。</p>
+            <ul>
+                <li>HTTPSを有効にするとHTTPアクセスをHTTPSへリダイレクトできる。公開サイトではHTTPSを</li>
+            </ul>
+            <p>強制する。</p>
+            <p>DNSの変更には反映時間がある。GitHub Pagesを停止した後もDNSレコードを残す場合は、 独自ドメインの設定状態と所有権検証を定期的に確認する。</p>
+            <h3 id="主な制約とセキュリティ上の注意">主な制約とセキュリティ上の注意</h3>
+            <p>GitHub公式資料に記載されている主な制約は次のとおりである。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>項目</th>
+                        <th>制約</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>ユーザー・組織サイト</td>
+                        <td>アカウントごとに1サイト</td>
+                    </tr>
+                    <tr>
+                        <td>Pagesソースリポジトリ</td>
+                        <td>推奨上限1 GB</td>
+                    </tr>
+                    <tr>
+                        <td>公開済みサイト</td>
+                        <td>1 GB以下</td>
+                    </tr>
+                    <tr>
+                        <td>デプロイ時間</td>
+                        <td>10分を超えるとタイムアウト</td>
+                    </tr>
+                    <tr>
+                        <td>帯域</td>
+                        <td>100 GB/月のソフト上限</td>
+                    </tr>
+                    <tr>
+                        <td>ビルド回数</td>
+                        <td>10回/時のソフト上限。カスタムGitHub Actionsワークフローでのビルドにはこの制限が適用されない</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>上限超過時は、レート制限、配信停止、GitHub Supportからの代替策の案内などが行われる 可能性がある。大容量ファイルや大量配信には、リリース、CDN、別のホスティングサービス を検討する。</p>
+            <p>GitHub Pagesはオンラインビジネス、電子商取引、商用SaaSを運用するための無料Web ホスティングとしては想定されていない。また、パスワードやクレジットカード番号などの 機密性の高い取引を扱わない。静的ファイルは公開対象になり得るため、APIキー、秘密鍵、 個人情報をリポジトリやビルド成果物に含めない。</p>
+            <h3 id="向いている用途-向いていない用途">向いている用途・向いていない用途</h3>
+            <p><strong>向いている用途</strong></p>
+            <ul>
+                <li>READMEやMarkdownから作るドキュメントサイト</li>
+                <li>技術ブログ、ポートフォリオ、履歴書</li>
+                <li>オープンソースプロジェクトの紹介ページ</li>
+                <li>JavaScriptで完結する静的なデモ</li>
+            </ul>
+            <p><strong>単独では向いていない用途</strong></p>
+            <ul>
+                <li>ユーザー情報を保存する会員サイト</li>
+                <li>データベースを使う業務システム</li>
+                <li>サーバー側で認証・決済・ファイル処理を行うサービス</li>
+                <li>大容量ファイルや大量トラフィックを継続的に配信するサービス</li>
+            </ul>
+            <p>後者では、フロントエンドをGitHub Pagesに置き、API・認証・データベース・ファイル配信を 別サービスに分離する構成を検討する。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages">What is GitHub Pages? - GitHub Docs</a></li>
+                <li>GitHub Pagesの定義、サイトの種類、標準URL、データ収集の説明</li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://docs.github.com/en/pages/quickstart">Quickstart for GitHub Pages - GitHub Docs</a></li>
+                <li>ユーザーサイトの作成、Pages設定、公開確認の手順</li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site">Creating a GitHub Pages site - GitHub Docs</a></li>
+                <li>新規・既存リポジトリからのサイト作成と公開手順</li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site">Configuring a publishing source for your GitHub Pages site - GitHub Docs</a></li>
+                <li>ブランチ公開とGitHub Actions公開の設定</li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages">Using custom workflows with GitHub Pages - GitHub Docs</a></li>
+                <li>Pages用GitHub Actions、アーティファクト、権限、デプロイ設定</li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://docs.github.com/en/pages/setting-up-a-github-pages-site-with-jekyll/about-github-pages-and-jekyll">About GitHub Pages and Jekyll - GitHub Docs</a></li>
+                <li>Jekyllの役割とGitHub Actionsを使ったデプロイの推奨</li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits">GitHub Pages limits - GitHub Docs</a></li>
+                <li>容量、帯域、ビルド回数、タイムアウト、商用利用に関する制約</li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/about-custom-domains-and-github-pages">About custom domains and GitHub Pages - GitHub Docs</a></li>
+                <li>サブドメイン、アペックスドメイン、DNS、ドメインテイクオーバー対策</li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://docs.github.com/en/pages/getting-started-with-github-pages/securing-your-github-pages-site-with-https">Securing your GitHub Pages site with HTTPS - GitHub Docs</a></li>
+                <li>HTTPSの強制とHTTPからHTTPSへのリダイレクト</li>
+                <li>参照日: 2026-09-15</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-15: GitHub Pagesの仕組み、公開方法、独自ドメイン、制約、用途を公式資料に基づいて初版作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

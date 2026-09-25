@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ループエンジニアリング</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">ループエンジニアリング</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>AIコーディングで最近使われ始めた「ループエンジニアリング」について、 用語の意味、Ralph Loopやハーネスエンジニアリングとの関係、具体的な設計要素、 向いている用途、導入時の注意点を一次情報中心に整理する。</p>
+            <h2 id="結論">結論</h2>
+            <ul>
+                <li>ループエンジニアリングは、人がAIへ一手ずつプロンプトを送る代わりに、</li>
+            </ul>
+            <p><strong>仕事の発見、割り当て、実行、検証、記録、次の行動、停止までを反復する仕組み</strong> を設計する考え方である。</p>
+            <ul>
+                <li>Addy Osmaniが2026年6月に「人間のプロンプト役をシステムで置き換える」と</li>
+            </ul>
+            <p>定義して広めた新しい呼称である。ただし、反復型エージェント自体は以前からあり、 Geoffrey HuntleyのRalph Loop、ReAct系のエージェントループ、長時間エージェントの ハーネス設計などを包括する上位の運用設計と捉えるのが妥当である。</p>
+            <ul>
+                <li>成否を分けるのは、プロンプトの巧さよりも、**機械的に判定できる完了条件、</li>
+            </ul>
+            <p>外部テスト、状態の永続化、1回ごとの小さな作業単位、権限制御、反復回数や コストの上限**である。</p>
+            <ul>
+                <li>AI自身の「できました」を完了判定にしてはいけない。テスト、ビルド、静的解析、</li>
+            </ul>
+            <p>ブラウザ操作、別エージェント、人によるレビューなど、成果物の外側に検証器を置く。</p>
+            <ul>
+                <li>現時点では確立した標準規格ではなく、製品機能や実務パターンをまとめた新しい</li>
+            </ul>
+            <p>用語である。単純作業へ一律に適用するより、反復可能で客観的に検証できるタスクへ 段階的に導入するのがよい。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="用語の意味と成立">用語の意味と成立</h3>
+            <p>Addy OsmaniはLoop Engineeringを、概ね「エージェントへプロンプトを送る人間自身を 置き換え、その仕事をするシステムを設計すること」と定義している。ここでいう ループは、目的を与えられたAIが完了まで反復する再帰的なゴールである。</p>
+            <p>従来の対話型AIコーディングでは、次の順序を人が繰り返す。</p>
+            <ol>
+                <li>人が状況を読む。</li>
+                <li>人が次のプロンプトを書く。</li>
+                <li>AIがコードを変更する。</li>
+                <li>人が結果を確認し、次の指示を考える。</li>
+            </ol>
+            <p>ループエンジニアリングでは、このうち定型化できる部分をシステムへ移す。</p>
+            <ol>
+                <li>課題、CI失敗、依存更新などから仕事を見つける。</li>
+                <li>優先順位を付け、作業エージェントへ渡す。</li>
+                <li>エージェントが計画、実装、テストを行う。</li>
+                <li>外部の検証器が完了条件を判定する。</li>
+                <li>未達なら失敗内容を次の反復へ渡す。</li>
+                <li>達成なら記録して停止し、必要に応じて人へレビューを依頼する。</li>
+            </ol>
+            <p>2026年8月時点で「Loop Engineering」は新しい実務用語であり、学術的に統一された 定義や標準規格ではない。Osmaniの記事は考え方を明文化して普及させた主要な 一次情報だが、反復型エージェント全般の最初の発明を主張するものではない。</p>
+            <h3 id="ralph-loopとの関係">Ralph Loopとの関係</h3>
+            <p>Geoffrey Huntleyが広めたRalph Loopは、同じゴールやプロンプトを繰り返し与え、 エージェントに1ループ1タスクで前進させる単純なオーケストレーションパターンで ある。Huntley自身も、エンジニアの役割を個々のコード作成からループのプログラムへ 移すと説明している。</p>
+            <p>両者の関係は次のように整理できる。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>用語</th>
+                        <th>主な対象</th>
+                        <th>特徴</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>プロンプトエンジニアリング</td>
+                        <td>1回の指示</td>
+                        <td>AIへ何をどう依頼するかを改善する</td>
+                    </tr>
+                    <tr>
+                        <td>コンテキストエンジニアリング</td>
+                        <td>1回または1セッションの入力</td>
+                        <td>必要な規則、コード、履歴を適切に見せる</td>
+                    </tr>
+                    <tr>
+                        <td>ハーネスエンジニアリング</td>
+                        <td>1体のエージェントの実行環境</td>
+                        <td>ツール、権限、状態、テスト、制約を整える</td>
+                    </tr>
+                    <tr>
+                        <td>Ralph Loop</td>
+                        <td>単純な反復実行</td>
+                        <td>同じ目標を繰り返し、1回に1タスクずつ進める</td>
+                    </tr>
+                    <tr>
+                        <td>ループエンジニアリング</td>
+                        <td>反復する業務システム全体</td>
+                        <td>発見、分配、実行、検証、記憶、停止を設計する</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>したがって、Ralph Loopはループエンジニアリングを実装する最小パターンの一つと 考えられる。Loop EngineeringはRalphの単純反復に加え、スケジュール実行、 並列作業、役割分離、外部連携、永続メモリ、監視、コスト管理まで扱う。</p>
+            <h3 id="主要な設計要素">主要な設計要素</h3>
+            <p>Osmaniは五つの機能と、一つの外部記憶を挙げている。</p>
+            <ol>
+                <li><strong>Automations</strong></li>
+            </ol>
+            <ul>
+                <li>定期実行やイベントを起点に、仕事の発見と仕分けを行う。</li>
+            </ul>
+            <ol>
+                <li><strong>Worktrees</strong></li>
+            </ol>
+            <ul>
+                <li>並列エージェントごとにGit worktreeなどで作業場所を分離し、変更の衝突を防ぐ。</li>
+            </ul>
+            <ol>
+                <li><strong>Skills</strong></li>
+            </ol>
+            <ul>
+                <li>プロジェクト固有の手順や知識をファイル化し、毎回推測させない。</li>
+            </ul>
+            <ol>
+                <li><strong>Plugins and connectors</strong></li>
+            </ol>
+            <ul>
+                <li>Issue、CI、ブラウザ、データベースなど、既存ツールと接続する。</li>
+            </ul>
+            <ol>
+                <li><strong>Sub-agents</strong></li>
+            </ol>
+            <ul>
+                <li>実装役と検証役を分け、作成者自身による甘い自己評価を減らす。</li>
+            </ul>
+            <ol>
+                <li><strong>External memory</strong></li>
+            </ol>
+            <ul>
+                <li>Markdown、JSON、Issue、プロジェクトボード、Git履歴などへ、完了済みと</li>
+            </ul>
+            <p>次の作業を会話の外に保存する。</p>
+            <p>これらすべてを最初から導入する必要はない。最小構成は「明確なゴール、 作業エージェント、外部テスト、進捗ファイル、反復上限」でよい。</p>
+            <h3 id="実用的な最小ループ">実用的な最小ループ</h3>
+            <p>最初に試すなら、次の流れが安全で分かりやすい。</p>
+            <ol>
+                <li><strong>仕様をテスト可能な項目へ分解する</strong></li>
+            </ol>
+            <ul>
+                <li>例: 「ログインを改善する」ではなく、「無効なパスワードで401を返す」</li>
+            </ul>
+            <p>「有効な認証情報でセッションを作る」のようにする。</p>
+            <ol>
+                <li><strong>完了条件を固定する</strong></li>
+            </ol>
+            <ul>
+                <li>対象テスト、ビルド、型チェック、lintが成功する。</li>
+                <li>要件一覧がすべて合格になる。</li>
+                <li>変更範囲外のファイルを触っていない。</li>
+            </ul>
+            <ol>
+                <li><strong>1ループ1項目に制限する</strong></li>
+            </ol>
+            <ul>
+                <li>未完了項目を一つ選び、実装、検証、記録まで終えてから次へ進む。</li>
+            </ul>
+            <ol>
+                <li><strong>状態を外部へ保存する</strong></li>
+            </ol>
+            <ul>
+                <li>要件ごとの合否、実施内容、残課題、既知の失敗をJSONやIssueへ残す。</li>
+                <li>Gitコミットを回復地点として使う。</li>
+            </ul>
+            <ol>
+                <li><strong>外部検証を実行する</strong></li>
+            </ol>
+            <ul>
+                <li>AIの説明ではなく、実際のテスト結果や画面操作で合否を決める。</li>
+            </ul>
+            <ol>
+                <li><strong>失敗を次の入力へ変換する</strong></li>
+            </ol>
+            <ul>
+                <li>エラーログと未達要件を次の反復へ渡し、再計画させる。</li>
+            </ul>
+            <ol>
+                <li><strong>停止またはエスカレーションする</strong></li>
+            </ol>
+            <ul>
+                <li>合格時は停止する。</li>
+                <li>最大反復回数、時間、費用、同一失敗回数の上限に達したら人へ戻す。</li>
+            </ul>
+            <p>Anthropicの長時間コーディング実験では、最初のエージェントが全機能を <code>feature_list.json</code>へ分解し、後続エージェントが毎回一機能だけ進め、 <code>claude-progress.txt</code>とGit履歴へ引き継ぎを残す構成が有効だった。単に高レベルの 指示を繰り返すだけでは、一度に多くを実装して途中でコンテキストを失う、 未完成なのに完了宣言する、エンドツーエンドで動かない、といった失敗が起きた。</p>
+            <h3 id="向いているタスク">向いているタスク</h3>
+            <ul>
+                <li>失敗したテストやCIを直し、再実行で合否を確認できる作業</li>
+                <li>依存関係更新、警告除去、定型的な移行など、小単位へ分解できる保守</li>
+                <li>多数の明確な受け入れ条件を順番に実装する長時間タスク</li>
+                <li>Issueの分類、重複確認、ドキュメント同期などの定期処理</li>
+                <li>実装とレビューを分離できる複数エージェントのワークフロー</li>
+            </ul>
+            <h3 id="向いていないタスク">向いていないタスク</h3>
+            <ul>
+                <li>1回で終わる短い修正や、反復の準備コストの方が大きい作業</li>
+                <li>「使いやすく」「格好よく」など、完了条件を客観化できない依頼</li>
+                <li>仕様や優先順位について、関係者の合意形成が必要な作業</li>
+                <li>本番削除、本番デプロイ、課金、秘密情報の操作など、誤動作の影響が大きい処理</li>
+                <li>十分なテストや観測手段がなく、誤った変更を検知できないコードベース</li>
+            </ul>
+            <h3 id="主な失敗パターンと対策">主な失敗パターンと対策</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>失敗</th>
+                        <th>原因</th>
+                        <th>対策</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>無限反復と費用増加</td>
+                        <td>停止条件や上限がない</td>
+                        <td>回数、時間、トークン、費用の上限を設ける</td>
+                    </tr>
+                    <tr>
+                        <td>未完成で完了宣言</td>
+                        <td>AIの自己評価に依存</td>
+                        <td>外部テストと固定した要件一覧で判定する</td>
+                    </tr>
+                    <tr>
+                        <td>同じ失敗の繰り返し</td>
+                        <td>エラーと試行履歴を保存していない</td>
+                        <td>失敗分類、試行済み対策、エスカレーション条件を記録する</td>
+                    </tr>
+                    <tr>
+                        <td>スコープの拡大</td>
+                        <td>ゴールと変更範囲が曖昧</td>
+                        <td>1ループ1項目、変更可能範囲、禁止事項を固定する</td>
+                    </tr>
+                    <tr>
+                        <td>コンテキスト劣化</td>
+                        <td>全履歴を詰め込み続ける</td>
+                        <td>新しいコンテキストと短い外部引き継ぎを使う</td>
+                    </tr>
+                    <tr>
+                        <td>検証の形骸化</td>
+                        <td>実装役が自分で合格判定する</td>
+                        <td>別エージェント、CI、テスト、人のゲートを使う</td>
+                    </tr>
+                    <tr>
+                        <td>並列作業の衝突</td>
+                        <td>同じ作業ツリーを共有する</td>
+                        <td>worktree、ブランチ、ファイル所有範囲を分ける</td>
+                    </tr>
+                    <tr>
+                        <td>危険な自律実行</td>
+                        <td>権限が広すぎる</td>
+                        <td>サンドボックス、許可リスト、最小権限、人の承認を使う</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3 id="セキュリティと運用上の注意">セキュリティと運用上の注意</h3>
+            <p>Anthropicの公式デモは、OSレベルのサンドボックス、プロジェクトディレクトリ外への ファイル操作制限、実行コマンドの許可リストを重ねている。これは、長時間かつ 自動で回すほど、通常の対話セッションより防御を強くする必要があることを示す。</p>
+            <p>特に次はループの外側に残すべきである。</p>
+            <ul>
+                <li>本番環境への反映や不可逆な削除の最終承認</li>
+                <li>秘密情報、個人情報、決済情報へのアクセス</li>
+                <li>セキュリティ例外の承認</li>
+                <li>法務、規制、組織方針に関する最終判断</li>
+            </ul>
+            <p>GitHub Agentic Workflowsのような製品機能も登場しているが、2026年8月31日時点でも Public Previewである。ワークフローはMarkdownから<code>.lock.yml</code>へコンパイルし、 GitHub ActionsまたはGitHub CLIと<code>gh-aw</code>拡張で実行する。新しいコマンドや 自動化機能を組織の標準として安定していると決めつけず、仕様変更、利用料金、 監査ログ、権限範囲を確認して導入する。</p>
+            <h3 id="実務での判断基準">実務での判断基準</h3>
+            <p>次の質問にすべて答えられるタスクは、ループ化しやすい。</p>
+            <ul>
+                <li>何をもって完了とするか。</li>
+                <li>合否を誰または何が判定するか。</li>
+                <li>1回で処理する最小単位は何か。</li>
+                <li>次の反復へ何を保存するか。</li>
+                <li>何回、何分、いくらまで実行するか。</li>
+                <li>どの失敗で停止して人へ戻すか。</li>
+                <li>AIに許可する操作と禁止する操作は何か。</li>
+            </ul>
+            <p>答えられない項目がある場合は、先に要件、テスト、権限、監視を整える方が、 モデルやプロンプトを変更するより効果が高い。</p>
+            <h3 id="現在の環境で実現できる範囲">現在の環境で実現できる範囲</h3>
+            <p>2026年8月31日に、このワークスペースで再確認した環境は次のとおりである。</p>
+            <ul>
+                <li>Windows上のVS Code 1.135.0</li>
+                <li>GitHub Copilot CLI 1.0.68</li>
+                <li>Git 2.53.0</li>
+                <li>Copilot Agent HostのAutopilotセッション</li>
+                <li>サブエージェント、テスト実行、Problems診断、ブラウザ操作、GitHub操作、</li>
+            </ul>
+            <p>セッション内のTodoデータベースを利用できる</p>
+            <ul>
+                <li>ルートの<code>AGENTS.md</code>と<code>.github/copilot-instructions.md</code>から</li>
+            </ul>
+            <p><code>Rule/Rule.md</code>を参照するプロジェクト指示がある</p>
+            <ul>
+                <li>GitHubリモートへコミットとpushができる</li>
+                <li>GitHub CLI、Claude Code CLI、Codex CLIはコマンドとして未導入</li>
+                <li>ワークスペース固有の<code>.vscode</code>設定はない</li>
+            </ul>
+            <p><strong>結論として、この環境だけでも人が開始する半自動のループエンジニアリングは 実行できる。</strong> 現在の調査作業自体が、次のループをすでに構成している。</p>
+            <ol>
+                <li><code>Rule/Rule.md</code>から完了条件と作業手順を読み込む。</li>
+                <li>既存メモを調査し、重複や不足情報を判定する。</li>
+                <li>必要に応じてサブエージェントとWeb検索へ作業を分ける。</li>
+                <li>調査結果をMarkdownへ保存する。</li>
+                <li>Problems診断、差分チェック、保存ファイルの再読で検証する。</li>
+                <li>不備があれば修正し、合格後にコミットしてpushする。</li>
+            </ol>
+            <p>コーディング用リポジトリでも、プロジェクトに既存のテスト、ビルド、lint、 型チェックがあれば、同じCopilot環境で「実装、検証、修正」のループを回せる。 Git worktreeもGit本体で利用できるため、複数エージェントの作業場所を分離できる。 Copilot CLI以外の専用CLIは必須ではない。</p>
+            <p>一方、現状のままでは次の意味で<strong>完全自動の常時ループではない</strong>。</p>
+            <ul>
+                <li>ユーザーの依頼またはセッション開始が起点で、定期実行やIssueイベントによる</li>
+            </ul>
+            <p>自動起動は設定されていない。</p>
+            <ul>
+                <li>セッション内Todoは利用できるが、別セッションをまたぐ汎用的な要件台帳としては</li>
+            </ul>
+            <p>Git管理されたJSON、Markdown、GitHub Issueなどを別途設計する必要がある。</p>
+            <ul>
+                <li>実行回数、時間、モデル使用量、同一失敗回数を機械的に監視する専用の</li>
+            </ul>
+            <p>オーケストレーターは設定されていない。</p>
+            <ul>
+                <li>この調査メモ用リポジトリには、アプリケーションの自動テストやCIがないため、</li>
+            </ul>
+            <p>Markdown調査の合否は書式診断、リンク、差分、人またはエージェントによる 内容確認が中心になる。</p>
+            <p>現在の環境で最初に導入するなら、外部サービスや新しいCLIを増やす前に、 対象のコーディングリポジトリへ次を用意するのが現実的である。</p>
+            <ol>
+                <li><code>AGENTS.md</code>に、1ループで扱う作業単位、変更禁止範囲、正しい検証コマンドを書く。</li>
+                <li>要件を機械判定できるチェック項目へ分解し、Git管理のJSONまたはIssueへ保存する。</li>
+                <li>Copilot Agent HostをAutopilotで実行し、毎回一項目だけ実装させる。</li>
+                <li>既存のテスト、ビルド、lint、型チェックを完了条件にする。</li>
+                <li>最大反復回数と、同じ失敗が続いた場合の停止条件を依頼文に明記する。</li>
+                <li>最後のマージ、デプロイ、削除は人の承認を残す。</li>
+            </ol>
+            <p>この段階なら、追加導入なしで現在の機能を生かせる。PCを閉じても定期的に動く ループが必要になった時点で、GitHub ActionsとGitHub Agentic Workflows、 または別のスケジューラーを追加する。GitHub Agentic WorkflowsをCLIから管理する 場合は、現在未導入のGitHub CLIが追加で必要になる。</p>
+            <h3 id="関連メモ">関連メモ</h3>
+            <ul>
+                <li><a href="../VS%20Code/Copilot%20ChatにおけるAGENTS.mdの役割.html">Copilot ChatにおけるAGENTS.mdの役割</a></li>
+                <li>エージェントへプロジェクト固有の規則を渡す方法</li>
+                <li><a href="../VS%20Code/VS%20Code%20GitHub%20Copilot%20ChatでAutopilotを既定にする方法.html">VS Code GitHub Copilot ChatでAutopilotを既定にする方法</a></li>
+                <li>Copilotを自律実行する設定</li>
+                <li><a href="../VS%20Code/GitHub%20CopilotのRubber%20Duck機能.html">GitHub CopilotのRubber Duck機能</a></li>
+                <li>実装役とは別のモデルを検証役にする仕組み</li>
+            </ul>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://addyosmani.com/blog/loop-engineering/">Loop Engineering（Addy Osmani）</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://www.oreilly.com/radar/loop-engineering/">Loop Engineering（O'Reilly Radar）</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://ghuntley.com/loop/">everything is a ralph loop（Geoffrey Huntley）</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents">Effective harnesses for long-running agents（Anthropic）</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://github.com/anthropics/claude-quickstarts/tree/main/autonomous-coding">Autonomous Coding Agent Demo（Anthropic）</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://openai.com/index/harness-engineering/">Harness engineering: leveraging Codex in an agent-first world（OpenAI）</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://openai.com/index/unrolling-the-codex-agent-loop/">Unrolling the Codex agent loop（OpenAI）</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://developers.openai.com/cookbook/examples/agents<em>sdk/agent</em>improvement_loop">Build an Agent Improvement Loop with Traces, Evals, and Codex（OpenAI）</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.github.com/en/copilot/how-tos/github-agentic-workflows/creating-github-agentic-workflows">Creating GitHub Agentic Workflows（GitHub Docs）</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: 全URL、ローカル環境、GitHub Agentic WorkflowsのPublic Preview状態と</li>
+            </ul>
+            <p>現行作成手順を再確認</p>
+            <ul>
+                <li>2026-08-28: 現在のVS Code、Copilot CLI、Git環境で実現できる範囲と導入手順を追記</li>
+                <li>2026-08-28: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

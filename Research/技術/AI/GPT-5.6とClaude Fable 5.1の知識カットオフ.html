@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPT-5.6とClaude Fable 5.1の知識カットオフ</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">GPT-5.6とClaude Fable 5.1の知識カットオフ</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>GPT-5.6シリーズとClaude Fable 5.1について、学習済み知識のカットオフ時期を OpenAIおよびAnthropicの公式モデル資料で確認した。</p>
+            <h2 id="結論">結論</h2>
+            <ul>
+                <li><strong>GPT-5.6シリーズ: 2026年2月16日</strong></li>
+                <li>GPT-5.6 Sol、Terra、Lunaの3モデルすべてで共通。</li>
+                <li><strong>Claude Fable 5.1: 2026年6月</strong></li>
+                <li>Anthropicは日付までは公表していない。</li>
+            </ul>
+            <p>したがって、公表値上はFable 5.1のほうがGPT-5.6シリーズより新しい時点までの 知識を持つ。ただし、カットオフは学習済み知識の境界を示すものであり、 その日以前の全情報を必ず知っていることを保証するものではない。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="gpt-5-6シリーズ">GPT-5.6シリーズ</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>モデル</th>
+                        <th>公式の知識カットオフ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>GPT-5.6 Sol (<code>gpt-5.6-sol</code>)</td>
+                        <td>2026年2月16日</td>
+                    </tr>
+                    <tr>
+                        <td>GPT-5.6 Terra (<code>gpt-5.6-terra</code>)</td>
+                        <td>2026年2月16日</td>
+                    </tr>
+                    <tr>
+                        <td>GPT-5.6 Luna (<code>gpt-5.6-luna</code>)</td>
+                        <td>2026年2月16日</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>OpenAIの各モデルページはいずれも「Feb 16, 2026 knowledge cutoff」と 明記している。<code>gpt-5.6</code>エイリアスはGPT-5.6 Solへルーティングされるため、 接尾辞なしのGPT-5.6についても同じ日付になる。</p>
+            <h3 id="claude-fable-5-1">Claude Fable 5.1</h3>
+            <p>Anthropicの公式モデル一覧では、Claude Fable 5.1の 「Reliable knowledge cutoff」と「Training data cutoff」がともに 「Jun 2026」とされている。月単位の公表であり、月内の具体的な日付は 公式資料からは確認できない。</p>
+            <h3 id="比較上の注意">比較上の注意</h3>
+            <ul>
+                <li>OpenAIは日単位、Anthropicは月単位で公表しているため、厳密な日数差は</li>
+            </ul>
+            <p>算出できない。</p>
+            <ul>
+                <li>Anthropicは「Reliable knowledge cutoff」と「Training data cutoff」を</li>
+            </ul>
+            <p>区別しているが、Fable 5.1では両方とも2026年6月である。</p>
+            <ul>
+                <li>Web検索や外部ツールで取得する最新情報は、モデル本体の学習済み知識とは</li>
+            </ul>
+            <p>別に扱う必要がある。</p>
+            <h3 id="現行性">現行性</h3>
+            <p>2026年9月7日に各モデルページを再確認した。GPT-5.6 Sol、Terra、Lunaはいずれも 現行ページに同じカットオフを掲載し、廃止または後継への移行告知はない。Fable 5.1も 現行モデル一覧に掲載され、2027年9月1日より前に廃止しないと案内されている。 したがって、GPT-5.6の初版値は維持し、Fableは現行の5.1情報へ更新した。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://developers.openai.com/api/docs/models/gpt-5.6-sol">GPT-5.6 Sol（OpenAI公式モデル資料）</a></li>
+                <li>参照日: 2026-09-07</li>
+                <li><a href="https://developers.openai.com/api/docs/models/gpt-5.6-terra">GPT-5.6 Terra（OpenAI公式モデル資料）</a></li>
+                <li>参照日: 2026-09-07</li>
+                <li><a href="https://developers.openai.com/api/docs/models/gpt-5.6-luna">GPT-5.6 Luna（OpenAI公式モデル資料）</a></li>
+                <li>参照日: 2026-09-07</li>
+                <li><a href="https://platform.claude.com/docs/en/models/overview">Models overview（Anthropic公式モデル一覧）</a></li>
+                <li>参照日: 2026-09-07</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-07: Fable 5.1の現行名称、知識カットオフ、提供状態を公式一覧で再確認</li>
+                <li>2026-08-31: 全URL、知識カットオフ、提供状態、廃止予定を再確認</li>
+                <li>2026-08-26: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

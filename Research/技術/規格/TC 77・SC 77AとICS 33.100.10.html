@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TC 77・SC 77AとICS 33.100.10</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">TC 77・SC 77AとICS 33.100.10</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>規格情報に記載された「TC 77/SC 77A」と「ICS 33.100.10」が何を示すか、 および両者の違いと関係を確認した。</p>
+            <h2 id="結論">結論</h2>
+            <ul>
+                <li><code>TC 77/SC 77A</code>は、IEC（国際電気標準会議）で規格を審議・作成する組織を示す。</li>
+                <li><code>TC 77</code>: Technical Committee 77（第77技術委員会）</li>
+            </ul>
+            <p>「Electromagnetic compatibility（電磁両立性、EMC）」</p>
+            <ul>
+                <li><code>SC 77A</code>: TC 77のSubcommittee 77A（第77A分科委員会）</li>
+            </ul>
+            <p>「EMC - Low frequency phenomena（EMC―低周波現象）」 主な対象周波数は概ね9 kHz以下（現象又は機器に応じて上限を上げ得る）。</p>
+            <ul>
+                <li><code>ICS 33.100.10</code>は、規格を主題別に整理する国際規格分類</li>
+            </ul>
+            <p>（International Classification for Standards）のコードで、 「Emission（エミッション）」を示す。</p>
+            <ul>
+                <li>したがって、この2項目が同じ規格に記載されている場合は、概ね</li>
+            </ul>
+            <p>「IECのEMC・低周波現象を担当するSC 77Aが扱う規格で、内容分類はEMCの エミッションに属する」という意味である。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="tc-77-sc-77a">TC 77/SC 77A</h3>
+            <p><code>TC</code>はTechnical Committee（技術委員会）、<code>SC</code>はSubcommittee （分科委員会）の略である。IECの公式委員会ページでは、TC 77の名称を 「Electromagnetic compatibility」、その配下のSC 77Aの名称を 「EMC - Low frequency phenomena」としている。</p>
+            <p>これは「誰が規格を担当するか」を表す組織上の識別子である。 <code>TC 77/SC 77A</code>という表記は、TC 77に属するSC 77Aを意味する。</p>
+            <p>2026年8月31日時点のIEC公式Scopeでは、TC 77は製品委員会が横断利用する EMC規格・技術報告書を作成し、全周波数範囲のイミュニティ、9 kHz以下の エミッション、CISPRの範囲外にある9 kHz超のエミッション等を扱う。 SC 77Aは低周波現象（概ね9 kHz以下）を担当する。委員会名称・所属の変更は 確認されなかった。</p>
+            <h3 id="ics-33-100-10">ICS 33.100.10</h3>
+            <p>ICSは規格文書を主題別に検索・整理するための階層的な分類コードである。 コードの階層は次のとおり。</p>
+            <ul>
+                <li><code>33</code>: Telecommunications. Audio and video engineering</li>
+            </ul>
+            <p>（電気通信、音響・映像工学）</p>
+            <ul>
+                <li><code>33.100</code>: Electromagnetic compatibility (EMC)</li>
+            </ul>
+            <p>（電磁両立性。無線妨害を含む）</p>
+            <ul>
+                <li><code>33.100.10</code>: Emission（エミッション）</li>
+            </ul>
+            <p>EMCにおけるエミッションは、機器などから外部へ出る電磁妨害を指す。 ただし、ICSコード自体は担当委員会を示すものではなく、同じICS分類に 複数の委員会や標準化機関の規格が含まれ得る。</p>
+            <h3 id="両者の読み分け">両者の読み分け</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>表記</th>
+                        <th>示すもの</th>
+                        <th>この場合の意味</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>TC 77/SC 77A</code></td>
+                        <td>規格を担当するIECの委員会</td>
+                        <td>EMCのうち低周波現象を扱う分科委員会</td>
+                    </tr>
+                    <tr>
+                        <td><code>ICS 33.100.10</code></td>
+                        <td>規格の主題分類</td>
+                        <td>EMCのエミッション</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>この情報だけでは具体的な規格番号や要求事項までは特定できない。規格番号 （例: <code>IEC 61000-...</code>）が併記されている場合は、その番号を確認することで、 対象機器、試験方法、限度値などをさらに特定できる。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://www.iec.ch/ords/f?p=103:7:0::::FSP<em>ORG</em>ID:1265">IEC TC 77 Dashboard</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://www.iec.ch/ords/f?p=103:7:0::::FSP<em>ORG</em>ID:1384">IEC TC 77/SC 77A Dashboard</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://www.iso.org/ics/33/x/">ISO ICS 33</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://www.iso.org/ics/33.100/x/">ISO ICS 33.100</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://www.iso.org/ics/33.100.10/x/">ISO ICS 33.100.10</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: 全参考URLを再確認し、IEC Dashboardを現行URLへ更新してTC 77・SC 77AのScopeを追記</li>
+                <li>2026-08-27: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

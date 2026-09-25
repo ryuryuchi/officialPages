@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>dotenvの基本</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">dotenvの基本</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>Node.jsアプリケーションで設定値や秘密情報を環境変数として扱うための <code>dotenv</code>について、役割、導入方法、<code>.env</code>の書式、利用時の注意点を調べた。 Node.js本体に追加された<code>.env</code>対応との使い分けも整理する。</p>
+            <h2 id="結論">結論</h2>
+            <p><code>dotenv</code>は、プロジェクトの<code>.env</code>ファイルを読み込み、値を <code>process.env</code>へ追加する依存関係のないNode.jsパッケージである。アプリの ソースコードと環境ごとの設定値を分離したい場合に使える。</p>
+            <p>基本的な導入は<code>npm install dotenv</code>後、アプリケーションの早い段階で <code>require('dotenv').config()</code>または<code>import 'dotenv/config'</code>を実行する方法である。 ただし、<code>.env</code>は秘密情報を含み得るため、通常はGitへコミットせず、<code>.gitignore</code> へ追加する。キーをクライアントへ公開するフロントエンドへ渡す用途には、 秘密情報を置いてはならない。</p>
+            <p>Node.jsには<code>.env</code>を読む<code>--env-file</code>と<code>process.loadEnvFile()</code>があるため、 Node.jsだけで完結する新規アプリでは追加パッケージが不要な場合がある。 一方、<code>dotenv</code>はNode.js 12以上で動作し、既存コード、複数ファイルの統合、 <code>parse</code>や<code>populate</code>などのAPIを使う場合に選択肢になる。採用時は対象Node.jsの バージョンと実行環境の方式を統一する。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="dotenvの役割">dotenvの役割</h3>
+            <p><code>dotenv</code>は<code>.env</code>を解析し、デフォルトでは現在の作業ディレクトリにある <code>.env</code>の値を<code>process.env</code>へ設定する。OSや実行環境ですでに設定された値は、 <code>override: true</code>を指定しない限り上書きされない。環境変数をコードへ直書きせず、 開発・テスト・本番で設定を差し替えやすくするために使う。</p>
+            <h3 id="導入と基本的な使い方">導入と基本的な使い方</h3>
+            <pre><code class="language-bash">npm install dotenv</code></pre>
+            <p>プロジェクトルートの<code>.env</code>に設定を書く。</p>
+            <pre><code class="language-dotenv">PORT=3000
+DATABASE_URL=&quot;postgres://localhost/example&quot;
+API_KEY=&quot;開発用のキー&quot;</code></pre>
+            <p>CommonJSでは、<code>process.env</code>を参照する処理より前に読み込む。</p>
+            <pre><code class="language-js">require(&#x27;dotenv&#x27;).config()
+
+const port = Number(process.env.PORT || 3000)
+console.log(`listening on ${port}`)</code></pre>
+            <p>ES Modulesでは、設定用エントリーポイントを先に読み込める。</p>
+            <pre><code class="language-js">import &#x27;dotenv/config&#x27;
+
+console.log(process.env.API_KEY)</code></pre>
+            <p>値は文字列として読み込まれるため、ポート番号や真偽値はアプリ側で変換・検証 する。必須値がない場合に起動時エラーにするなど、設定の妥当性確認も別途行う。</p>
+            <h3 id="envの主な書式"><code>.env</code>の主な書式</h3>
+            <p>Node.js公式仕様では、変数名は英字・数字・アンダースコアで構成し、数字から 始めない。値は引用符で囲め、引用符付きの値は複数行にできる。<code>#</code>以降はコメント だが、引用符内の<code>#</code>は値に含まれる。<code>export</code>接頭辞は無視される。</p>
+            <pre><code class="language-dotenv"># コメント
+HOST=localhost
+MESSAGE=&quot;hello # dotenv&quot;
+PRIVATE_KEY=&quot;line one
+line two&quot;</code></pre>
+            <p>アプリケーション、利用するライブラリ、デプロイ基盤の<code>.env</code>解釈が完全に同じ とは限らないため、特殊な書式は実行環境で確認する。</p>
+            <h3 id="オプションとapi">オプションとAPI</h3>
+            <p>標準の<code>config()</code>は次の指定に対応する。</p>
+            <ul>
+                <li><code>path</code>: <code>.env</code>以外のファイルを指定する。複数ファイルを配列で渡せる。</li>
+                <li><code>override</code>: 既存の環境変数を<code>.env</code>の値で上書きする。既定値は<code>false</code>。</li>
+                <li><code>debug</code>: 値が設定されない理由を調べるログを有効にする。</li>
+                <li><code>quiet</code>: 読み込み時のログを抑制する。</li>
+                <li><code>processEnv</code>: <code>process.env</code>ではなく、指定したオブジェクトへ値を書き込む。</li>
+            </ul>
+            <p><code>dotenv.parse()</code>は文字列または<code>Buffer</code>をオブジェクトへ変換し、 <code>dotenv.populate()</code>は任意のオブジェクトへ値を投入する。通常のアプリでは <code>config()</code>だけで足りるが、設定のテストや独自ローダーを作る場合に利用できる。</p>
+            <h3 id="node-js本体の機能との比較">Node.js本体の機能との比較</h3>
+            <p>Node.jsには<code>.env</code>を読む機能があり、CLIでは次のように起動できる。</p>
+            <pre><code class="language-bash">node --env-file=.env app.js</code></pre>
+            <p>プログラムからは<code>process.loadEnvFile('./.env')</code>を使える。Node.js公式は <code>.env</code>の一般的な仕様を定義しているが、<code>.env</code>には言語横断の正式な標準仕様が ないと説明している。</p>
+            <p>Node.js本体を対象にでき、起動コマンドを管理できるなら標準機能が簡潔である。 既存の<code>dotenv</code>利用、Node.js以外のツールとの慣習、<code>config()</code>のオプションやAPIが 必要なら<code>dotenv</code>を継続する、という基準で選ぶとよい。これは調査結果に基づく 使い分けの判断であり、プロジェクト固有の要件で再確認する。</p>
+            <h3 id="セキュリティと運用上の注意">セキュリティと運用上の注意</h3>
+            <ul>
+                <li><code>.env</code>を<code>.gitignore</code>へ追加し、実際の秘密情報をリポジトリへ保存しない。</li>
+                <li><code>.env.example</code>には値そのものではなく、必要なキー名と説明だけを置く。</li>
+                <li>フロントエンドへ埋め込まれる環境変数は利用者から見えるため、秘密情報を入れない。</li>
+                <li>本番では、クラウドのシークレット管理やデプロイ環境の環境変数を優先する。</li>
+                <li><code>process.env</code>の値は文字列なので、型、範囲、必須性を起動時に検証する。</li>
+                <li><code>override: true</code>は、実行環境が意図せず<code>.env</code>で上書きされる危険があるため、</li>
+            </ul>
+            <p>明示的な理由がある場合だけ使う。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://github.com/motdotla/dotenv/blob/master/README.md">dotenv README（公式）</a></li>
+                <li>参照日: 2026-09-10</li>
+                <li><a href="https://raw.githubusercontent.com/motdotla/dotenv/master/package.json">dotenv package.json（公式リポジトリ）</a></li>
+                <li>参照日: 2026-09-10</li>
+                <li><a href="https://nodejs.org/api/environment_variables.html">Environment Variables | Node.js v26 Documentation</a></li>
+                <li>参照日: 2026-09-10</li>
+                <li><a href="https://www.npmjs.com/package/dotenv">dotenv - npm</a></li>
+                <li>参照日: 2026-09-10</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-10: dotenvの役割、導入、書式、Node.js標準機能との使い分け、運用上の注意を整理</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

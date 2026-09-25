@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExcelにHTMLを表示する方法</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">ExcelにHTMLを表示する方法</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>HTMLをExcelのセル内やワークシート上へ、Webブラウザーと同じ見た目で表示できるかを調査した。HTMLの表示、Webデータの取り込み、外部ブラウザーで開く方法を区別し、用途別の選択肢を整理する。</p>
+            <h2 id="結論">結論</h2>
+            <ul>
+                <li><strong>セルにHTML文字列を入れるだけでは、HTMLとして描画されない。</strong> <code>__RAW<em>HTML</em>0<strong>太字</strong>RAW<em>HTML</em>1__</code>などのタグも文字列として表示される。</li>
+                <li><strong>ワークシート上にブラウザー相当の領域を置くことは可能。</strong> Microsoftが提供するOfficeアドインの「コンテンツアドイン」を開発すると、HTML、CSS、JavaScriptで作ったUIをシートへ直接埋め込める。右側へ表示する「作業ウィンドウアドイン」も選べる。</li>
+                <li><strong>HTMLの表データが欲しいだけなら、Power Queryの「データ &gt; Webから」が適している。</strong> これはWebページをそのまま表示する機能ではなく、検出した表をExcelのセルへ読み込む機能である。</li>
+                <li><strong>表示だけなら、ハイパーリンクで既定のブラウザーを開く方法が最も簡単で安全である。</strong></li>
+                <li>VBAの旧式なWebBrowserコントロールなどでも類似のことはできる場合があるが、Windows依存、古い描画エンジン、配布や保守の難しさがあるため、新規構築ではOfficeアドインを優先する。</li>
+            </ul>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="そのまま表示-の意味別の可否">「そのまま表示」の意味別の可否</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>やりたいこと</th>
+                        <th>可否</th>
+                        <th>適した方法</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>セル内のHTMLタグをブラウザーのように描画する</td>
+                        <td>不可</td>
+                        <td>必要な文字や書式へ変換してセルへ設定する</td>
+                    </tr>
+                    <tr>
+                        <td>HTMLの表をセルへ取り込む</td>
+                        <td>可能</td>
+                        <td>Power Queryの「Webから」</td>
+                    </tr>
+                    <tr>
+                        <td>HTML UIをワークシート上に埋め込む</td>
+                        <td>可能</td>
+                        <td>Officeのコンテンツアドイン</td>
+                    </tr>
+                    <tr>
+                        <td>HTML UIをExcel画面の右側に表示する</td>
+                        <td>可能</td>
+                        <td>Officeの作業ウィンドウアドイン</td>
+                    </tr>
+                    <tr>
+                        <td>Webページを別画面で表示する</td>
+                        <td>可能</td>
+                        <td><code>HYPERLINK</code>関数または通常のハイパーリンク</td>
+                    </tr>
+                    <tr>
+                        <td>HTMLの見た目だけをシート上に置く</td>
+                        <td>可能</td>
+                        <td>ブラウザーで表示して画像として貼り付ける</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3 id="1-セルはhtmlレンダラーではない">1. セルはHTMLレンダラーではない</h3>
+            <p>セルに次の文字列を貼り付けても、太字の「重要」にはならず、タグを含む文字列として扱われる。</p>
+            <pre><code class="language-html">&lt;b&gt;重要&lt;/b&gt;</code></pre>
+            <p>表示したい内容が限定的なら、HTMLを解析して次のように変換する方法はある。</p>
+            <ul>
+                <li><code>__RAW<em>HTML</em>0__</code>をセル内改行へ変換する</li>
+                <li><code>__RAW<em>HTML</em>0<strong></code>や<code></strong>RAW<em>HTML</em>1__</code>の範囲へ太字書式を設定する</li>
+                <li><code>__RAW<em>HTML</em>0<strong></code>や<code></strong>RAW<em>HTML</em>1__</code>を記号付き・番号付きのテキストへ変換する</li>
+                <li>画像は別途ダウンロードして貼り付ける</li>
+            </ul>
+            <p>ただし、これはHTMLを描画するのではなく、対応するExcelの値や書式へ個別に変換する処理である。CSSレイアウト、JavaScript、フォームなどを同じように再現することはできない。</p>
+            <h3 id="2-シート上でhtmlを本当に描画する">2. シート上でHTMLを本当に描画する</h3>
+            <p>MicrosoftのExcelアドインには、WebベースのUIを表示する次の仕組みがある。</p>
+            <ul>
+                <li><strong>コンテンツアドイン</strong>: ワークシートへ直接埋め込む</li>
+                <li><strong>作業ウィンドウアドイン</strong>: Excel画面の右側に表示する</li>
+            </ul>
+            <p>アドインはWebアプリとマニフェストで構成され、HTML、CSS、JavaScriptを使用する。 2026年8月時点のMicrosoft Learnでは、Windows版はEdge WebView2、MacとiOSは Safari WKWebView、AndroidはChrome、Excel for the webは利用中のブラウザーが表示を 担当する。利用できるAPIは、Excelの版とプラットフォームごとの要件セットも確認する。</p>
+            <p>これは「任意のHTMLファイルをセルへ貼り付ける」機能ではなく、Officeアドインとしての開発と配布が必要である。社内だけで使う場合も、マニフェストの用意、Webコンテンツのホスト、組織のアドイン配布・信頼設定などを検討する。</p>
+            <h3 id="3-htmlの表をexcelデータとして取り込む">3. HTMLの表をExcelデータとして取り込む</h3>
+            <p>HTMLページ中の表を編集・集計したい場合は、次の手順でPower Queryを使う。</p>
+            <ol>
+                <li><code>データ</code>タブを開く。</li>
+                <li><code>Webから</code>を選ぶ。</li>
+                <li>URLを入力して接続する。</li>
+                <li>ナビゲーターで検出された表を選ぶ。</li>
+                <li><code>読み込み</code>または<code>データの変換</code>を選ぶ。</li>
+            </ol>
+            <p>読み込まれるのは表データであり、元ページ全体のレイアウトではない。Webコネクターには<code>Web.BrowserContents</code>のようにWebView2を必要とする機能もあるが、取得結果は最終的にExcelの表として扱われる。</p>
+            <h3 id="4-表示だけならブラウザーで開く">4. 表示だけならブラウザーで開く</h3>
+            <p>セルからWebページを開くだけなら、次の式で十分である。</p>
+            <pre><code class="language-excel">=HYPERLINK(&quot;https://example.com/page.html&quot;,&quot;HTMLを開く&quot;)</code></pre>
+            <p>クリックすると、Excel内ではなく対象の文書またはURLが開かれる。Excel for the webの<code>HYPERLINK</code>関数では、リンク先はWebアドレスに限定される。</p>
+            <h3 id="5-方式の選び方">5. 方式の選び方</h3>
+            <ul>
+                <li><strong>Webページを見せたいだけ</strong>: ハイパーリンク</li>
+                <li><strong>見た目を固定して資料に載せたい</strong>: 画像として貼り付け</li>
+                <li><strong>Web上の表を集計したい</strong>: Power Query</li>
+                <li><strong>Excel内で操作できるHTML UIが必要</strong>: Officeアドイン</li>
+                <li><strong>HTML付き文章をセルへ入れたい</strong>: 必要なタグだけExcel書式へ変換</li>
+            </ul>
+            <p>「HTMLをそのまま表示」に最も近いのはコンテンツアドインだが、簡単さではハイパーリンク、データ利用ではPower Queryが適している。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://learn.microsoft.com/en-us/office/dev/add-ins/excel/excel-add-ins-overview">Build Excel add-ins with Office Add-ins - Microsoft Learn</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://learn.microsoft.com/en-us/office/dev/add-ins/design/content-add-ins">Content Office Add-ins - Microsoft Learn</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://learn.microsoft.com/en-us/office/dev/add-ins/concepts/browsers-used-by-office-web-add-ins">Browsers and webview controls used by Office Add-ins - Microsoft Learn</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://learn.microsoft.com/en-us/power-query/connectors/web/web">Power Query Web Connector - Microsoft Learn</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://support.microsoft.com/en-us/excel/get-started/import-data-from-the-web">Import data from the web using the web connector - Microsoft Support</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://support.microsoft.com/en-us/excel/functions/hyperlink-function">HYPERLINK function - Microsoft Support</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://learn.microsoft.com/en-us/answers/questions/5405884/displaying-html-in-an-excel-cell">Displaying HTML in an Excel cell - Microsoft Q&amp;amp;A</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: 全参考URLと本文事実を再確認し、Officeアドインの現行WebView構成と要件セットの注意を更新</li>
+                <li>2026-08-27: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

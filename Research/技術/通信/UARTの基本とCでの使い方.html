@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UARTの基本とCでの使い方</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">UARTの基本とCでの使い方</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>UARTが何をする仕組みなのか、また「CでUARTを使う」とは具体的に何を意味するのかを、組み込み開発の初心者向けに整理した。</p>
+            <h2 id="結論">結論</h2>
+            <p>UART（Universal Asynchronous Receiver/Transmitter）は、マイコンやセンサーなどの機器間で、データを1ビットずつ送受信する非同期シリアル通信の仕組みである。</p>
+            <p>UARTはC言語の機能ではない。Cプログラムから、マイコン内蔵UARTのレジスターや、メーカー提供のドライバー・HAL（Hardware Abstraction Layer）を操作して利用する。したがって、実際のCコードはマイコンやOSによって異なる。</p>
+            <p>最初に試す設定としては、両端を同じ通信条件（例えば <code>115200 baud、8データビット、パリティなし、ストップビット1</code>、略して <code>115200 8N1</code>）にし、送信側のTXを受信側のRXへ、RXをTXへ、GNDをGNDへ接続する。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="uartの基本">UARTの基本</h3>
+            <ul>
+                <li><strong>非同期</strong>：クロック線を別に送らないため、送受信側で通信速度などの条件を事前に合わせる。</li>
+                <li><strong>TX</strong>：送信線（Transmit）</li>
+                <li><strong>RX</strong>：受信線（Receive）</li>
+                <li><strong>baud rate</strong>：1秒あたりの通信速度。UARTでは通常、1シンボルが1ビットなのでビット毎秒の意味で使われることが多い。</li>
+                <li><strong>全二重</strong>：TXとRXが別線なので、送信と受信を同時に行える。</li>
+            </ul>
+            <p>1バイトの送信では、通常、アイドル状態の後にスタートビット、データビット、任意のパリティビット、ストップビットを付ける。よく使われる <code>8N1</code> は「データ8ビット、パリティなし、ストップビット1」を表す。データビットは一般に最下位ビット（LSB）から送られる。</p>
+            <h3 id="配線と規格の注意">配線と規格の注意</h3>
+            <p>UARTは論理的な通信方式であり、電圧レベルやコネクター形状まで一意に決めるものではない。TTL/CMOSレベルのUART、RS-232、RS-485、USB-シリアル変換器などは、電気的な仕様や信号の扱いが異なる。</p>
+            <p>そのため、機器の仕様書で電圧レベルを確認せずに接続してはいけない。特に、マイコンの3.3 V UART信号をRS-232ポートへ直接接続することはできない。PCと接続する場合は、適切なUSB-UART変換器などを使用する。</p>
+            <h3 id="cで使うときの考え方">Cで使うときの考え方</h3>
+            <p>Cの標準ライブラリだけでUARTを直接開くことはできない。典型的な処理は次の順序になる。</p>
+            <ol>
+                <li>UART番号とTX/RXピンを選ぶ。</li>
+                <li>baud rate、データ長、パリティ、ストップビットを設定する。</li>
+                <li>UARTドライバーを初期化する。</li>
+                <li>送信関数でバイト列を送り、受信関数または受信割り込みでデータを読む。</li>
+                <li>必要に応じてタイムアウト、リングバッファ、割り込み、DMAを扱う。</li>
+            </ol>
+            <p>例えば、メーカーSDKを使うコードは次のような形になる。関数名や型はSDKごとに異なるため、そのまま別のマイコンへ移植できるコードではない。</p>
+            <pre><code class="language-c">uart_config_t config = {
+    .baud_rate = 115200,
+    .data_bits = UART_DATA_8_BITS,
+    .parity = UART_PARITY_DISABLE,
+    .stop_bits = UART_STOP_BITS_1
+};
+
+uart_param_config(UART_NUM_1, &amp;config);
+uart_set_pin(UART_NUM_1, TX_PIN, RX_PIN,
+             UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+uart_driver_install(UART_NUM_1, 1024, 1024, 0, NULL, 0);</code></pre>
+            <p>送受信処理は、単純な確認ならポーリング、他の処理と並行して受信するなら割り込み、連続した大量データならDMAを選ぶことが多い。</p>
+            <h3 id="よくあるつまずき">よくあるつまずき</h3>
+            <ul>
+                <li>送受信側のbaud rateや <code>8N1</code> などの条件が一致していない</li>
+                <li>TX同士、RX同士を接続している（基本はTX-RX、RX-TX）</li>
+                <li>GNDを共通にしていない</li>
+                <li>UARTの電圧レベルが合っていない</li>
+                <li>改行コード（LF/CRLF）や文字コードの前提が違う</li>
+                <li>受信処理が遅く、バッファーがあふれている</li>
+            </ul>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://www.analog.com/en/resources/analog-dialogue/articles/uart-a-hardware-communication-protocol.html">Analog Devices: UART: A Hardware Communication Protocol Understanding the Basics</a></li>
+                <li>参照日: 2026-09-10</li>
+                <li><a href="https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/peripherals/uart.html">Espressif ESP-IDF Programming Guide: Universal Asynchronous Receiver/Transmitter (UART)</a></li>
+                <li>参照日: 2026-09-10</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-10: UARTの役割、通信フレーム、配線上の注意、Cでの利用方法を初版として整理</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

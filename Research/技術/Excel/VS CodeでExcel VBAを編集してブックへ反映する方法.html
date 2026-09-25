@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VS CodeでExcel VBAを編集してブックへ反映する方法</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">VS CodeでExcel VBAを編集してブックへ反映する方法</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>Microsoft ExcelのVBAをVS Codeで編集し、マクロ有効ブックへ反映する方法を整理する。VS Codeをテキストエディター兼Git管理環境として使いながら、Excel側のVBAプロジェクトと同期することを目的とする。</p>
+            <h2 id="結論">結論</h2>
+            <p>Windows版Excelでは、<code>xlwings vba edit</code>を使う方法が扱いやすい。初回にブック内のVBAコンポーネントを<code>.bas</code>、<code>.cls</code>、<code>.frm</code>へ書き出し、その後はVS Codeでファイルを保存するたびに開いているブックへ反映できる。</p>
+            <p>ただし、VS CodeだけでVBA開発のすべてを置き換えることはできない。UserFormの画面設計、参照設定、VBAプロジェクトのコンパイル、ブレークポイントを使ったデバッグなどは、従来どおりExcelのVisual Basic Editor（VBE）で行う。</p>
+            <p>Pythonを導入したくない場合は、VBEからモジュールを手動でエクスポートし、VS Codeで編集してから再インポートする。継続的に編集するなら<code>xlwings</code>、一度だけの修正や厳しく管理されたPCでは手動方式が適している。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="前提">前提</h3>
+            <ul>
+                <li>デスクトップ版Excelを使用する。Excel for the webではVBAを作成、実行、編集できない。</li>
+                <li>ブックをVBAを保存できる<code>.xlsm</code>、<code>.xlsb</code>、<code>.xlam</code>などの形式にする。通常の<code>.xlsx</code>にはVBAコードを保存できない。</li>
+                <li>作業前にブックのバックアップを作る。</li>
+                <li>VS CodeでVBA用のシンタックスハイライト拡張機能を追加すると読みやすくなるが、拡張機能だけではブックとの同期は行われない。</li>
+            </ul>
+            <h3 id="推奨方法-xlwingsで自動同期する">推奨方法: xlwingsで自動同期する</h3>
+            <h4 id="1-pythonとxlwingsを用意する">1. Pythonとxlwingsを用意する</h4>
+            <p>現行のxlwingsはPython 3.9以上を前提としている。PowerShellで次を実行する。<code>vba edit</code>のファイル監視には<code>watchgod</code>も必要である。</p>
+            <pre><code class="language-powershell">py -m pip install --upgrade xlwings watchgod</code></pre>
+            <p>xlwingsのExcelアドインは、VBAファイルの同期だけを行う場合には不要である。 2026年8月31日の再確認時点で、公式changelogの最新掲載はxlwings 0.36.17 （2026年8月17日）である。公式CLI説明と現行ソースは引き続き<code>xlwings vba edit</code>、 <code>export</code>、<code>import</code>および<code>watchgod</code>を使用しており、この手順に廃止予告はない。</p>
+            <h4 id="2-excelの設定を変更する">2. Excelの設定を変更する</h4>
+            <p>Excelで次の順に開く。</p>
+            <ol>
+                <li><code>ファイル</code> &gt; <code>オプション</code></li>
+                <li><code>トラスト センター</code> &gt; <code>トラスト センターの設定</code></li>
+                <li><code>マクロの設定</code></li>
+                <li><code>VBA プロジェクト オブジェクト モデルへのアクセスを信頼する</code>を有効にする</li>
+            </ol>
+            <p>これは外部プログラムからVBAプロジェクトを書き換えるために必要な設定である。Microsoftによると、ユーザー単位かつOfficeアプリ単位の設定で、既定では拒否される。</p>
+            <p><code>すべてのマクロを有効にする</code>まで選ぶ必要はない。この設定はMicrosoftも非推奨としている。同期を常用しない場合は、作業後にVBAプロジェクトへのアクセス許可を戻す。</p>
+            <h4 id="3-ブックと作業フォルダーを用意する">3. ブックと作業フォルダーを用意する</h4>
+            <ol>
+                <li>対象ブックをExcelで開く。</li>
+                <li>ブックごとに専用の作業フォルダーを作る。</li>
+                <li>VS Codeでそのフォルダーを開く。</li>
+                <li>VS Codeのターミナルで、そのフォルダーへ移動する。</li>
+            </ol>
+            <p>同じフォルダーへ無関係な<code>.bas</code>、<code>.cls</code>、<code>.frm</code>を置かない。<code>xlwings vba import</code>はカレントフォルダーの対象ファイルをブックへ取り込むため、ブックごとに分ける方が安全である。</p>
+            <h4 id="4-編集監視を開始する">4. 編集監視を開始する</h4>
+            <p>対象ブックがアクティブなら、作業フォルダーで次を実行する。</p>
+            <pre><code class="language-powershell">xlwings vba edit</code></pre>
+            <p>ブックを明示する場合は、次のように指定する。</p>
+            <pre><code class="language-powershell">xlwings vba edit --file &quot;C:\Work\Book1.xlsm&quot;</code></pre>
+            <p>確認画面に対象ブックと作業フォルダーが表示されるので、誤りがないことを確認して続行する。</p>
+            <p>初回実行時は、ブック内のコンポーネントが作業フォルダーへ書き出される。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>VBAコンポーネント</th>
+                        <th>主な拡張子</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>標準モジュール</td>
+                        <td><code>.bas</code></td>
+                    </tr>
+                    <tr>
+                        <td>クラスモジュール</td>
+                        <td><code>.cls</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>ThisWorkbook</code>、ワークシート</td>
+                        <td><code>.cls</code></td>
+                    </tr>
+                    <tr>
+                        <td>UserForm</td>
+                        <td><code>.frm</code>と付随する<code>.frx</code></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>書き出されたファイルをVS Codeで編集して保存すると、監視中の<code>xlwings</code>がブック内のコードを更新し、ブックを保存する。監視を終了するにはターミナルで<code>Ctrl+C</code>を押す。</p>
+            <h4 id="5-excel側で行った変更を取り直す">5. Excel側で行った変更を取り直す</h4>
+            <p>UserFormのレイアウト、モジュールのプロパティなどをVBEで変更した場合は、VS Code側へ自動反映されない。次を実行して、Excel側の内容でローカルファイルを上書きする。</p>
+            <pre><code class="language-powershell">xlwings vba export --file &quot;C:\Work\Book1.xlsm&quot;</code></pre>
+            <p>反対に、ローカルファイル一式でExcel側を明示的に更新する場合は次を使う。</p>
+            <pre><code class="language-powershell">xlwings vba import --file &quot;C:\Work\Book1.xlsm&quot;</code></pre>
+            <p>どちらも対象ブックとフォルダーを確認してから実行する。取り違えると新しい変更を上書きするため、実行前にGitへコミットするかバックアップを取る。</p>
+            <h4 id="6-新規モジュールとuserformを扱う">6. 新規モジュールとUserFormを扱う</h4>
+            <p>監視中にVS Codeで新しい<code>.bas</code>、<code>.cls</code>、<code>.frm</code>を作成しても、<code>vba edit</code>は新規コンポーネントとして追加しない。新しいモジュールやUserFormはVBEで作成してから、<code>xlwings vba export</code>で作業フォルダーへ書き出す。</p>
+            <p>UserFormの画面部品はVBEのデザイナーで編集する。<code>.frm</code>だけでなく、画像などを保持する<code>.frx</code>も対で管理する。</p>
+            <h3 id="手動方式-vbeでエクスポートとインポートを行う">手動方式: VBEでエクスポートとインポートを行う</h3>
+            <p>Pythonや自動同期ツールを使えない場合は、次の手順で編集できる。</p>
+            <ol>
+                <li>Excelで<code>Alt+F11</code>を押してVBEを開く。</li>
+                <li>プロジェクトエクスプローラーで標準モジュール、クラス、UserFormを右クリックする。</li>
+                <li><code>ファイルのエクスポート</code>を選び、専用フォルダーへ保存する。</li>
+                <li>VS Codeでファイルを編集して保存する。</li>
+                <li>VBEで古い標準モジュールまたはクラスを削除する。削除時に再エクスポートするか聞かれた場合、すでにバックアップ済みなら不要である。</li>
+                <li>プロジェクトを右クリックし、<code>ファイルのインポート</code>で編集済みファイルを読み込む。</li>
+                <li>VBEの<code>デバッグ</code> &gt; <code>VBAProjectのコンパイル</code>を実行し、Excelで動作確認して保存する。</li>
+            </ol>
+            <p>MicrosoftのVBA Add-In Object Modelでも、<code>Export</code>はコンポーネントを別ファイルへ保存し、<code>Import</code>はファイルからコンポーネントをプロジェクトへ追加する操作として定義されている。</p>
+            <p><code>ThisWorkbook</code>や各ワークシートはブック固有のドキュメントモジュールである。単純にインポートすると通常のクラスとして追加され、既存のドキュメントモジュールを置き換えられない。この部分を手動で扱う場合は、VS Codeで編集したコード本文を既存の<code>ThisWorkbook</code>または対象シートのコード画面へ貼り戻す。自動同期が必要なら<code>xlwings vba edit</code>を使う方がよい。</p>
+            <h3 id="xvba拡張機能という選択肢">XVBA拡張機能という選択肢</h3>
+            <p>VS Code Marketplaceの第三者製拡張機能<code>XVBA - Live Server VBA for Excel &amp; Access</code>には、VBAのインポート、保存時の自動反映、補完、フォーマット、マクロ実行などがまとめられている。Pythonを別途操作せずVS Code内で完結させたい場合の候補になる。</p>
+            <p>一方で、Excelを外部から操作する拡張機能であり、セットアップ時にはマクロ実行やブック書き換えに関する設定が必要になる。業務PCでは組織の拡張機能ポリシーを確認し、ブックをバックアップしたうえで導入する。構成を単純にし、同期処理をコマンドとして確認しながら使いたい場合は<code>xlwings</code>の方が分かりやすい。</p>
+            <h3 id="vs-codeとvbeの役割分担">VS CodeとVBEの役割分担</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>作業</th>
+                        <th>VS Code</th>
+                        <th>ExcelのVBE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>コード編集、検索、一括置換</td>
+                        <td>適する</td>
+                        <td>可能</td>
+                    </tr>
+                    <tr>
+                        <td>Gitで差分確認、履歴管理</td>
+                        <td>適する</td>
+                        <td>不向き</td>
+                    </tr>
+                    <tr>
+                        <td>UserFormの画面設計</td>
+                        <td>不可</td>
+                        <td>必要</td>
+                    </tr>
+                    <tr>
+                        <td>参照設定</td>
+                        <td>不可</td>
+                        <td>必要</td>
+                    </tr>
+                    <tr>
+                        <td>コンパイル</td>
+                        <td>不可</td>
+                        <td>必要</td>
+                    </tr>
+                    <tr>
+                        <td>ステップ実行、ブレークポイント</td>
+                        <td>原則不可</td>
+                        <td>必要</td>
+                    </tr>
+                    <tr>
+                        <td>イミディエイトウィンドウ</td>
+                        <td>不可</td>
+                        <td>必要</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3 id="gitで管理する場合">Gitで管理する場合</h3>
+            <ul>
+                <li><code>.bas</code>、<code>.cls</code>、<code>.frm</code>はテキスト差分を確認できるのでGit管理に向く。</li>
+                <li><code>.frx</code>はバイナリだが、UserFormに必要なため<code>.frm</code>と一緒に管理する。</li>
+                <li>ブック本体はバイナリで差分を読みづらい。コードレビューはエクスポートしたファイルを中心に行う。</li>
+                <li>Excel側だけで変更した後は、コミット前に必ず<code>xlwings vba export</code>を実行する。</li>
+                <li>同じモジュールをVS CodeとVBEで同時に編集しない。どちらを正とするか決めてから同期する。</li>
+            </ul>
+            <h3 id="制約と注意点">制約と注意点</h3>
+            <ul>
+                <li><code>xlwings vba edit</code>によるVBA同期は、現行実装ではWindows向けである。</li>
+                <li>パスワードでロックされたVBAプロジェクトは、外部ツールから更新できないことがある。</li>
+                <li>会社のグループポリシーでトラストセンター設定が固定されている場合は、管理者へ確認する。</li>
+                <li>コード保存直後にブックも更新されるため、構文エラーを含む途中状態が入ることがある。大きな変更はGitブランチやコピーしたブックで行う。</li>
+                <li>VS Codeで保存できてもVBAとして正しいとは限らない。最後は必ずVBEでコンパイルし、Excel上でマクロを実行して確認する。</li>
+            </ul>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://docs.xlwings.org/en/stable/command_line.html">Command Line Client (CLI) - xlwings Documentation</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.xlwings.org/en/stable/installation.html">Installation - xlwings Documentation</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.xlwings.org/en/stable/whatsnew.html">Changelog - xlwings Documentation</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://github.com/xlwings/xlwings/blob/main/xlwings/cli.py">xlwings CLI source code - GitHub</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://support.microsoft.com/en-US/Excel/change-macro-security-settings-in-excel">Change macro security settings in Excel - Microsoft Support</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://support.microsoft.com/en-US/Excel/file-formats-that-are-supported-in-excel">File formats that are supported in Excel - Microsoft Support</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://learn.microsoft.com/en-us/office/vba/language/reference/user-interface-help/export-method-vba-add-in-object-model">Export method (VBA Add-In Object Model) - Microsoft Learn</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://learn.microsoft.com/en-us/office/vba/language/reference/user-interface-help/import-method-vba-add-in-object-model">Import method (VBA Add-In Object Model) - Microsoft Learn</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://marketplace.visualstudio.com/items?itemName=local-smart.excel-live-server">XVBA - Live Server VBA for Excel &amp;amp; Access - Visual Studio Marketplace</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: 全参考URLと現行CLIソースを再確認し、xlwings 0.36.17時点の対応状況とchangelogを追記</li>
+                <li>2026-08-26: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

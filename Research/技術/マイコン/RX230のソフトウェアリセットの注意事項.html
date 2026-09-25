@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RX230のソフトウェアリセットの注意事項</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">RX230のソフトウェアリセットの注意事項</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>Renesas RX230で、ソフトウェアからリセットを発生させる方法と、リセット前後に注意すべきレジスタ、周辺機能、リセット要因の確認方法を調べた。</p>
+            <h2 id="結論">結論</h2>
+            <p>RX230のソフトウェアリセットは、次の手順で実行する。</p>
+            <ol>
+                <li><code>PRCR.PRC1</code>を1にして、システム関連レジスタへの書込みを許可する。</li>
+                <li>ソフトウェアリセットレジスタ<code>SWRR</code>へ16ビット値<code>A501h</code>を書き込む。</li>
+                <li>リセット後の起動処理で<code>RSTSR2.SWRF</code>を確認し、ソフトウェアリセットだったことを判定する。</li>
+            </ol>
+            <p>主な注意点は、<code>SWRR</code>への書込み後は通常のプログラム実行へ戻らず、内部リセット時間の経過後にリセット例外処理が始まること、CPU・大半のレジスタ・内部状態が初期化されること、RTC関連など一部の状態は保持されることだ。通信や不揮発性メモリへの書込みを途中でリセットしないよう、必要な処理を完了させてから実行する。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="実行方法">実行方法</h3>
+            <p>RX230/RX231 Group User's Manual: Hardware Rev.1.20では、<code>SWRR</code>はアドレス<code>0008 00C2h</code>の16ビットレジスタであり、<code>A501h</code>を書き込むとMCUがリセットされると規定されている（6.2.4、168ページ）。</p>
+            <p>また、<code>SWRR</code>を書き換える前に、プロテクトレジスタ<code>PRCR</code>の<code>PRC1</code>ビットを1にして書込み許可状態にする必要がある。書込み値や書込み幅を独自に変更せず、使用するデバイスヘッダやマニュアルの定義に合わせる。</p>
+            <h3 id="リセットで失われる状態">リセットで失われる状態</h3>
+            <p>ハードウェアマニュアルのリセット対象一覧では、ソフトウェアリセットにより次のものが初期化対象となる。</p>
+            <ul>
+                <li>CPUと内部状態</li>
+                <li>上記の個別項目以外のレジスタ</li>
+                <li>ソフトウェアリセット検出フラグ以外の、各リセット要因に関係する初期化対象</li>
+            </ul>
+            <p>したがって、リセット直前に次の処理が残っていると、データ破棄や外部機器との不整合につながる可能性がある。</p>
+            <ul>
+                <li>UART、SCI、SPI、I2Cなどの通信フレーム送信・受信</li>
+                <li>DMAやタイマに依存する周辺処理</li>
+                <li>内蔵フラッシュ、外付け不揮発性メモリへの書込み</li>
+                <li>外部回路へ出力した制御信号と、ソフトウェア上の状態の更新</li>
+            </ul>
+            <p>これらはマニュアルに個別の完了手順が示されているという意味ではなく、リセットでCPU・周辺レジスタ・内部状態が初期化されることから導かれる実装上の注意である。必要なら、通信完了待ち、周辺機能停止、データ保存、外部機器への停止通知を行ってから<code>SWRR</code>へ書き込む。</p>
+            <h3 id="rtcなど保持される状態">RTCなど保持される状態</h3>
+            <p>リセット対象一覧では、リアルタイムクロック関連のレジスタはソフトウェアリセットで変更されない。一方、RTCの一部制御ビット（<code>RCR1.CIE</code>、<code>RCR1.RTCOS</code>、<code>RCR2.RTCOE</code>、<code>ADJ30</code>、<code>RESET</code>）はすべてのリセットで初期化されると注記されている。</p>
+            <p>「ソフトウェアリセットならRTC周辺がすべて保持される」とは限らないため、RTCを使う場合は保持したいデータと再初期化が必要な制御ビットを分けて確認する。</p>
+            <h3 id="リセット要因の判定">リセット要因の判定</h3>
+            <p><code>RSTSR2</code>はアドレス<code>0008 00C0h</code>にあり、ビット2の<code>SWRF</code>が1ならソフトウェアリセットが発生したことを示す。リセット後の共通起動処理でこのフラグを確認すると、電源投入、外部リセット、ウォッチドッグリセットなどと処理を分けられる。</p>
+            <p><code>SWRF</code>は、1を読み出した後に0を書き込むことでクリアできる。リセット要因を記録したい場合は、フラグをすぐに消去する前に保存し、次回起動時の判定に影響しないようにクリア手順を統一する。</p>
+            <h3 id="実装時の確認事項">実装時の確認事項</h3>
+            <ul>
+                <li><code>PRCR.PRC1</code>の書込み許可を設定したか。</li>
+                <li><code>SWRR</code>へ正確に<code>A501h</code>を16ビット書込みしているか。</li>
+                <li>書込み後に処理が継続すると仮定していないか。</li>
+                <li>リセット前に通信、DMA、タイマ、メモリ書込みを安全な状態にしたか。</li>
+                <li>リセット後の起動処理で<code>RSTSR2.SWRF</code>などの要因フラグを確認しているか。</li>
+                <li>リセット後に、初期化される周辺レジスタを再設定しているか。</li>
+                <li>RTCなど、保持される状態と初期化される制御ビットを区別しているか。</li>
+                <li>使用するRX230の型番とマニュアル版数に差異がないか。</li>
+            </ul>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://www.renesas.com/en/document/mah/rx230-group-rx231-group-users-manual-hardware">RX230 Group, RX231 Group User's Manual: Hardware</a></li>
+                <li>参照日: 2026-09-11</li>
+                <li>6.2.3～6.3.8（リセット状態レジスタ、<code>SWRR</code>、ソフトウェアリセット動作、リセット要因判定）、Rev.1.20</li>
+                <li><a href="https://www.renesas.com/en/document/mas/rx-family-users-manual-software-rev120">RX Family User's Manual: Software</a></li>
+                <li>参照日: 2026-09-11</li>
+                <li>リセット例外処理とCPUのリセット後状態の一般仕様</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-11: RX230のソフトウェアリセット手順、保護ビット、初期化対象、RTC保持、リセット要因判定を公式資料で確認して初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

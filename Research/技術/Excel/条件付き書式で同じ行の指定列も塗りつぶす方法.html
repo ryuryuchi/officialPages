@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excelの条件付き書式で同じ行の指定列も塗りつぶす方法</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">Excelの条件付き書式で同じ行の指定列も塗りつぶす方法</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>Excelの条件付き書式で、ある列の値を判定し、条件に合う行の指定した列にも同じ塗りつぶしを適用する方法を整理する。</p>
+            <h2 id="結論">結論</h2>
+            <p>塗りつぶしたい範囲全体へ、数式を使う条件付き書式を設定する。判定に使う列だけを<code>$</code>で固定し、行番号は固定しない。</p>
+            <p>たとえば、C列が「完了」の行についてA列からF列まで塗りつぶす場合は、適用先を<code>=$A$2:$F$100</code>、条件式を次のようにする。</p>
+            <pre><code class="language-excel">=$C2=&quot;完了&quot;</code></pre>
+            <p><code>$C</code>は判定列をC列に固定し、<code>2</code>は各行に合わせて変化させる指定である。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="基本手順">基本手順</h3>
+            <p>例として、C列が「完了」の行についてA列からF列まで塗りつぶす。</p>
+            <ol>
+                <li>見出しを除く対象範囲<code>A2:F100</code>を選択する。</li>
+                <li><code>ホーム</code>タブの<code>条件付き書式</code>から<code>新しいルール</code>を選択する。</li>
+                <li><code>数式を使用して、書式設定するセルを決定</code>を選択する。</li>
+                <li>次の数式を入力する。</li>
+            </ol>
+            <p>``<code>excel =$C2="完了" </code>``</p>
+            <ol>
+                <li><code>書式</code>を選択し、<code>塗りつぶし</code>タブで色を指定する。</li>
+                <li><code>OK</code>でルールを確定する。</li>
+                <li><code>条件付き書式</code>の<code>ルールの管理</code>で、適用先が次の範囲になっていることを確認する。</li>
+            </ol>
+            <p>``<code>excel =$A$2:$F$100 </code>``</p>
+            <p>この設定では、C2が「完了」ならA2:F2、C3が「完了」ならA3:F3というように、各行が個別に判定される。</p>
+            <h3 id="離れた指定列だけを塗りつぶす場合">離れた指定列だけを塗りつぶす場合</h3>
+            <p>たとえば、C列を判定し、同じ行のA列とF列だけを塗りつぶす場合も、条件式は同じである。</p>
+            <pre><code class="language-excel">=$C2=&quot;完了&quot;</code></pre>
+            <p>適用先は、<code>Ctrl</code>キーを押しながらA列とF列の対象範囲を選択するか、<code>ルールの管理</code>で複数範囲を指定する。</p>
+            <pre><code class="language-excel">=$A$2:$A$100,$F$2:$F$100</code></pre>
+            <p>Excelの環境によって複数範囲の区切り記号が異なる場合や、複数範囲を一度に設定しにくい場合は、A列用とF列用に同じ条件式のルールを1件ずつ作成する。</p>
+            <h3 id="数式の参照方法">数式の参照方法</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>書き方</th>
+                        <th>固定される部分</th>
+                        <th>この用途での意味</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>$C2</code></td>
+                        <td>C列</td>
+                        <td>各行のC列を判定する。今回の基本形</td>
+                    </tr>
+                    <tr>
+                        <td><code>$C$2</code></td>
+                        <td>C列と2行目</td>
+                        <td>すべての行でC2だけを判定する</td>
+                    </tr>
+                    <tr>
+                        <td><code>C2</code></td>
+                        <td>なし</td>
+                        <td>適用先の列に応じて判定列も横へずれる</td>
+                    </tr>
+                    <tr>
+                        <td><code>C$2</code></td>
+                        <td>2行目</td>
+                        <td>判定する行を2行目に固定し、列は横へずれる</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>同じ行の複数列を塗りつぶす場合、通常は<code>$C2</code>のように、列だけを固定する複合参照を使う。</p>
+            <h3 id="条件式の例">条件式の例</h3>
+            <h4 id="数値が基準以上">数値が基準以上</h4>
+            <p>B列が100以上の行を塗りつぶす。</p>
+            <pre><code class="language-excel">=$B2&gt;=100</code></pre>
+            <h4 id="空白以外">空白以外</h4>
+            <p>D列に何か入力されている行を塗りつぶす。</p>
+            <pre><code class="language-excel">=$D2&lt;&gt;&quot;&quot;</code></pre>
+            <h4 id="複数条件">複数条件</h4>
+            <p>B列が100以上、かつC列が「完了」の行を塗りつぶす。</p>
+            <pre><code class="language-excel">=AND($B2&gt;=100,$C2=&quot;完了&quot;)</code></pre>
+            <h3 id="注意点">注意点</h3>
+            <ul>
+                <li>数式の行番号は、適用範囲の先頭行に合わせる。適用先が<code>A5:F100</code>なら、条件式も<code>=$C5="完了"</code>から始める。</li>
+                <li>判定列の<code>$</code>を外すと、塗りつぶす列ごとに参照先が横へずれるため、意図しない結果になりやすい。</li>
+                <li>見出し行を適用範囲に含めない。含める場合は、数式の行番号も見出し行に合わせる必要がある。</li>
+                <li>既存の条件付き書式と競合する場合は、<code>ルールの管理</code>で適用先、優先順位、<code>条件を満たす場合は停止</code>の設定を確認する。</li>
+            </ul>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://support.microsoft.com/ja-JP/Excel/use-conditional-formatting-to-highlight-information-in-excel">条件付き書式を使用して Excel の情報を強調表示する - Microsoft サポート</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://support.microsoft.com/en-us/Excel/switch-between-relative-absolute-and-mixed-references">Switch between relative, absolute, and mixed references - Microsoft Support</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: Microsoft公式手順を再確認し、リダイレクトされていた参考URLを現行URLへ更新</li>
+                <li>2026-08-27: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

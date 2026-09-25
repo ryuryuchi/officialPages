@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APIの基本</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">APIの基本</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>APIとは何か、アプリ同士がどのように情報をやり取りするのかを、初めて学ぶ人向けに整理する。 特に、Webサービスでよく使われるHTTP APIの基本用語、利用の流れ、注意点を説明する。</p>
+            <h2 id="結論">結論</h2>
+            <p>API（Application Programming Interface）は、ソフトウェアが別のソフトウェアの機能やデータを利用するための「決められた窓口」である。</p>
+            <p>たとえば、飲食店では客がメニューから料理を注文し、店員が厨房へ伝え、完成した料理を客へ運ぶ。APIに置き換えると、客側のアプリが<strong>クライアント</strong>、厨房側のシステムが<strong>サーバー</strong>、注文を受け渡す仕組みが<strong>API</strong>に近い。</p>
+            <p>利用者はサーバー内部の作り方を知らなくても、APIの仕様に従ってリクエスト（要求）を送れば、レスポンス（応答）を受け取れる。ただし、利用前には必ず公式ドキュメントでURL、送信方法、認証、料金、回数制限を確認する必要がある。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="apiでできること">APIでできること</h3>
+            <p>APIを使うと、あるサービスの機能やデータを別のプログラムから利用できる。代表例は次のとおり。</p>
+            <ul>
+                <li>天気サービスから現在の天気を取得する</li>
+                <li>地図サービスに住所を渡して地図を表示する</li>
+                <li>決済サービスへ支払い処理を依頼する</li>
+                <li>GitHubからリポジトリやIssueの情報を取得する</li>
+            </ul>
+            <p>APIはWeb専用の言葉ではない。OSやプログラミング言語のライブラリにもAPIがある。ただし、インターネット経由で使うAPIは「Web API」と呼ばれることが多い。</p>
+            <h3 id="画面操作との違い">画面操作との違い</h3>
+            <p>人は通常、Webサイトのボタンや入力欄などの画面（UI）を操作する。一方、プログラムはAPIへ決められた形式で直接要求を送る。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>比較項目</th>
+                        <th>UI</th>
+                        <th>API</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>主な利用者</td>
+                        <td>人</td>
+                        <td>プログラム</td>
+                    </tr>
+                    <tr>
+                        <td>操作方法</td>
+                        <td>ボタン、画面、フォーム</td>
+                        <td>URL、HTTPメソッド、データ</td>
+                    </tr>
+                    <tr>
+                        <td>応答</td>
+                        <td>人が読む画面</td>
+                        <td>プログラムが処理しやすいデータ</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3 id="基本的な通信の流れ">基本的な通信の流れ</h3>
+            <p>Web APIでは、一般に次の順番で通信する。</p>
+            <ol>
+                <li>クライアントがAPIのURL（エンドポイント）へリクエストを送る。</li>
+                <li>サーバーが認証情報や入力内容を確認する。</li>
+                <li>サーバーが検索、登録、計算などの処理を行う。</li>
+                <li>サーバーが処理結果をレスポンスとして返す。</li>
+                <li>クライアントが結果を画面表示や次の処理に使う。</li>
+            </ol>
+            <p>「エンドポイント」は、APIの特定の機能を呼び出すURLである。たとえば、GitHub REST APIで特定の公開リポジトリを取得するエンドポイントは、次のような形になる。</p>
+            <pre><code class="language-text">https://api.github.com/repos/OWNER/REPOSITORY</code></pre>
+            <h3 id="リクエストを構成する主な要素">リクエストを構成する主な要素</h3>
+            <ul>
+                <li><strong>URL（エンドポイント）</strong>: どの機能やデータを使うかを示す</li>
+                <li><strong>HTTPメソッド</strong>: 何をしたいかを示す</li>
+                <li><strong>ヘッダー</strong>: データ形式や認証情報などの付加情報を渡す</li>
+                <li><strong>パラメーター</strong>: 検索条件や対象IDなどを渡す</li>
+                <li><strong>ボディ</strong>: 登録・更新したいデータなどを渡す</li>
+            </ul>
+            <p>よく使うHTTPメソッドは次のとおり。ただし、実際の動作はAPIの仕様で決まるため、名前だけで判断せずドキュメントを確認する。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>HTTPメソッド</th>
+                        <th>一般的な用途</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>GET</code></td>
+                        <td>データを取得する</td>
+                    </tr>
+                    <tr>
+                        <td><code>POST</code></td>
+                        <td>新しいデータを作成する、処理を依頼する</td>
+                    </tr>
+                    <tr>
+                        <td><code>PUT</code> / <code>PATCH</code></td>
+                        <td>既存データを更新する</td>
+                    </tr>
+                    <tr>
+                        <td><code>DELETE</code></td>
+                        <td>データを削除する</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3 id="レスポンスを構成する主な要素">レスポンスを構成する主な要素</h3>
+            <p>サーバーからのレスポンスには、主に次の情報が含まれる。</p>
+            <ul>
+                <li><strong>ステータスコード</strong>: 成功または失敗の種類を示す3桁の番号</li>
+                <li><strong>ヘッダー</strong>: データ形式やキャッシュなどの付加情報</li>
+                <li><strong>ボディ</strong>: 取得したデータやエラーの詳細</li>
+            </ul>
+            <p>代表的なHTTPステータスコードは次のとおり。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>コード</th>
+                        <th>主な意味</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>200 OK</code></td>
+                        <td>リクエストが成功した</td>
+                    </tr>
+                    <tr>
+                        <td><code>201 Created</code></td>
+                        <td>新しいデータの作成に成功した</td>
+                    </tr>
+                    <tr>
+                        <td><code>400 Bad Request</code></td>
+                        <td>入力やリクエストの形式に問題がある</td>
+                    </tr>
+                    <tr>
+                        <td><code>401 Unauthorized</code></td>
+                        <td>有効な認証情報がない、または認証に失敗した</td>
+                    </tr>
+                    <tr>
+                        <td><code>403 Forbidden</code></td>
+                        <td>認証済みでも操作する権限がない</td>
+                    </tr>
+                    <tr>
+                        <td><code>404 Not Found</code></td>
+                        <td>対象のURLやデータが見つからない</td>
+                    </tr>
+                    <tr>
+                        <td><code>429 Too Many Requests</code></td>
+                        <td>利用回数の上限を超えた</td>
+                    </tr>
+                    <tr>
+                        <td><code>500 Internal Server Error</code></td>
+                        <td>サーバー内部で問題が発生した</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3 id="jsonとは">JSONとは</h3>
+            <p>Web APIのデータ形式にはJSONがよく使われる。JSONは、名前と値の組み合わせをテキストで表せる形式である。</p>
+            <pre><code class="language-json">{
+  &quot;name&quot;: &quot;sample&quot;,
+  &quot;public&quot;: true,
+  &quot;stars&quot;: 10
+}</code></pre>
+            <p>この例では、<code>name</code>、<code>public</code>、<code>stars</code>が項目名であり、それぞれに文字列、真偽値、数値が入っている。APIによって項目名や入れ子構造が異なるため、レスポンス例や仕様書を確認してプログラムから必要な値を取り出す。</p>
+            <h3 id="rest-apiとは">REST APIとは</h3>
+            <p>REST APIはWeb APIの代表的な設計方式の一つで、HTTPの仕組みを利用してリソース（ユーザー、商品、投稿など）を操作する。一般にURLで対象を表し、HTTPメソッドで取得・作成・更新・削除などの操作を表す。</p>
+            <p>すべてのWeb APIがREST APIというわけではない。SOAP、RPC、GraphQL、WebSocketなど、目的や通信方法が異なる方式もある。初心者はまずHTTP、JSON、リクエスト、レスポンスを理解すると、REST APIを学びやすい。</p>
+            <p>APIの仕様を機械可読に共有する標準としてOpenAPIがある。2026年8月31日時点の最新仕様は3.2.0で、HTTP APIの操作、入力、応答などをJSONまたはYAMLで記述できる。OpenAPIはAPIそのものの通信方式ではなく、API記述の仕様である。</p>
+            <h3 id="認証とapiキー">認証とAPIキー</h3>
+            <p>APIには誰でも利用できるものと、認証が必要なものがある。よく使われる認証情報にはAPIキーやアクセストークンがある。</p>
+            <p>APIキーやトークンはパスワードと同様に扱い、次の点を守る。</p>
+            <ul>
+                <li>ソースコードへ直接書き込まない</li>
+                <li>GitHubなどの公開リポジトリへ登録しない</li>
+                <li>チャット、画像、ログへ不用意に載せない</li>
+                <li>環境変数やサービスのシークレット管理機能を使う</li>
+                <li>漏えいした可能性があれば、無効化して再発行する</li>
+                <li>必要最小限の権限と有効期限を設定する</li>
+            </ul>
+            <p>ブラウザーで動くJavaScriptへ秘密のAPIキーを埋め込むと、利用者からキーを確認できてしまう。秘密情報が必要なAPIは、原則として自分のサーバーを経由して呼び出す。</p>
+            <h3 id="初心者向けの試し方">初心者向けの試し方</h3>
+            <p>公開情報を取得する<code>GET</code> APIは、比較的安全に試しやすい。PowerShellでは、次の例でGitHubの公開リポジトリ情報を取得できる。</p>
+            <pre><code class="language-powershell">Invoke-RestMethod `
+  -Uri &quot;https://api.github.com/repos/microsoft/vscode&quot; `
+  -Headers @{
+    &quot;Accept&quot; = &quot;application/vnd.github+json&quot;
+    &quot;X-GitHub-Api-Version&quot; = &quot;2026-03-10&quot;
+    &quot;User-Agent&quot; = &quot;api-learning-sample&quot;
+  }</code></pre>
+            <p>結果にはリポジトリ名、説明、スター数などが含まれる。この例は公開情報の取得なので認証なしでも試せるが、認証しないリクエストにも回数制限がある。GitHub REST APIは日付ベースでバージョン管理され、現在は<code>2026-03-10</code>と<code>2022-11-28</code>がサポート対象である。ヘッダーを省略すると既定版になるため、再現性が必要な統合では対応版を明示する。</p>
+            <p>学習時は次の順番で確認するとよい。</p>
+            <ol>
+                <li>公式ドキュメントで対象のエンドポイントを探す。</li>
+                <li>必要なHTTPメソッド、パラメーター、認証を確認する。</li>
+                <li>ブラウザー、PowerShell、<code>curl</code>、Postmanなどでリクエストを試す。</li>
+                <li>ステータスコードとレスポンスのJSONを確認する。</li>
+                <li>動作を確認してから、自分のプログラムへ組み込む。</li>
+            </ol>
+            <p>データの作成・更新・削除を行うAPIは実データを変更する。練習環境やテスト用アカウントが提供されている場合は、そちらを使う。</p>
+            <h3 id="apiを使う前の確認項目">APIを使う前の確認項目</h3>
+            <ul>
+                <li>公式ドキュメントと利用規約</li>
+                <li>エンドポイントとHTTPメソッド</li>
+                <li>必須・任意のパラメーター</li>
+                <li>認証方法と必要な権限</li>
+                <li>無料・有料の範囲</li>
+                <li>単位時間あたりの利用回数制限（レート制限）</li>
+                <li>エラー時のステータスコードとレスポンス</li>
+                <li>APIのバージョンと廃止予定</li>
+                <li>取得したデータの保存・再配布が許可されるか</li>
+            </ul>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://aws.amazon.com/what-is/api/">What is an API? - Amazon Web Services</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://developer.mozilla.org/ja/docs/Learn<em>web</em>development/Extensions/Client-side_APIs/Introduction">Web API の紹介 - MDN Web Docs</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://developer.mozilla.org/ja/docs/Web/HTTP/Guides/Overview">HTTP の概要 - MDN Web Docs</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.github.com/ja/rest/using-the-rest-api/getting-started-with-the-rest-api">REST API を使用した作業の開始 - GitHub Docs</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.github.com/ja/rest/about-the-rest-api/api-versions">GitHub Docs: API のバージョン</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://spec.openapis.org/oas/latest.html">OpenAPI Specification 3.2.0</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: 全参考URLを再確認し、GitHub REST API 2026-03-10、必須ヘッダー、OpenAPI 3.2.0を反映</li>
+                <li>2026-08-26: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

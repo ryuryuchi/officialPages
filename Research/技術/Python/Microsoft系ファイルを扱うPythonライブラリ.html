@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microsoft系ファイルを扱うPythonライブラリ</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">Microsoft系ファイルを扱うPythonライブラリ</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>Microsoft Officeで使われるファイル拡張子を、Pythonから読み取り・編集・変換する ための代表的なライブラリを調べた。Word、Excel、PowerPointの現行形式だけでなく、 旧形式、Outlook、Visio、Access、Microsoft 365上のファイルも対象にした。</p>
+            <h2 id="結論">結論</h2>
+            <p>Microsoft系の拡張子を扱うPythonライブラリは複数ある。ただし、拡張子を一括して 高水準に扱う単一の標準ライブラリはなく、形式と目的に応じて選ぶ。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>対象</th>
+                        <th>第一候補</th>
+                        <th>主な用途と制約</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>.docx</code></td>
+                        <td><code>python-docx</code></td>
+                        <td>Word文書の文章、段落、表、画像などの読み書き。Wordアプリ不要</td>
+                    </tr>
+                    <tr>
+                        <td><code>.xlsx</code>、<code>.xlsm</code></td>
+                        <td><code>openpyxl</code></td>
+                        <td>セル、数式、書式、シートの読み書き。旧式<code>.xls</code>は対象外</td>
+                    </tr>
+                    <tr>
+                        <td><code>.pptx</code></td>
+                        <td><code>python-pptx</code></td>
+                        <td>スライド、テキスト、画像、表、図形、グラフの読み書き</td>
+                    </tr>
+                    <tr>
+                        <td><code>.xls</code></td>
+                        <td><code>xlrd</code></td>
+                        <td>古いExcel形式の読み取り。書き込みやマクロ、図形などは扱わない</td>
+                    </tr>
+                    <tr>
+                        <td><code>.xlsb</code></td>
+                        <td><code>pyxlsb</code></td>
+                        <td>バイナリExcelの基本的な読み取り。機能は限定的</td>
+                    </tr>
+                    <tr>
+                        <td>複数のExcel形式</td>
+                        <td><code>python-calamine</code></td>
+                        <td><code>.xls</code>、<code>.xlsx</code>、<code>.xlsm</code>、<code>.xlsb</code>などの読み取りを一つのAPIに寄せる候補</td>
+                    </tr>
+                    <tr>
+                        <td>Outlook <code>.msg</code></td>
+                        <td><code>extract-msg</code></td>
+                        <td>メール本文、宛先、日時、添付ファイルの抽出</td>
+                    </tr>
+                    <tr>
+                        <td>Visio <code>.vsdx</code></td>
+                        <td><code>vsdx</code></td>
+                        <td>ページ、図形、テキストの読み取り・一部編集</td>
+                    </tr>
+                    <tr>
+                        <td>Access <code>.mdb</code>、<code>.accdb</code></td>
+                        <td><code>pyodbc</code></td>
+                        <td>Access ODBCドライバー経由のデータベース接続。別途ドライバーが必要</td>
+                    </tr>
+                    <tr>
+                        <td>Officeファイルの暗号化解除</td>
+                        <td><code>msoffcrypto-tool</code></td>
+                        <td>パスワードで保護されたOfficeファイルを復号し、別ライブラリへ渡す</td>
+                    </tr>
+                    <tr>
+                        <td>Windows版Officeの完全自動化</td>
+                        <td><code>pywin32</code></td>
+                        <td>COM経由でWord、Excel、PowerPointなどを操作。WindowsとOfficeが必要</td>
+                    </tr>
+                    <tr>
+                        <td>OneDrive、SharePoint上のファイル</td>
+                        <td><code>msgraph-sdk</code>など</td>
+                        <td>Microsoft Graph経由の取得・保存・共有。ローカル形式の解析器ではない</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>したがって、<strong>ローカルの<code>.docx</code>、<code>.xlsx</code>、<code>.pptx</code>を処理するなら、まず <code>python-docx</code>、<code>openpyxl</code>、<code>python-pptx</code>を検討する</strong>のが分かりやすい。Excelの データ抽出だけなら、複数形式を読める<code>python-calamine</code>や、<code>pandas.read_excel()</code> と各形式用のエンジンを組み合わせる方法もある。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="ファイル形式による違い">ファイル形式による違い</h3>
+            <p><code>.docx</code>、<code>.xlsx</code>、<code>.pptx</code>はOffice Open XML（OOXML）系で、ZIP内のXMLなどを扱う 形式である。一方、<code>.doc</code>、<code>.xls</code>、<code>.ppt</code>、古い<code>.vsd</code>や<code>.mpp</code>、Outlookの <code>.msg</code>などにはOLE2/Compound File Binary Formatが使われるものがある。形式の内部 構造が異なるため、<code>openpyxl</code>を使って<code>.xls</code>を開く、といった使い方はできない。</p>
+            <p><code>olefile</code>はOLE2コンテナーの解析に使える低レベルライブラリだが、WordやExcelの 文書を高水準のオブジェクトとして編集するライブラリではない。旧形式を扱う場合は、 専用ライブラリ、OLE2解析、またはOffice COM自動化のどれが必要かを先に決める。</p>
+            <h3 id="代表的な使い分け">代表的な使い分け</h3>
+            <h4 id="word">Word</h4>
+            <p><code>python-docx</code>は<code>.docx</code>の作成・更新を対象にしている。段落、スタイル、表、画像、 ヘッダー・フッターなどをPythonオブジェクトとして操作できる。Wordのレイアウトを 完全に再現する変換器ではなく、複雑な図形、フィールド、マクロなどは別途確認する。</p>
+            <p><code>.docx</code>をHTMLへ変換して見出しやスタイルを意味構造へ寄せたい場合は<code>mammoth</code>も 候補になる。ただし、入力文書をサニタイズしないため、信頼できないファイルを扱う 場合は出力HTMLを検査する。</p>
+            <h4 id="excel">Excel</h4>
+            <p><code>openpyxl</code>は<code>.xlsx</code>、<code>.xlsm</code>、<code>.xltx</code>、<code>.xltm</code>の読み書きに向く。セルの値や数式、 書式、シート、画像などを扱えるが、Excelアプリケーションそのものの計算結果を 再計算するものではない。マクロを保持する場合は、読み込み時の設定と保存後の 動作確認が必要である。</p>
+            <p>旧式<code>.xls</code>の読み取りは<code>xlrd</code>、<code>.xlsb</code>の読み取りは<code>pyxlsb</code>が代表例である。 <code>pandas.read_excel()</code>は、<code>openpyxl</code>、<code>xlrd</code>、<code>pyxlsb</code>、<code>calamine</code>などを形式に 応じて使い分けられる。データ分析が目的で、書式や図形を保持しないなら、この 組み合わせが扱いやすい。</p>
+            <p><code>python-calamine</code>はRustの<code>calamine</code>をPythonから利用するバインディングで、 Excelの複数形式を読み取る用途の候補である。ネイティブのExcelファイルを編集して 保存する用途では、<code>openpyxl</code>など対象形式専用のライブラリを優先する。</p>
+            <h4 id="powerpoint">PowerPoint</h4>
+            <p><code>python-pptx</code>は<code>.pptx</code>の読み書きに対応し、スライド、テキスト、画像、表、図形、 グラフなどを操作できる。PowerPoint 2007以降のOpen XML形式が対象で、すべての PowerPoint機能がPython APIに公開されているわけではない。高度なアニメーションや 未対応要素を完全に編集する場合は、<code>pywin32</code>によるPowerPoint COM操作も比較する。</p>
+            <h4 id="outlook-access-visio">Outlook、Access、Visio</h4>
+            <ul>
+                <li><code>.msg</code>からメールと添付ファイルを取り出すなら<code>extract-msg</code>が用途に合う。</li>
+                <li><code>.pst</code>はメールボックス全体のコンテナーであり、単純な<code>.msg</code>抽出とは別問題である。</li>
+            </ul>
+            <p><code>libpff</code>/<code>pypff</code>などの環境依存の選択肢、またはOutlook COMを検討し、対象OSと 配布方法を確認する。</p>
+            <ul>
+                <li><code>.mdb</code>、<code>.accdb</code>は<code>pyodbc</code>だけで完結せず、対応するMicrosoft Access Database</li>
+            </ul>
+            <p>EngineなどのODBCドライバーをインストールして接続する。</p>
+            <ul>
+                <li><code>.vsdx</code>はOOXML系のVisio形式で、<code>vsdx</code>パッケージに図形・テキストの読み書き</li>
+            </ul>
+            <p>機能がある。古いバイナリ<code>.vsd</code>は同じAPIで扱えるとは限らない。</p>
+            <ul>
+                <li><code>.mpp</code>は専用形式であり、汎用のOfficeライブラリだけで高忠実度に扱えるとは</li>
+            </ul>
+            <p>考えない。対象のProject環境、変換サービス、商用SDKなどを個別に比較する。</p>
+            <h4 id="officeアプリを実際に操作する場合">Officeアプリを実際に操作する場合</h4>
+            <p>書式、印刷設定、更新リンク、マクロ、PowerPointの高度な機能などをOffice自身に 処理させたい場合は、Windows版Officeを<code>pywin32</code>のCOMから操作する方法がある。 この方式はファイル形式の直接解析ではなく、Officeアプリを起動して操作する方式で ある。そのため、Officeのインストール、ユーザーセッション、ダイアログ、プロセス 終了、同時実行、サーバー上での運用制約を考慮する。LinuxコンテナーやOffice未導入 環境には向かない。</p>
+            <h3 id="最小の導入例">最小の導入例</h3>
+            <p>OOXML形式を直接処理する基本パッケージは次のように導入できる。</p>
+            <pre><code class="language-powershell">python -m pip install python-docx openpyxl python-pptx</code></pre>
+            <p>Excelの値だけを読み取る例:</p>
+            <pre><code class="language-python">from pathlib import Path
+
+import openpyxl
+
+
+source = Path(&quot;sample.xlsx&quot;)
+workbook = openpyxl.load_workbook(source, read_only=True, data_only=True)
+worksheet = workbook.active
+
+for row in worksheet.iter_rows(values_only=True):
+    print(row)
+
+workbook.close()</code></pre>
+            <p>実際のアプリでは、入力拡張子を許可リストで検査し、上書き前に一時ファイルや バックアップを使う。信頼できないOOXMLを読む場合は、<code>openpyxl</code>の公式注意事項に 従い、XML処理の防御策として<code>defusedxml</code>の利用を検討する。</p>
+            <h3 id="選定の目安">選定の目安</h3>
+            <ol>
+                <li><strong>値・文章の抽出だけ</strong>: <code>pandas</code>、<code>python-calamine</code>、<code>xlrd</code>、<code>pyxlsb</code>、</li>
+            </ol>
+            <p><code>python-docx</code>、<code>extract-msg</code>など、読み取り中心のライブラリ。</p>
+            <ol>
+                <li><strong>Office形式を編集して保存</strong>: 形式専用の<code>openpyxl</code>、<code>python-docx</code>、</li>
+            </ol>
+            <p><code>python-pptx</code>、<code>vsdx</code>。</p>
+            <ol>
+                <li><strong>見た目やOffice固有機能を維持</strong>: Windows上の<code>pywin32</code>または商用SDK。</li>
+                <li><strong>Microsoft 365のクラウドファイルを取得・更新</strong>: <code>msgraph-sdk</code>または</li>
+            </ol>
+            <p>SharePoint対応クライアント。認証、権限、テナント設定が別途必要。</p>
+            <p>ライブラリの対応範囲はバージョンで変わるため、採用時は対象ファイルの実サンプル （マクロ、結合セル、図形、暗号化、埋め込みオブジェクトを含む）で、読み取りだけ でなく保存後のOfficeでの再現性も確認する。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://python-docx.readthedocs.io/en/latest/">python-docx documentation</a></li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://openpyxl.readthedocs.io/en/stable/">openpyxl documentation</a></li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://python-pptx.readthedocs.io/en/latest/">python-pptx documentation</a></li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://pandas.pydata.org/docs/reference/api/pandas.read<em>excel.html">pandas.read</em>excel documentation</a></li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://pypi.org/project/xlrd/">xlrd - PyPI</a></li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://pypi.org/project/pyxlsb/">pyxlsb - PyPI</a></li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://pypi.org/project/python-calamine/">python-calamine - PyPI</a></li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://github.com/TeamMsgExtractor/msg-extractor">extract-msg - GitHub</a></li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://pypi.org/project/olefile/">olefile - PyPI</a></li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://pypi.org/project/vsdx/">vsdx - PyPI</a></li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://pypi.org/project/msoffcrypto-tool/">msoffcrypto-tool - PyPI</a></li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://pypi.org/project/pywin32/">pywin32 - PyPI</a></li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://github.com/microsoftgraph/msgraph-sdk-python">Microsoft Graph SDK for Python</a></li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://learn.microsoft.com/en-us/graph/api/resources/driveitem?view=graph-rest-1.0">driveItem resource type - Microsoft Graph</a></li>
+                <li>参照日: 2026-09-15</li>
+                <li><a href="https://pypi.org/project/mammoth/">Mammoth documentation</a></li>
+                <li>参照日: 2026-09-15</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-15: 初版を作成。Office文書、旧形式、Outlook、Access、Visio、</li>
+            </ul>
+            <p>Microsoft 365を扱うPythonライブラリを比較。</p>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

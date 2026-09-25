@@ -24,12 +24,16 @@ LIST_PATTERN = re.compile(
 def page_label(page: Path, category: Path) -> str:
     """Use the page folder name as the link label."""
 
+    if page == category:
+        return category.name
     return page.relative_to(category).parts[-1]
 
 
 def collect_pages(category: Path) -> list[Path]:
-    """Find nested pages, excluding the category's own index.html."""
+    """Find a category landing page or nested pages."""
 
+    if (category / "index.html").is_file() or (category / "README.html").is_file():
+        return [category]
     return sorted(
         (
             candidate.parent
@@ -43,7 +47,10 @@ def collect_pages(category: Path) -> list[Path]:
 def links_html(pages: list[Path], root: Path, category: Path) -> str:
     items: list[str] = []
     for page in pages:
-        target = page.joinpath("index.html").relative_to(root).as_posix()
+        page_file = page / "index.html"
+        if page == category and not page_file.is_file():
+            page_file = page / "README.html"
+        target = page_file.relative_to(root).as_posix()
         label = page_label(page, category)
         items.append(
             f'                <li><a href="{html.escape(target, quote=True)}" '

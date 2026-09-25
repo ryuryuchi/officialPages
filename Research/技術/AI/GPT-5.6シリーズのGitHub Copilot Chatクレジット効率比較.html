@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPT-5.6シリーズのGitHub Copilot Chatクレジット効率比較</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">GPT-5.6シリーズのGitHub Copilot Chatクレジット効率比較</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>GitHub Copilot Chatで利用できるGPT-5.6 Luna、Terra、Solについて、Usage Based BillingにおけるAIクレジットの消費効率を公式のトークン単価から比較した。参照日は2026-09-09。</p>
+            <h2 id="結論">結論</h2>
+            <ul>
+                <li>同じ入力・出力・キャッシュ条件なら、クレジット効率は <strong>Luna &gt; Terra &gt; Sol</strong> の順である。LunaはGPT-5.6シリーズ内で最も低価格、Terraは中間、Solは最も高価格である。</li>
+                <li>単純な質問、短い修正、反復的な作業はLunaが最も長く使える。通常の対話的・エージェント型コーディングはTerra、複雑な推論、大規模コードベース、長時間のエージェント作業はSolが公式の想定用途である。</li>
+                <li>「1回のチャット＝一定クレジット」ではない。入力、出力、キャッシュ入力、キャッシュ書き込みのトークン数で決まり、長い会話やエージェントの複数回呼び出しは消費量が増える。</li>
+                <li>モデル倍率は実在するが、現在のGPT-5.6利用に掛かる倍率ではない。2026-06-01に移行したUsage Based Billingでは倍率を使わず、トークン単価からAIクレジットを計算する。</li>
+                <li>倍率が残るのは、既存の年額Copilot Pro／Pro+でレガシーのプレミアムリクエスト課金を継続している場合だけである。そのレガシー契約者は新モデルを利用できないため、GPT-5.6 Luna／Terra／Solの倍率は公式表に存在しない。</li>
+                <li>有料プランでAutoを使う場合はモデルコストに10%割引が適用される。一方、特定モデルを手動選択した場合の比較は、公開単価そのもので行う。</li>
+                <li>AIクレジットの効率だけで品質を順位付けすることはできない。安価なLunaで目的を達成できる作業はLuna、失敗による再試行コストが大きい作業はTerraまたはSolを選ぶのが実用的である。</li>
+            </ul>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="料金表">料金表</h3>
+            <p>GitHub公式の価格表は1,000,000トークン単位で、1 AIクレジットは0.01米ドルである。以下は2026-09-09時点のGPT-5.6の単価（米ドル／100万トークン）。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>モデル</th>
+                        <th>区分</th>
+                        <th>入力</th>
+                        <th>キャッシュ入力</th>
+                        <th>キャッシュ書き込み</th>
+                        <th>出力</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>GPT-5.6 Luna</td>
+                        <td>通常（入力200K以下）</td>
+                        <td>0.20</td>
+                        <td>0.02</td>
+                        <td>0.25</td>
+                        <td>1.20</td>
+                    </tr>
+                    <tr>
+                        <td>GPT-5.6 Terra</td>
+                        <td>通常（入力272K以下）</td>
+                        <td>2.00</td>
+                        <td>0.20</td>
+                        <td>2.50</td>
+                        <td>12.00</td>
+                    </tr>
+                    <tr>
+                        <td>GPT-5.6 Sol</td>
+                        <td>通常（入力272K以下）</td>
+                        <td>4.00</td>
+                        <td>0.40</td>
+                        <td>5.00</td>
+                        <td>20.00</td>
+                    </tr>
+                    <tr>
+                        <td>GPT-5.6 Luna</td>
+                        <td>長文（入力200K超）</td>
+                        <td>0.40</td>
+                        <td>0.04</td>
+                        <td>0.50</td>
+                        <td>1.80</td>
+                    </tr>
+                    <tr>
+                        <td>GPT-5.6 Terra</td>
+                        <td>長文（入力272K超）</td>
+                        <td>4.00</td>
+                        <td>0.40</td>
+                        <td>5.00</td>
+                        <td>18.00</td>
+                    </tr>
+                    <tr>
+                        <td>GPT-5.6 Sol</td>
+                        <td>長文（入力272K超）</td>
+                        <td>8.00</td>
+                        <td>0.80</td>
+                        <td>10.00</td>
+                        <td>30.00</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3 id="同じトークン量での相対効率">同じトークン量での相対効率</h3>
+            <p>通常料金の単価を比較すると、Lunaを1とした場合、Terraは入力・キャッシュ入力・キャッシュ書き込みで10倍、出力で10倍、Solはそれぞれ20倍、20倍である。したがって、同じトークン構成の処理だけを比べると、TerraはLunaの10分の1、Solは20分の1のクレジット効率になる。</p>
+            <p>1 AIクレジット（0.01米ドル）で処理できるトークン数の目安は次のとおりである。実際の1回の対話は複数種類のトークンを含むため、単一列だけを合算せず、各トークン種別の単価で計算する。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>モデル（通常料金）</th>
+                        <th>入力</th>
+                        <th>キャッシュ入力</th>
+                        <th>キャッシュ書き込み</th>
+                        <th>出力</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Luna</td>
+                        <td>50,000トークン</td>
+                        <td>500,000トークン</td>
+                        <td>40,000トークン</td>
+                        <td>約8,333トークン</td>
+                    </tr>
+                    <tr>
+                        <td>Terra</td>
+                        <td>5,000トークン</td>
+                        <td>50,000トークン</td>
+                        <td>4,000トークン</td>
+                        <td>約833トークン</td>
+                    </tr>
+                    <tr>
+                        <td>Sol</td>
+                        <td>2,500トークン</td>
+                        <td>25,000トークン</td>
+                        <td>2,000トークン</td>
+                        <td>500トークン</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>長文料金では、Lunaの入力効率が25,000トークン／クレジット、Terraが2,500、Solが1,250となる。長文コンテキストでは通常料金より効率が落ちるため、大きなリポジトリを毎回そのまま渡す使い方は、モデル選択だけでなく会話の分割や不要な文脈の削減も重要になる。</p>
+            <h3 id="モデル倍率-が掛かるケース">「モデル倍率」が掛かるケース</h3>
+            <p>GitHubには、以前のプレミアムリクエスト課金でモデルごとの倍率を掛けて月間リクエスト枠を減らす仕組みがある。ただし、GitHubは2026-06-01にUsage Based Billingへ移行し、倍率は新方式には適用されないと明記している。</p>
+            <p>倍率が適用される例外は、既存の年額Copilot Pro／Pro+契約者が契約満了までレガシーのプレミアムリクエスト方式を継続している場合である。公式の現行レガシー表では、GPT-5 miniは0.33倍、GPT-5.3-Codexは6倍、GPT-5.4とGPT-5.4 miniは6倍、GPT-5.5は57倍などとされている。Autoを使う場合はレガシー方式でも10%割引され、1倍のモデルなら0.9倍として計算される。</p>
+            <p>一方、同じ公式資料はレガシー年額プランの利用者には新モデルへのアクセスがないと説明している。したがって、GPT-5.6 Luna／Terra／Solを選べる通常の利用者は、倍率ではなく入力・出力・キャッシュトークンの単価で計算する。倍率をGPT-5.6の単価へさらに掛ける計算は、二重計上になる。</p>
+            <h3 id="用途別の選び方">用途別の選び方</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>作業</th>
+                        <th>推奨</th>
+                        <th>理由</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>短い質問、単純なコード修正、定型的な説明</td>
+                        <td>Luna</td>
+                        <td>最低単価で、短時間・小規模タスク向け</td>
+                    </tr>
+                    <tr>
+                        <td>通常の実装、対話的なデバッグ、一般的なエージェント作業</td>
+                        <td>Terra</td>
+                        <td>公式にバランス型の既定候補として位置付けられている</td>
+                    </tr>
+                    <tr>
+                        <td>大規模コードベースの設計検討、難しいデバッグ、長時間のエージェント作業</td>
+                        <td>Sol</td>
+                        <td>推論性能の上限を重視する用途向け。ただし単価は最も高い</td>
+                    </tr>
+                    <tr>
+                        <td>作業内容に応じて自動選択したい</td>
+                        <td>Auto</td>
+                        <td>有料プランではモデルコストに10%割引がある。ただし選択モデルと価格を固定した比較には向かない</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3 id="利用可能なプランと課金範囲">利用可能なプランと課金範囲</h3>
+            <p>GitHubの案内では、SolはCopilot Pro+、Max、Business、Enterpriseで利用でき、TerraとLunaはPro、Pro+、Max、Business、Enterpriseで利用できる。展開は段階的で、BusinessとEnterpriseでは管理者によるモデルポリシーの有効化が必要な場合がある。</p>
+            <p>Copilot Chat、Copilot CLI、cloud agentなどの機能はAIクレジットを消費する。一方、コード補完とNext Edit suggestionsはAIクレジットの対象外である。したがって、補完中心の利用ではモデル単価の比較結果がそのまま月間消費量を表すわけではない。</p>
+            <h3 id="効率比較の限界">効率比較の限界</h3>
+            <p>ここでの「効率」は、同一トークン量を処理したときの金銭・AIクレジット上の効率であり、正答率や作業完了率を含むベンチマークではない。Solで一度で完了する作業をLunaで何度もやり直す場合、実際の総消費は逆転し得る。GitHub公式も、モデルの選択はタスクの複雑さ、品質、レイテンシー、コストのバランスで決めるよう案内している。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing">Models and pricing for GitHub Copilot</a></li>
+                <li>参照日: 2026-09-09</li>
+                <li><a href="https://docs.github.com/en/copilot/reference/ai-models/model-comparison">AI model comparison</a></li>
+                <li>参照日: 2026-09-09</li>
+                <li><a href="https://docs.github.com/en/copilot/reference/ai-models/supported-models">Supported AI models in GitHub Copilot</a></li>
+                <li>参照日: 2026-09-09</li>
+                <li><a href="https://github.blog/changelog/2026-07-09-openais-gpt-5-6-sol-terra-and-luna-are-now-available-in-github-copilot/">OpenAI’s GPT-5.6 Sol, Terra, and Luna are now available in GitHub Copilot</a></li>
+                <li>参照日: 2026-09-09</li>
+                <li><a href="https://docs.github.com/en/copilot/concepts/billing/usage-based-billing-for-individuals">Usage-based billing for individuals</a></li>
+                <li>参照日: 2026-09-09</li>
+                <li><a href="https://docs.github.com/en/copilot/reference/copilot-billing/request-based-billing-legacy/model-multipliers-for-annual-plans">Model multipliers for annual plans on request-based billing (legacy)</a></li>
+                <li>参照日: 2026-09-09</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-09: GitHub公式のGPT-5.6単価、AIクレジット換算、用途別推奨、プラン別提供範囲を調査して初版を作成</li>
+                <li>2026-09-09: レガシー年額プランのモデル倍率とGPT-5.6への非適用、Usage Based Billingとの違いを追記</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

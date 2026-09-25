@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copilot Chatで最初に試すコマンド</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">Copilot Chatで最初に試すコマンド</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>Visual Studio Code（VS Code）のGitHub Copilot Chatで使えるスラッシュコマンドから、 初めて触るときに効果を理解しやすいものを選び、用途と入力例を整理する。</p>
+            <h2 id="結論">結論</h2>
+            <p>最初は次の5つがおすすめである。上から順に試すと、理解、修正、テスト作成、 会話の整理という基本的な流れを体験しやすい。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>おすすめ順</th>
+                        <th>コマンド</th>
+                        <th>用途</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td><code>/explain</code></td>
+                        <td>コード、ファイル、プログラミング概念を説明してもらう</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td><code>/fix</code></td>
+                        <td>コードやコンパイラー・lintエラーの修正を依頼する</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td><code>/tests</code></td>
+                        <td>対象のメソッドや関数のテストを生成する</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td><code>/compact</code></td>
+                        <td>長い会話を要約してコンテキストを圧縮する</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td><code>/clear</code></td>
+                        <td>Chat viewで新しいチャットセッションを開始する</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>これは初心者向けの選定であり、公式の推奨順位ではない。実際に使えるコマンドは 環境やチャットのコンテキストによって異なるため、チャット入力欄に <code>/</code> と入力して 表示される一覧を正とする。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="基本的な使い方">基本的な使い方</h3>
+            <ol>
+                <li>VS Codeでチャットビューを開く。</li>
+                <li>入力欄に <code>/</code> を入力し、候補からコマンドを選ぶ。</li>
+                <li>必要に応じてコードを選択するか、対象を文章で補足して送信する。</li>
+                <li>コード変更が提案された場合は、差分を確認してから採用する。</li>
+            </ol>
+            <h3 id="1-explain">1. <code>/explain</code></h3>
+            <p>アクティブなエディターのコードがどのように機能するか説明してもらう。知らない コードを読むときや、処理の流れを確認するときに使いやすい。</p>
+            <pre><code class="language-text">/explain この関数を初心者向けに説明して</code></pre>
+            <p>質問を「何を入力として受け取り、何を返すか」のように具体化すると、確認したい点に 絞った回答を得やすい。</p>
+            <h3 id="2-fix">2. <code>/fix</code></h3>
+            <p>選択したコードの問題に対する修正を提案してもらう。エラーが出ている箇所や、 期待どおり動かない範囲を選択して使う。</p>
+            <pre><code class="language-text">/fix このエラーの原因も説明して</code></pre>
+            <p>提案は必ず正しいとは限らない。変更差分を読み、既存のテストがある場合は実行して 確認する。</p>
+            <h3 id="3-tests">3. <code>/tests</code></h3>
+            <p>選択したコードに対する単体テストを生成してもらう。正常系だけでなく、空文字、 境界値、エラーなども含めるよう補足すると用途が分かりやすい。</p>
+            <pre><code class="language-text">/tests 正常系と境界値のテストを作成して</code></pre>
+            <p>生成されたテストがプロジェクト既存のテストフレームワークや書き方に合っているかを 確認する必要がある。</p>
+            <h3 id="4-compact">4. <code>/compact</code></h3>
+            <p>長くなった会話の過去部分を要約し、コンテキストウィンドウの空きを増やす。 新しいセッションにはせず、現在の会話の重要事項を残したまま継続したいときに使う。 残す内容を後ろへ指定できる。</p>
+            <pre><code class="language-text">/compact API設計の決定事項を残して</code></pre>
+            <h3 id="5-clear">5. <code>/clear</code></h3>
+            <p>新しいチャットセッションを開始する。前の話題の影響を避けて、別の質問を始めたい ときに使う。</p>
+            <pre><code class="language-text">/clear</code></pre>
+            <h3 id="次に試す候補">次に試す候補</h3>
+            <ul>
+                <li><code>/fixTestFailure</code>: 失敗したテストを見つけて修正する。テスト実行まで扱うように</li>
+            </ul>
+            <p>なってから試す候補。環境によってはコマンドではなくTestingのスマートアクション として表示される。</p>
+            <ul>
+                <li><code>/new</code>: 新しいプロジェクトを作成する。ファイル変更を伴うため、最初の練習では</li>
+            </ul>
+            <p>作業用フォルダーを用意してから使う。</p>
+            <ul>
+                <li><code>/rubber-duck</code>: Copilot Agent Hostセッションで別モデルに計画や実装を</li>
+            </ul>
+            <p>批評させる機能。VS Code 1.135では実験的で、単純な質問より、 複雑な作業の見落とし確認に向く。詳細は <a href="./GitHub%20CopilotのRubber%20Duck機能.html">GitHub CopilotのRubber Duck機能</a> を参照する。</p>
+            <h3 id="コマンドと対象指定の違い">コマンドと対象指定の違い</h3>
+            <p><code>/</code> はよく使う処理を呼び出すスラッシュコマンドである。一方、<code>#</code> は回答に含める 対象やコンテキストを明示するために使う。たとえば、ファイル名やフォルダー名を <code>#</code>に続けて指定でき、<code>#selection</code>は現在選択しているテキストを対象に含める。</p>
+            <pre><code class="language-text">/explain #selection</code></pre>
+            <p>VS Codeはアクティブなファイルや選択範囲を暗黙のコンテキストとして含める場合が あるが、対象が曖昧なときは <code>#</code> による指定を併用すると意図を伝えやすい。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://docs.github.com/ja/copilot/reference/chat-cheat-sheet?tool=vscode">GitHub Copilot Chat のチート シート</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://code.visualstudio.com/docs/chat/chat-overview">Use chat in VS Code</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://code.visualstudio.com/docs/agents/reference/ai-features-cheat-sheet">AI features in VS Code cheat sheet</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: 全参考URLと現行コマンド一覧を再確認し、公式一覧にない<code>/help</code>を</li>
+            </ul>
+            <p><code>/compact</code>へ置換、<code>/fixTestFailure</code>、<code>#</code>指定、Rubber Duckの条件を修正</p>
+            <ul>
+                <li>2026-08-27: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

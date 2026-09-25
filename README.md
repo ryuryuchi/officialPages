@@ -26,14 +26,23 @@ python .\create_diary.py
 
 ## MarkdownからHTMLを生成
 
-`index.md`を同じフォルダの`index.html`へ変換するジェネレーターを用意しています。
-引数なしで実行すると、リポジトリ内にあるすべての`index.md`を対象にします。
+Markdownを同じフォルダのHTMLへ変換するジェネレーターを用意しています。
+引数なしでは従来どおり、リポジトリ内にあるすべての`index.md`を
+`index.html`へ変換します。
 
 ```powershell
 python .\generate_html.py
 ```
 
+Researchのように`index.md`以外のMarkdownもHTML化する場合は、
+`--all-markdown`を指定します。Markdownの相対リンクも生成先のHTMLへ接続します。
+
+```powershell
+python .\generate_html.py --all-markdown .\Research
+```
+
 個別のページだけを生成する場合は、Markdownファイルまたはフォルダを指定します。
+出力名はMarkdownと同名のHTMLです（`index.md`なら`index.html`）。
 
 ```powershell
 python .\generate_html.py .\diary\2026-09-15\index.md
@@ -48,9 +57,10 @@ python .\generate_html.py --check
 
 ## トップページのリンクを自動更新
 
-トップ直下の各フォルダをカテゴリとして、配下の`index.html`へ飛ぶリンクを
-トップページへ追記・更新できます。たとえば`diary`フォルダは
-`<section name="diary">`へ自動的に反映されます。
+トップ直下の各フォルダをカテゴリとして、トップページへリンクを追記・更新できます。
+カテゴリ直下に`index.html`または`README.html`があればそのページへ、
+なければ配下の`index.html`へリンクします。たとえば`Research`は目次ページへ、
+`diary`は各日記ページへ自動的に接続されます。
 
 ```powershell
 python .\update.py
@@ -64,8 +74,8 @@ python .\update.py --check
 
 ## HTML生成とリンク更新をまとめて実行
 
-次のBATを実行すると、すべての`index.md`をHTMLへ変換したあと、
-トップページのリンクを更新します。
+次のBATを実行すると、すべての`index.md`と`Research`配下のMarkdownを
+HTMLへ変換したあと、トップページのリンクを更新します。
 
 ```powershell
 .\generate_all.bat

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>画像生成AIサービス比較</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">画像生成AIサービス比較</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>個人が画像を生成・編集する用途を対象に、主要なWebサービスを比較した。 おすすめ、最安有料プランのコスト、一般的な作品制作での品質・制御性をそれぞれ分けて順位付けする。価格・無料枠・モデルは頻繁に変わるため、契約直前には各社の価格ページを確認する。</p>
+            <h2 id="結論">結論</h2>
+            <h3 id="総合おすすめ順">総合おすすめ順</h3>
+            <ol>
+                <li><strong>ChatGPT</strong> — ChatGPT Images 2.0で、会話による指示、局所編集、画像内の文字まで</li>
+            </ol>
+            <p>一つの画面で進めたい人に最も扱いやすい。画像以外のAI機能も使うなら第一候補。</p>
+            <ol>
+                <li><strong>Midjourney</strong> — V8.2の一枚絵、広告風ビジュアル、コンセプトアートの完成度を</li>
+            </ol>
+            <p>最優先するなら第一候補。操作に慣れが必要で、無料の継続利用枠はない。</p>
+            <ol>
+                <li><strong>Google Gemini</strong> — 既存画像を渡して自然言語で複数回編集する用途に向く。Geminiを普段から使う人は導入しやすい。</li>
+                <li><strong>Adobe Firefly</strong> — Adobe Express／Photoshopを使い、商用案件で来歴やワークフローを重視する人に向く。ベータ機能の商用可否は個別に確認する。</li>
+                <li><strong>Ideogram</strong> — ポスター、サムネイル、ロゴ案など、画像内の文字を主役にする制作で有力。</li>
+            </ol>
+            <p>ただし旧Basicプランの掲載は終了し、最安の月払い有料プランはPlusになった。</p>
+            <ol>
+                <li><strong>Leonardo.Ai</strong> — 多数のプリセット、カスタムモデル、トークン制の反復生成を使い分けたい人に向く。</li>
+            </ol>
+            <p>最初に試すなら、無料枠のある <strong>ChatGPT、Gemini、Firefly、Ideogram、Leonardo.Ai</strong> で同じプロンプトを比較し、作風を最優先する場合だけMidjourneyを月単位で契約するのが費用対効果がよい。</p>
+            <h3 id="コスト順">コスト順</h3>
+            <p>以下は各サービスの<strong>最安の月払い個人向け有料プラン</strong>を、米ドル表示の公開価格で並べたもの。税、為替、App Store／Google Play経由の価格、国・地域別価格は含めない。無料枠は全社とも回数・待ち時間・機能に制約があり、互いに同じ生成量ではないため、順位外とした。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>順位</th>
+                        <th>サービス</th>
+                        <th>最安有料プラン</th>
+                        <th>月額（税別、USD）</th>
+                        <th>コスト上の注意</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Adobe Firefly</td>
+                        <td>Standard</td>
+                        <td>$9.99</td>
+                        <td>月2,000生成クレジット。期間限定で一部モデルの生成無制限特典がある。</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Midjourney</td>
+                        <td>Basic</td>
+                        <td>$10</td>
+                        <td>Fast GPU時間は月3.3時間で、Relax Modeはない。</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>Leonardo.Ai</td>
+                        <td>Essential</td>
+                        <td>$12</td>
+                        <td>月8,500 Fast Tokens。モデル・設定によって1回の消費量が変わる。</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>Google Gemini</td>
+                        <td>Google AI Pro</td>
+                        <td>$19.99</td>
+                        <td>米国の公開価格。日本ではAI Plus（月額725円）も表示されるなど地域差がある。</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>Ideogram</td>
+                        <td>Plus</td>
+                        <td>$20</td>
+                        <td>月1,000優先クレジット。年払いは月換算$15だが、この表では月払いを比較する。</td>
+                    </tr>
+                    <tr>
+                        <td>順位外</td>
+                        <td>ChatGPT</td>
+                        <td>Go</td>
+                        <td>地域別</td>
+                        <td>最安有料層だが、取得した公式ページは固定の米ドル価格を表示しない。</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p><strong>費用だけで選ぶなら</strong>、米ドル価格を確認できた中ではFirefly Standardが最安で、 地域別価格のChatGPT Goも契約画面で比較する。作品性ならMidjourney Basicが候補になる。 旧Ideogram Basicの掲載は終了し、月払いのPlusは$20になった。既に対象の有料プランを 契約している場合は、追加費用ゼロでそのサービスから試すのが最安である。</p>
+            <h3 id="クオリティ順">クオリティ順</h3>
+            <p>ここでの「クオリティ」は、静止画の見栄えだけでなく、プロンプト追従、複数回編集のしやすさ、人物・物体の破綻の少なさ、実用的な文字表現を総合した筆者の評価である。公式の共通ベンチマーク順位ではないため、用途ごとの強みを併記する。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>順位</th>
+                        <th>サービス</th>
+                        <th>強い用途</th>
+                        <th>評価上の留意点</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Midjourney</td>
+                        <td>高密度な一枚絵、写実・アート、作風のあるコンセプト画像</td>
+                        <td>画像内の正確な文章や細かな修正指示は、用途によって次点以下より手間になる。</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>ChatGPT</td>
+                        <td>会話による反復修正、日本語を含む説明的な画像、ラフからの仕上げ</td>
+                        <td>同じ指示でも生成回ごとの差があり、用途・混雑時の上限に左右される。</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>Google Gemini</td>
+                        <td>指示ベースの画像編集、参照画像の要素を保った変更</td>
+                        <td>利用可能なモデル・上限はGeminiのプランと地域により変わる。</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>Ideogram</td>
+                        <td>英字を中心とした文字入りポスター、広告・ロゴ案</td>
+                        <td>写実的な人物や複雑な編集を主目的にする場合は上位サービスも比較する。</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>Adobe Firefly</td>
+                        <td>Adobe制作フロー内での生成塗りつぶし、商用制作の素材案</td>
+                        <td>作品性だけを追う用途では、モデル選択やAdobeアプリとの連携を前提に比較する。</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>Leonardo.Ai</td>
+                        <td>プリセット／カスタムモデルによる量産、ゲーム素材</td>
+                        <td>初期設定の選択肢が多く、同じ品質を再現するには設定の理解が必要。</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>用途別に選ぶと、<strong>最高の一枚絵はMidjourney</strong>、<strong>自然言語での修正はChatGPTまたはGemini</strong>、<strong>文字入りデザインはIdeogram</strong>、<strong>Adobe資産と商用ワークフローはFirefly</strong>がそれぞれ有力である。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="比較条件">比較条件</h3>
+            <ul>
+                <li>対象は、ブラウザーまたは公式アプリから個人が利用できる画像生成サービスとした。API従量課金、企業専用プラン、動画生成専用サービスは比較から除外した。</li>
+                <li>コスト順位は、2026-08-31時点で価格ページに掲載された月払いの最安有料個人プランを</li>
+            </ul>
+            <p>比較した。年払いの割引額、税、為替は比較に入れていない。ChatGPT GoとGoogle AIの 下位プランは地域差があるため、契約画面の現地価格を優先する。</p>
+            <ul>
+                <li>各社に無料枠がある場合でも、クレジット量、速度、利用可能モデル、公開・非公開設定が異なる。無料であることを品質・生成量が同等である意味には扱わない。</li>
+                <li>商用利用の可否は、出力、利用プラン、機能の正式版／ベータ版、第三者の権利で条件が変わる。公開前に各社の現行利用規約を確認する。</li>
+            </ul>
+            <h3 id="サービスごとの選定理由">サービスごとの選定理由</h3>
+            <h4 id="chatgpt">ChatGPT</h4>
+            <p>画像生成を文章の会話と同じUIで扱えるため、「この部分だけ変える」「文字を読みやすくする」 といった反復がしやすい。現行のChatGPT Images 2.0は、旧4o Image Generationの後継で、 APIでは<code>gpt-image-1.5</code>として提供される。Goは最安だが、Plusはより高度で正確な画像生成を 明記しているため、品質重視ではPlusも比較する。</p>
+            <h4 id="midjourney">Midjourney</h4>
+            <p>2026年7月25日公開のV8.2は、V8を基に美観、画質、パーソナライズを改善し、偶発的な 低品質画像を減らした現行モデルである。最安プランはFast GPU時間が月3.3時間で Relax Modeがないため、大量生成では上位プラン込みで見積もる。</p>
+            <h4 id="google-gemini">Google Gemini</h4>
+            <p>Geminiアプリで画像生成・編集を会話として進められる。日本向けページでは無料プランに 画像生成・編集、Google AI Plus（月額725円）に無料版の2倍の上限を掲載している。 プラン名、価格、利用モデルは地域で異なるため、米ドル表だけで最安と断定しない。</p>
+            <h4 id="adobe-firefly">Adobe Firefly</h4>
+            <p>Adobeは、Fireflyの現行モデルをライセンス済みコンテンツや著作権保護期間が満了したパブリックドメインのコンテンツで学習したと説明している。Adobe Expressの案内では、原則として生成AI出力を商用利用できる一方、Adobeが商用利用不可と指定したベータ機能の出力は個人利用に限られる。案件で使うときは、この区別を確認する。</p>
+            <h4 id="ideogram">Ideogram</h4>
+            <p>2026年8月31日の契約画面では、個人向け有料プランはPlus（月払い$20、月1,000優先 クレジット）とPro（月払い$60、月3,500優先クレジット）であり、旧Basicは掲載されて いない。優先枠消費後は対象機能を低速キューで利用できる。生成画像について所有権を 主張しないという案内は継続しているが、第三者の権利確認は別途必要である。</p>
+            <h4 id="leonardo-ai">Leonardo.Ai</h4>
+            <p>無料枠は1日150 Fast Tokens、Essentialは月額$12で月間8,500 Fast Tokensと公表されている。トークン消費量は生成設定に依存するため、「何枚作れるか」ではなく、試すモデル・解像度・編集回数を決めてからコストを比較する。</p>
+            <h3 id="契約前の実用的な確認手順">契約前の実用的な確認手順</h3>
+            <ol>
+                <li>同じ日本語・英語プロンプト、同じ縦横比、同じ参照画像で無料枠を比較する。</li>
+                <li>必要な用途を一つ決める。例: 商品画像、人物イラスト、文字入りバナー、既存画像の修正。</li>
+                <li>1枚を完成させるまでの生成回数、文字の修正回数、待ち時間を記録する。</li>
+                <li>商用公開する場合は、選んだ<strong>プラン・機能・モデル</strong>の利用規約とベータ表示を確認する。</li>
+                <li>月間の必要枚数を試算し、最安プランの上限を超えるなら、上位プランまたはAPI従量課金も含めて再比較する。</li>
+            </ol>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://chatgpt.com/pricing">ChatGPT Pricing</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://help.openai.com/en/articles/11989085-what-is-chatgpt-go">What is ChatGPT Go?</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://openai.com/index/introducing-chatgpt-images-2-0/">Introducing ChatGPT Images 2.0</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://openai.com/index/introducing-4o-image-generation/">Introducing 4o Image Generation</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.midjourney.com/hc/en-us/articles/27870484040333-Comparing-Midjourney-Plans">Comparing Midjourney Plans</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://www.midjourney.com/updates/version-8-2">Midjourney Version 8.2</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://gemini.google/subscriptions/">Google AI Plans</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://www.adobe.com/products/firefly/plans.html">Adobe Firefly plans</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://www.adobe.com/express/pricing">Adobe Express pricing and generative AI FAQ</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://ideogram.ai/pricing">Ideogram Pricing</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.ideogram.ai/plans-and-pricing/available-plans">Ideogram Available Plans</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://leonardo.ai/pricing/">Leonardo.Ai Pricing</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: 全URLと現行プランを再確認し、ChatGPT Go、Images 2.0、Midjourney V8.2、</li>
+            </ul>
+            <p>Ideogram Basic掲載終了後の価格、Google AIの地域差を反映</p>
+            <ul>
+                <li>2026-08-25: 初版を作成。主要な画像生成AIサービスをおすすめ・コスト・クオリティ別に比較</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

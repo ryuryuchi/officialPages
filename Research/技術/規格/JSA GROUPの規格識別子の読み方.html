@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSA GROUPの規格識別子の読み方</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">JSA GROUPの規格識別子の読み方</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>JSA GROUPの規格検索で表示される規格番号が分かりにくいため、 IEC、JIS、BS ENの例を使い、各要素が示す発行体系、部門、Part、 版、年、追補の意味を確認した。</p>
+            <h2 id="結論">結論</h2>
+            <p>規格番号には発行機関ごとの構文があり、すべての数字を共通の法則で 読み解くことはできない。ただし、概ね次の順に読むと整理しやすい。</p>
+            <pre><code class="language-text">発行体系 + 規格群・本体番号 + Part番号 + 版または年 + 追補</code></pre>
+            <table>
+                <thead>
+                    <tr>
+                        <th>例</th>
+                        <th>読み方</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>IEC 61000-3-3 Amd.1 Ed. 3.0:2017</code></td>
+                        <td>IEC 61000-3-3第3版に対する第1追補で、追補の発行年は2017年</td>
+                    </tr>
+                    <tr>
+                        <td><code>JIS Z 8737-1:2000</code></td>
+                        <td>JISのZ部門に属する8737の第1部で、制定または直近の改正年は2000年</td>
+                    </tr>
+                    <tr>
+                        <td><code>BS EN 61000-2-12:2003</code></td>
+                        <td>EN 61000-2-12を英国国家規格として採用した2003年版</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>これらは原則としてJSA GROUP独自の商品IDではなく、各発行機関の規格識別子である。 なお、「8737」「61000」の各桁を一桁ずつ読めるわけではない。規格群または 割り当てられた本体番号として扱い、ハイフン以降のPart、コロン以降の年、 <code>Ed.</code>や<code>Amd.</code>などの明示的な記号を読む。</p>
+            <p>例示した版が規格群の最新版とは限らない。2026年8月31日時点では、 <code>IEC 61000-3-3</code>の最新統合版は第3.2版 <code>IEC 61000-3-3:2013+AMD1:2017+AMD2:2021 CSV</code>であり、第4.0版は 準備中（IEC Webstore掲載の発行予測は2027年6月30日）である。 <code>Amd.1 Ed. 3.0:2017</code>という表記の読み方自体は変わらないが、現行一式を 確認する用途ではAMD2も含む第3.2版を参照する。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="3例に共通する読み方">3例に共通する読み方</h3>
+            <pre><code class="language-text">[発行体系] [本体番号]-[Part] [追補・版]:[年]</code></pre>
+            <ol>
+                <li>先頭の<code>IEC</code>、<code>JIS</code>、<code>BS EN</code>で、どの発行体系の文書かを確認する。</li>
+                <li>本体番号とハイフン付きPart番号を途中で省略せず確認する。</li>
+                <li><code>Ed.</code>、<code>Amd.</code>、<code>A1</code>などがあれば、版と追補を確認する。</li>
+                <li>コロン後の年が、基礎規格と追補のどちらに付いているかを確認する。</li>
+                <li>最後に、発行元の状態表示で現行、廃止、置換を確認する。</li>
+            </ol>
+            <h3 id="iec-61000-3-3-amd-1-ed-3-0-2017"><code>IEC 61000-3-3 Amd.1 Ed. 3.0:2017</code></h3>
+            <pre><code class="language-text">IEC 61000-3-3  Amd.1  Ed. 3.0  :2017
+│   │           │      │         └─ 第1追補の発行年
+│   │           │      └────────── 第3版を対象とする
+│   │           └───────────────── Amendment 1（第1追補）
+│   └───────────────────────────── IEC 61000規格群のPart 3-3
+└───────────────────────────────── 国際電気標準会議の規格</code></pre>
+            <ul>
+                <li><code>IEC</code>はInternational Electrotechnical Commission（国際電気標準会議）。</li>
+                <li><code>61000</code>はEMC（電磁両立性）規格群の番号。</li>
+                <li><code>3-3</code>はPart 3-3である。IEC公式名称ではPart 3がLimits（限度値）、</li>
+            </ul>
+            <p>Part 3-3が公共低電圧系統における電圧変動・フリッカの制限を扱う。</p>
+            <ul>
+                <li><code>Amd.1</code>はAmendment 1、すなわち第1追補。</li>
+                <li><code>Ed. 3.0</code>は、第3版の基礎文書を対象とすることを示す。</li>
+                <li><code>:2017</code>は、この表記では第1追補の発行年である。第3版そのものの発行年は</li>
+            </ul>
+            <p>2013年であり、2017年ではない。</p>
+            <p>IEC公式の文書識別子では、同じ追補を <code>IEC 61000-3-3:2013/AMD1:2017</code>と表す。基礎文書と第1追補を一体化した 統合版は<code>IEC 61000-3-3:2013+A1:2017 CSV</code>と表記される。 <code>CSV</code>はConsolidated Version（統合版）であり、追補だけを別途購入せずに 基礎文書と変更内容を読める版である。</p>
+            <p>その後にAMD2:2021が発行されているため、現行の追補反映済み一式は <code>IEC 61000-3-3:2013+AMD1:2017+AMD2:2021 CSV</code>（第3.2版）である。</p>
+            <h3 id="jis-z-8737-1-2000"><code>JIS Z 8737-1:2000</code></h3>
+            <pre><code class="language-text">JIS  Z  8737 -1 :2000
+│    │   │    │    └─ 制定または直近の改正年
+│    │   │    └────── 第1部
+│    │   └─────────── 規格の本体番号
+│    └─────────────── JIS部門記号Z（その他）
+└──────────────────── 日本産業規格</code></pre>
+            <ul>
+                <li><code>JIS</code>はJapanese Industrial Standards（日本産業規格）。</li>
+                <li><code>Z</code>は技術分野を示すJIS部門記号で、公式分類では</li>
+            </ul>
+            <p>Miscellaneous（その他）である。</p>
+            <ul>
+                <li><code>8737</code>はZ部門内の規格番号。数字を一桁ずつ分解して意味を読むものではない。</li>
+                <li><code>-1</code>は分冊規格の第1部。この規格の名称にも</li>
+            </ul>
+            <p>「第1部：反射面上の準自由音場における実用測定方法」と明記されている。</p>
+            <ul>
+                <li><code>:2000</code>は、制定時には制定年、改正後は直近の改正年を表す。</li>
+            </ul>
+            <p>JSA GROUPの履歴では、この規格は2000年5月20日に制定され、その後も 2005、2009、2014、2019、2024年に「確認」されている。しかし確認は 内容を変更しない手続きなので、規格番号は<code>JIS Z 8737-1:2000</code>のままである。 コロン後の年を「最後に有効性が確認された年」と読まないことが重要である。</p>
+            <h3 id="bs-en-61000-2-12-2003"><code>BS EN 61000-2-12:2003</code></h3>
+            <pre><code class="language-text">BS EN  61000-2-12 :2003
+│  │    │           └─ 採用されたEN規格の版年
+│  │    └───────────── IEC/EN 61000規格群のPart 2-12
+│  └────────────────── 欧州規格
+└───────────────────── 英国国家規格</code></pre>
+            <ul>
+                <li><code>BS</code>はBritish Standard。英国規格協会（BSI）が発行する英国国家規格。</li>
+                <li><code>EN</code>はEuropean Standard。CENELECなどが作成する欧州規格。</li>
+                <li><code>BS EN</code>全体で、EN規格を英国国家規格として採用したものを表す。</li>
+                <li><code>61000</code>はEMC規格群の番号。</li>
+                <li><code>2-12</code>はPart 2-12。公式名称ではPart 2がEnvironment（環境）、</li>
+            </ul>
+            <p>Part 2-12は公共中電圧電力系統の低周波伝導妨害および信号伝送の 両立性レベルを扱う。</p>
+            <ul>
+                <li><code>:2003</code>は基礎となるEN 61000-2-12の版年。この例ではBSIの発行日も</li>
+            </ul>
+            <p>2003年9月24日だが、規格によってはENの版年と英国での発行年が 一致しない場合がある。</p>
+            <h3 id="bs-enが表す関係"><code>BS EN</code>が表す関係</h3>
+            <p>JSA GROUPの説明によると、EN規格はCEN、CENELEC、ETSIが発行する欧州の 統一規格であり、加盟各国はEN規格を自国の国家規格として採用する。 英国でBSIが採用したものは<code>BS EN</code>、ドイツで採用したものは<code>DIN EN</code>のように 国別の接頭辞が付く。</p>
+            <p>したがって<code>BS EN</code>は、「BS規格とEN規格という別々の2規格を並記したもの」 ではなく、<strong>EN規格の英国国家規格版</strong>を示す。JSA GROUPは、言語指定がない 場合、英語で記載されたBSI発行のBS EN規格を案内している。</p>
+            <h3 id="61000-3-12が表す内容"><code>61000-3-12</code>が表す内容</h3>
+            <p>IEC公式ページの名称は、次の構造になっている。</p>
+            <pre><code class="language-text">IEC 61000-3-12
+Electromagnetic compatibility (EMC)
+Part 3-12: Limits
+Limits for harmonic currents produced by equipment ...</code></pre>
+            <ul>
+                <li><code>61000</code>はIECのEMC規格群である。</li>
+                <li><code>3-12</code>全体でPart 3-12を示す。</li>
+                <li>Part 3系は限度値を扱い、このPart 3-12は、公共低電圧系統へ接続する</li>
+            </ul>
+            <p>1相当たり16 A超75 A以下の機器が発生する高調波電流の限度を扱う。</p>
+            <p><code>3</code>や<code>12</code>は発行月ではない。また、<code>61000-3-12</code>は途中を省略せず、 一続きの規格番号として検索する。</p>
+            <h3 id="2011と実際の発行日の違い"><code>:2011</code>と実際の発行日の違い</h3>
+            <p><code>BS EN 61000-3-12:2011</code>の<code>2011</code>は、基礎となるEN規格の版年である。 BSI Knowledgeでは英国規格としての発行日は2012年2月29日と表示されるため、 識別子末尾の年と販売ページの発行日が一致しない場合がある。</p>
+            <p>このため、年を読むときは次を区別する。</p>
+            <ul>
+                <li><strong>識別子の<code>:2011</code></strong>: 採用元であるEN規格の版年</li>
+                <li><strong>BSIの発行日（2012年2月29日）</strong>: 英国国家規格として発行した日</li>
+                <li><strong>JSA GROUPの掲載日</strong>: JSA GROUPの商品情報が更新された日であり、規格の版年ではない</li>
+            </ul>
+            <h3 id="a1-2024が表す内容"><code>+A1:2024</code>が表す内容</h3>
+            <p><code>A1</code>は<code>Amendment 1</code>、すなわち第1追補である。規格全体を新しい年版へ 置き換えたという意味ではなく、2011年版に対して追加・変更を行う文書である。 BSIは、基礎規格と追補を反映した識別子を <code>BS EN 61000-3-12:2011+A1:2024</code>と表記している。 BSI Knowledgeでは同統合版を現行として掲載している。A1統合版は基礎規格 <code>BS EN 61000-3-12:2011</code>を置き換え、基礎規格の廃止予定日は 2027年3月20日とNational forewordに記載されている。</p>
+            <p>欧州規格側では同じ追補を<code>EN 61000-3-12:2011/A1:2024</code>のように スラッシュで表す例がある。検索で見つからない場合は、次の両方を試す。</p>
+            <ul>
+                <li><code>BS EN 61000-3-12:2011+A1:2024</code></li>
+                <li><code>EN 61000-3-12:2011/A1:2024</code></li>
+            </ul>
+            <p>なお、元になった国際規格のIEC版には <code>IEC 61000-3-12:2011+A1:2021</code>という統合版がある。IEC版では追補年が 2021、EN/BS EN版では2024であり、接頭辞と追補年が異なる。 内容や適用先が常に完全同一とは限らないため、指定された規格体系を 勝手に読み替えない。</p>
+            <h3 id="実務上の確認ポイント">実務上の確認ポイント</h3>
+            <ol>
+                <li><strong>接頭辞まで確認する</strong></li>
+            </ol>
+            <ul>
+                <li><code>IEC</code>、<code>EN</code>、<code>BS EN</code>は発行体系が異なる。</li>
+            </ul>
+            <ol>
+                <li><strong>年版と追補を省略しない</strong></li>
+            </ol>
+            <ul>
+                <li><code>BS EN 61000-3-12</code>だけでは、要求された版を一意に特定できない。</li>
+            </ul>
+            <ol>
+                <li><strong>識別子だけで現行性を判断しない</strong></li>
+            </ol>
+            <ul>
+                <li>古い年が含まれていても追補によって現行の場合があり、逆に新しく見えても</li>
+            </ul>
+            <p>廃止されている場合がある。購入・適用前にBSIまたはJSA GROUPの状態表示を確認する。</p>
+            <ol>
+                <li><strong>JSA GROUPの掲載には時間差がある</strong></li>
+            </ol>
+            <ul>
+                <li>JSA GROUPはBSIからのデータ提供に約1か月のタイムラグがあると案内している。</li>
+            </ul>
+            <ol>
+                <li><strong>追補だけで使えるとは限らない</strong></li>
+            </ol>
+            <ul>
+                <li><code>A1</code>は基礎規格への変更であるため、通常は基礎規格と組み合わせて読む。</li>
+            </ul>
+            <p>購入商品が追補単体か、追補反映済みの統合版かを商品説明で確認する。</p>
+            <ol>
+                <li><strong>番号から内容を推測しすぎない</strong></li>
+            </ol>
+            <ul>
+                <li><code>61000-3-3</code>や<code>8737-1</code>は一続きの正式な規格番号として検索する。</li>
+                <li><code>-1</code>などはPartを示すことが多いが、本体番号の各桁に共通の意味が</li>
+            </ul>
+            <p>割り当てられているわけではない。正式名称で対象範囲を確認する。</p>
+            <ol>
+                <li><strong>JISの確認年と規格番号の年を混同しない</strong></li>
+            </ol>
+            <ul>
+                <li>内容を変えない「確認」ではコロン後の年は更新されない。</li>
+                <li>「改正」された場合はコロン後の年が改正年に変わる。</li>
+            </ul>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://webdesk.jsa.or.jp/books/W11M0300">BS規格詳細検索 - 日本規格協会</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://knowledge.bsigroup.com/products/electromagnetic-compatibility-emc-limits-limits-for-harmonic-currents-produced-by-equipment-connected-to-public-low-voltage-systems-with-input-current-16-a-and-75-a-per-phase">BS EN 61000-3-12:2011 - BSI Knowledge</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://knowledge.bsigroup.com/products/electromagnetic-compatibility-emc-limits-limits-for-harmonic-currents-produced-by-equipment-connected-to-public-low-voltage-systems-with-input-current-16-a-and-75-a-per-phase-2">BS EN 61000-3-12:2011+A1:2024 - BSI Knowledge</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://webstore.iec.ch/en/publication/4144">IEC 61000-3-12:2011 - IEC Webstore</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://webstore.iec.ch/en/publication/69084">IEC 61000-3-12:2011+A1:2021 CSV - IEC Webstore</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://webstore.iec.ch/en/publication/28848">IEC 61000-3-3:2013/AMD1:2017 - IEC Webstore</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://webstore.iec.ch/en/publication/60730">IEC 61000-3-3:2013+A1:2017 CSV - IEC Webstore</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://www.jisc.go.jp/eng/jis-act/coverage-jis.html">Coverage of JIS - Japanese Industrial Standards Committee</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://webdesk.jsa.or.jp/books/W11M0090/index/?bunsyo_id=JIS+Z+8737-1%3A2000">JIS Z 8737-1:2000 - JSA GROUP Webdesk</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://webstore.iec.ch/en/publication/4130">IEC 61000-2-12:2003 - IEC Webstore</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://knowledge.bsigroup.com/products/electromagnetic-compatibility-emc-environment-compatibility-levels-for-low-frequency-conducted-disturbances-and-signalling-in-public-medium-voltage-power-supply-systems">BS EN 61000-2-12:2003 - BSI Knowledge</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: 全参考URLと現行性を再確認し、IEC 61000-3-3 AMD2及び第4版準備状況、BS EN 61000-3-12基礎版の移行期限を追記</li>
+                <li>2026-08-27: IEC、JIS、BS ENの3例を追加し、版、追補、部門記号、Part、年の読み方を整理</li>
+                <li>2026-08-27: 初版を作成し、BS、EN、規格番号、版年、追補の意味を整理</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

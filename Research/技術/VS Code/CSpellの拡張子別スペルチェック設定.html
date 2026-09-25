@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSpellの拡張子別スペルチェック設定</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">CSpellの拡張子別スペルチェック設定</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>VS Code拡張のCSpellで、ファイル種別（VS Codeのlanguage ID）ごとにスペルチェックの対象・対象外を設定できるかを確認した。</p>
+            <h2 id="結論">結論</h2>
+            <p>設定できる。VS Codeのユーザー設定またはワークスペース設定で、<code>cSpell.enabledFileTypes</code> を使う。</p>
+            <p>特定の種類だけ除外する場合は、次のように設定する。</p>
+            <pre><code class="language-json">{
+  &quot;cSpell.enabledFileTypes&quot;: {
+    &quot;markdown&quot;: false,
+    &quot;json&quot;: false
+  }
+}</code></pre>
+            <p>逆に、Markdownだけを対象にするなど、対象を限定する場合はワイルドカードを使う。</p>
+            <pre><code class="language-json">{
+  &quot;cSpell.enabledFileTypes&quot;: {
+    &quot;*&quot;: false,
+    &quot;markdown&quot;: true
+  }
+}</code></pre>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="設定場所">設定場所</h3>
+            <p>プロジェクト単位なら、プロジェクト直下の <code>.vscode/settings.json</code> に記載する。全プロジェクトに適用するなら、VS Codeのユーザー設定に記載する。設定画面で <code>cSpell.enabledFileTypes</code> を検索して変更することもできる。</p>
+            <h3 id="拡張子ではなくlanguage-idを指定する">拡張子ではなくlanguage IDを指定する</h3>
+            <p>設定のキーは拡張子そのものではなく、VS Codeのlanguage IDである。例えば、代表的な指定は次のとおり。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>対象</th>
+                        <th>language ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Markdown</td>
+                        <td><code>markdown</code></td>
+                    </tr>
+                    <tr>
+                        <td>JSON</td>
+                        <td><code>json</code></td>
+                    </tr>
+                    <tr>
+                        <td>JSON with Comments</td>
+                        <td><code>jsonc</code></td>
+                    </tr>
+                    <tr>
+                        <td>JavaScript</td>
+                        <td><code>javascript</code></td>
+                    </tr>
+                    <tr>
+                        <td>TypeScript</td>
+                        <td><code>typescript</code></td>
+                    </tr>
+                    <tr>
+                        <td>Python</td>
+                        <td><code>python</code></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>対象ファイルを開いたとき、ステータスバーに表示される言語モードからlanguage IDを確認できる。拡張子とlanguage IDの対応はCSpellの公式一覧で確認する。</p>
+            <h3 id="設定例">設定例</h3>
+            <p>すべてのファイル種別を対象外にして、Markdownとプレーンテキストだけを対象にする例。</p>
+            <pre><code class="language-json">{
+  &quot;cSpell.enabledFileTypes&quot;: {
+    &quot;*&quot;: false,
+    &quot;markdown&quot;: true,
+    &quot;plaintext&quot;: true
+  }
+}</code></pre>
+            <p>特定の種類だけを対象外にする例。</p>
+            <pre><code class="language-json">{
+  &quot;cSpell.enabledFileTypes&quot;: {
+    &quot;*&quot;: true,
+    &quot;json&quot;: false,
+    &quot;jsonc&quot;: false
+  }
+}</code></pre>
+            <p>なお、設定対象はファイル種別全体である。特定のファイル名やフォルダーだけを除外したい場合は、CSpellの<code>ignorePaths</code>など、パスを対象にする設定を使い分ける。</p>
+            <h3 id="古い設定名について">古い設定名について</h3>
+            <p><code>cSpell.enabledLanguageIds</code> や <code>cSpell.enableFiletypes</code> は以前使われていた設定名で、現在は <code>cSpell.enabledFileTypes</code> が推奨される。既存設定を移行するときは、拡張機能のバージョンと設定スキーマを確認する。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://streetsidesoftware.com/vscode-spell-checker/docs/configuration/files-folders-and-workspaces">Files, Folders, and Workspaces | VS Code Spell Checker</a></li>
+                <li><code>cSpell.enabledFileTypes</code> の用途、ワイルドカード、ファイル種別の有効・無効設定を確認</li>
+                <li>参照日: 2026-09-10</li>
+                <li><a href="https://cspell.org/docs/Configuration/file-types">File Types and Extensions | CSpell</a></li>
+                <li>CSpellが扱う拡張子とファイル種別の一覧を確認</li>
+                <li>参照日: 2026-09-10</li>
+                <li><a href="https://code.visualstudio.com/docs/configure/settings">User and workspace settings | Visual Studio Code</a></li>
+                <li>ユーザー設定とワークスペース設定の保存場所・適用範囲を確認</li>
+                <li>参照日: 2026-09-10</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-10: CSpellのファイル種別ごとのスペルチェック設定を調査して初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

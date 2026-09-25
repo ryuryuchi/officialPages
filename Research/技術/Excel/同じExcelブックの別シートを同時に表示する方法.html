@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>同じExcelブックの別シートを同時に表示する方法</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">同じExcelブックの別シートを同時に表示する方法</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>同じExcelブック内にある2つ以上のシートを、別々のウィンドウに表示して同時に確認する方法を整理する。ここでの「プレビュー」は印刷プレビューではなく、通常のワークシート画面を並べて表示することを指す。</p>
+            <h2 id="結論">結論</h2>
+            <p>デスクトップ版Excelでは、対象ブックを開いて<code>表示</code> &gt; <code>新しいウィンドウを開く</code>を選び、各ウィンドウで別のシートを選択する。その後、<code>表示</code> &gt; <code>並べて表示</code>、または<code>表示</code> &gt; <code>すべて整列</code>を使って左右や上下に配置する。</p>
+            <p><strong>Excel for the webには、2026年8月31日時点でデスクトップ版と同等の <code>表示</code> &gt; <code>新しいウィンドウ</code>は確認できない。</strong> 同じURLを別のブラウザータブや ウィンドウで開く回避策はあるが、Excelの<code>並べて表示</code>、<code>すべて整列</code>、<code>同時に スクロール</code>は使えない。確実な同時表示にはデスクトップ版を使用する。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="デスクトップ版excelで2つのシートを並べる手順">デスクトップ版Excelで2つのシートを並べる手順</h3>
+            <ol>
+                <li>同時に表示したいシートがあるブックを開く。</li>
+                <li><code>表示</code>タブの<code>ウィンドウ</code>グループで<code>新しいウィンドウを開く</code>を選択する。</li>
+                <li>片方のウィンドウで1枚目のシート、もう片方で2枚目のシートを選択する。</li>
+                <li><code>表示</code>タブの<code>並べて表示</code>を選択する。</li>
+                <li>必要に応じて、ウィンドウの境界をドラッグして表示幅を調整する。</li>
+            </ol>
+            <p>同じ位置を連動して確認したい場合は、<code>並べて表示</code>を有効にした状態で<code>同時にスクロール</code>を使用できる。</p>
+            <h3 id="3つ以上のシートを同時に表示する手順">3つ以上のシートを同時に表示する手順</h3>
+            <ol>
+                <li><code>表示</code> &gt; <code>新しいウィンドウを開く</code>を、追加したいシートの数に合わせて繰り返す。</li>
+                <li>各ウィンドウで異なるシートを選択する。</li>
+                <li><code>表示</code> &gt; <code>すべて整列</code>を選択する。</li>
+                <li><code>並べて表示</code>、<code>上下に並べて表示</code>、<code>左右に並べて表示</code>、<code>重ねて表示</code>など、目的に合う配置を選択する。</li>
+            </ol>
+            <p>Mac版では、Microsoftの公式手順で<code>新しいウィンドウ</code>と<code>すべて配置</code>という名称が案内されている。使用しているExcelの版や表示言語によって、ボタン名が若干異なる場合がある。</p>
+            <h3 id="excel-for-the-webでの回避策">Excel for the webでの回避策</h3>
+            <ol>
+                <li>対象ブックのURLを別のブラウザータブまたはウィンドウでも開く。</li>
+                <li>各画面で表示したいシートを選択する。</li>
+                <li>OSのスナップ機能などでブラウザーウィンドウを左右に配置する。</li>
+            </ol>
+            <p>これはブラウザーで同じクラウドファイルを2回開く回避策であり、デスクトップ版の <code>新しいウィンドウ</code>機能ではない。共同編集や保存の反映状態を確認しながら使用する。</p>
+            <h3 id="制約と注意点">制約と注意点</h3>
+            <ul>
+                <li><code>新しいウィンドウを開く</code>で作成されるのは同じブックの別表示であり、ブックのコピーではない。どちらのウィンドウで編集しても同じブックに反映される。</li>
+                <li>シートを増やすたびに、表示用のウィンドウも追加する必要がある。</li>
+                <li><code>分割</code>は同じシート内の離れた範囲を表示する機能であり、別シートの同時表示には<code>新しいウィンドウを開く</code>を使用する。</li>
+                <li><code>同時にスクロール</code>は、デスクトップ版で<code>並べて表示</code>が有効な場合に使用できる。</li>
+                <li>表示を終了するときは、追加したウィンドウを閉じる。最後のウィンドウを閉じる前に、必要な変更が保存されていることを確認する。</li>
+            </ul>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://support.microsoft.com/ja-jp/excel/compare-two-or-more-worksheets-at-the-same-time">2つ以上のワークシートを同時に比較する - Microsoft サポート</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://support.microsoft.com/ja-jp/excel/view-multiple-panes-sheets-or-workbooks">複数のウィンドウ枠、シート、またはブックを表示する - Microsoft サポート</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://support.microsoft.com/en-US/Excel/differences-between-using-a-workbook-in-the-browser-and-in-excel">Differences between using a workbook in the browser and in Excel - Microsoft Support</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: 全参考URLと対応環境を再確認し、Excel for the webにデスクトップ版相当の新しいウィンドウ機能があるとの記述を訂正</li>
+                <li>2026-08-27: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

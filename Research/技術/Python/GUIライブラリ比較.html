@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python GUIライブラリ比較</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">Python GUIライブラリ比較</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>Pythonの代表的なGUIライブラリを、軽さ、見た目、自由度の観点で比較する。</p>
+            <h2 id="結論">結論</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>重視する点</th>
+                        <th>第一候補</th>
+                        <th>特徴</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>軽さ</td>
+                        <td>Tkinter / ttk</td>
+                        <td>Python標準で、追加インストールが基本的に不要</td>
+                    </tr>
+                    <tr>
+                        <td>軽さと見た目の両立</td>
+                        <td>CustomTkinter</td>
+                        <td>Tkinterベースでモダンな外観</td>
+                    </tr>
+                    <tr>
+                        <td>見た目のきれいさ</td>
+                        <td>PySide6</td>
+                        <td>高品質で本格的なデスクトップGUI</td>
+                    </tr>
+                    <tr>
+                        <td>手軽なモダンUI</td>
+                        <td>Flet</td>
+                        <td>Flutter風のUIをPythonで構築可能</td>
+                    </tr>
+                    <tr>
+                        <td>自由度</td>
+                        <td>PySide6</td>
+                        <td>ウィジェット、描画、デザインの自由度が高い</td>
+                    </tr>
+                    <tr>
+                        <td>独自デザイン・タッチ操作</td>
+                        <td>Kivy</td>
+                        <td>アニメーションやカスタム描画に強い</td>
+                    </tr>
+                    <tr>
+                        <td>高速グラフ・開発ツール</td>
+                        <td>Dear PyGui</td>
+                        <td>GPU描画とリアルタイム更新に強い</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="2026年8月31日時点の公開状況">2026年8月31日時点の公開状況</h3>
+            <p>各プロジェクトの公式文書とPyPIメタデータを照合した。バージョン番号と <code>Requires-Python</code>は調査日時点の値であり、導入時には再確認する。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ライブラリ</th>
+                        <th>最新安定版</th>
+                        <th>Python要件</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>CustomTkinter</td>
+                        <td>6.0.0</td>
+                        <td>3.7以上</td>
+                    </tr>
+                    <tr>
+                        <td>ttkbootstrap</td>
+                        <td>2.2.2</td>
+                        <td>3.10以上</td>
+                    </tr>
+                    <tr>
+                        <td>PySide6</td>
+                        <td>6.11.2</td>
+                        <td>3.10以上、3.15未満</td>
+                    </tr>
+                    <tr>
+                        <td>Flet</td>
+                        <td>0.86.5</td>
+                        <td>3.10以上</td>
+                    </tr>
+                    <tr>
+                        <td>NiceGUI</td>
+                        <td>3.16.0</td>
+                        <td>3.10以上、4未満</td>
+                    </tr>
+                    <tr>
+                        <td>Kivy</td>
+                        <td>2.3.1</td>
+                        <td>3.8以上</td>
+                    </tr>
+                    <tr>
+                        <td>Dear PyGui</td>
+                        <td>2.3.1</td>
+                        <td>3.8以上</td>
+                    </tr>
+                    <tr>
+                        <td>wxPython</td>
+                        <td>4.3.1</td>
+                        <td>3.10以上</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>TkinterはPython標準ライブラリだが、PythonビルドによってはTkが任意部品となる。 利用可否は<code>python -m tkinter</code>で確認できる。Python 3.15はプレリリース段階であり、 特にバイナリwheelを使うGUIでは、Python 3.14以下の対応済み安定版を選ぶ方が確実である。</p>
+            <h3 id="軽さ重視">軽さ重視</h3>
+            <h4 id="tkinter-ttk">Tkinter / ttk</h4>
+            <p>Pythonに標準搭載されており、小規模なGUIツールに適している。</p>
+            <p><strong>長所</strong></p>
+            <ul>
+                <li>追加インストールが基本的に不要</li>
+                <li>起動が速く、メモリ使用量も比較的少ない</li>
+                <li>配布サイズを小さくしやすい</li>
+                <li>情報やサンプルが多い</li>
+            </ul>
+            <p><strong>短所</strong></p>
+            <ul>
+                <li>標準状態では見た目が古くなりやすい</li>
+                <li>複雑な画面ではコード量が増えやすい</li>
+                <li>アニメーションや高度な描画には不向き</li>
+            </ul>
+            <p><strong>適した用途</strong></p>
+            <ul>
+                <li>ファイル変換ツール</li>
+                <li>CSV・Excel操作ツール</li>
+                <li>社内業務ツール</li>
+                <li>設定画面</li>
+                <li>小規模なWindows自動化ツール</li>
+            </ul>
+            <h4 id="customtkinter">CustomTkinter</h4>
+            <p>Tkinterをベースに、モダンなウィジェットを提供する。</p>
+            <p><strong>長所</strong></p>
+            <ul>
+                <li>Tkinterより現代的な見た目</li>
+                <li>ダークモードに対応</li>
+                <li>Tkinter経験者には理解しやすい</li>
+                <li>小規模ツールを短期間で作りやすい</li>
+            </ul>
+            <p><strong>短所</strong></p>
+            <ul>
+                <li>標準ライブラリではない</li>
+                <li>ウィジェットの種類はPySide6ほど多くない</li>
+                <li>複雑なアプリケーションでは限界がある</li>
+            </ul>
+            <p>「軽くて、ある程度きれい」を求める場合の有力候補。</p>
+            <h4 id="ttkbootstrap">ttkbootstrap</h4>
+            <p>Tkinterの<code>ttk</code>ウィジェットにBootstrap風のテーマを適用する。</p>
+            <p><strong>長所</strong></p>
+            <ul>
+                <li>既存のTkinterコードを活用しやすい</li>
+                <li>CustomTkinterより標準の<code>ttk</code>に近い</li>
+                <li>テーマを変更しやすい</li>
+                <li>比較的軽量</li>
+            </ul>
+            <p><strong>短所</strong></p>
+            <ul>
+                <li>独自デザインの自由度はあまり高くない</li>
+                <li>高度なGUIにはPySide6のほうが適している</li>
+            </ul>
+            <p>既存のTkinterアプリの外観を改善したい場合に適している。</p>
+            <h3 id="guiのきれいさ重視">GUIのきれいさ重視</h3>
+            <h4 id="pyside6">PySide6</h4>
+            <p>Qtの公式Pythonバインディング。本格的なデスクトップアプリの有力候補。</p>
+            <p><strong>長所</strong></p>
+            <ul>
+                <li>標準ウィジェットの品質が高い</li>
+                <li>Windowsらしい本格的なアプリを作れる</li>
+                <li>ダークテーマやスタイルシートに対応</li>
+                <li>Qt Designerで画面を視覚的に設計できる</li>
+                <li>テーブル、ツリー、タブ、ドックなどが充実</li>
+                <li>中規模から大規模なアプリにも対応できる</li>
+            </ul>
+            <p><strong>短所</strong></p>
+            <ul>
+                <li>Tkinterより重い</li>
+                <li>インストールサイズと配布サイズが大きい</li>
+                <li>Qtの仕組みを覚える必要がある</li>
+                <li>シグナル、スロット、イベントループなどの理解が必要</li>
+            </ul>
+            <p><strong>適した用途</strong></p>
+            <ul>
+                <li>一般ユーザー向けデスクトップアプリ</li>
+                <li>高品質な社内ツール</li>
+                <li>データ管理アプリ</li>
+                <li>画像・動画処理アプリ</li>
+                <li>複数画面を持つ中規模以上のアプリ</li>
+            </ul>
+            <p>PyQt6も類似した選択肢だが、新規開発ではライセンス条件を確認したうえで、 まずPySide6を検討するとよい。</p>
+            <h4 id="flet">Flet</h4>
+            <p>FlutterベースのGUIをPythonから構築する。</p>
+            <p><strong>長所</strong></p>
+            <ul>
+                <li>モダンなデザインを作りやすい</li>
+                <li>レスポンシブレイアウトに対応</li>
+                <li>デスクトップ、Web、モバイルへの展開を検討できる</li>
+                <li>Pythonだけで比較的手軽に画面を作れる</li>
+            </ul>
+            <p><strong>短所</strong></p>
+            <ul>
+                <li>Tkinterより重い</li>
+                <li>ネイティブなWindowsアプリとは操作感が多少異なる</li>
+                <li>細かな制御ではQtに劣る場合がある</li>
+                <li>Flet独自の仕組みへの依存が大きくなる</li>
+            </ul>
+            <p><strong>適した用途</strong></p>
+            <ul>
+                <li>モダンな業務アプリ</li>
+                <li>Webとデスクトップの両方を視野に入れたアプリ</li>
+                <li>ダッシュボード</li>
+                <li>入力フォーム中心のアプリ</li>
+                <li>プロトタイプ</li>
+            </ul>
+            <h4 id="nicegui">NiceGUI</h4>
+            <p>Web技術を使用し、ブラウザ上にモダンなGUIを構築する。</p>
+            <p><strong>長所</strong></p>
+            <ul>
+                <li>Webらしい画面を作りやすい</li>
+                <li>ダッシュボードや管理画面に強い</li>
+                <li>HTML、CSS、JavaScriptと組み合わせられる</li>
+                <li>ネットワーク経由で複数端末から利用できる</li>
+            </ul>
+            <p><strong>短所</strong></p>
+            <ul>
+                <li>従来型のデスクトップGUIではない</li>
+                <li>ローカルサーバーとブラウザを使用する</li>
+                <li>単純なツールとしては構成が重い</li>
+                <li>デスクトップ固有機能との連携には工夫が必要</li>
+            </ul>
+            <h3 id="guiの自由度重視">GUIの自由度重視</h3>
+            <h4 id="pyside6-2">PySide6</h4>
+            <p>自由度と実用性のバランスに優れている。</p>
+            <p><strong>主な機能</strong></p>
+            <ul>
+                <li>Qt Style Sheetsによるデザイン変更</li>
+                <li>独自ウィジェットの作成</li>
+                <li>マウス・キーボードイベントの詳細制御</li>
+                <li>2DグラフィックスとOpenGL連携</li>
+                <li>Webページ表示</li>
+                <li>動画・音声再生</li>
+                <li>ドラッグ＆ドロップ</li>
+                <li>複数ウィンドウとシステムトレイ</li>
+                <li>高度なテーブルとツリー</li>
+                <li>Qt Quick/QMLによるアニメーションUI</li>
+            </ul>
+            <p>通常のデスクトップアプリで自由度を求める場合の第一候補。</p>
+            <h4 id="kivy">Kivy</h4>
+            <p>独自デザイン、タッチ操作、アニメーションに強い。</p>
+            <p><strong>長所</strong></p>
+            <ul>
+                <li>ウィジェットを自由にデザインできる</li>
+                <li>アニメーションとマルチタッチに対応</li>
+                <li>Windows、Linux、macOS、Android、iOSを対象にできる</li>
+                <li>ゲーム風、タブレット風のUIを作りやすい</li>
+            </ul>
+            <p><strong>短所</strong></p>
+            <ul>
+                <li>Windows標準アプリのような外観にはなりにくい</li>
+                <li>通常の業務アプリでは操作感が独特になる</li>
+                <li>配布やモバイル向けビルドの難易度が高め</li>
+                <li>日本語入力やプラットフォーム固有の挙動に注意が必要</li>
+            </ul>
+            <p><strong>適した用途</strong></p>
+            <ul>
+                <li>タッチパネルやキオスク端末</li>
+                <li>展示用・教育用アプリ</li>
+                <li>独自UI</li>
+                <li>モバイル展開を考えたアプリ</li>
+            </ul>
+            <h4 id="dear-pygui">Dear PyGui</h4>
+            <p>GPUを利用するImmediate Mode GUIライブラリ。</p>
+            <p><strong>長所</strong></p>
+            <ul>
+                <li>描画が高速</li>
+                <li>グラフやリアルタイム更新に強い</li>
+                <li>コードから画面を動的に構築しやすい</li>
+                <li>OpenGLやGPU系ツールとの相性がよい</li>
+            </ul>
+            <p><strong>短所</strong></p>
+            <ul>
+                <li>一般的なWindowsアプリとは異なる外観</li>
+                <li>フォーム中心の業務アプリにはやや不向き</li>
+                <li>PySide6ほどデスクトップ機能が充実していない</li>
+            </ul>
+            <p><strong>適した用途</strong></p>
+            <ul>
+                <li>リアルタイムモニター</li>
+                <li>グラフ表示</li>
+                <li>シミュレーター</li>
+                <li>開発者向けツール</li>
+                <li>画像処理パラメーターの調整画面</li>
+            </ul>
+            <h4 id="wxpython">wxPython</h4>
+            <p>OSのネイティブウィジェットを利用する。</p>
+            <p><strong>長所</strong></p>
+            <ul>
+                <li>OSに自然になじむ見た目と操作感</li>
+                <li>本格的なデスクトップアプリを作れる</li>
+                <li>Tkinterより高機能</li>
+            </ul>
+            <p><strong>短所</strong></p>
+            <ul>
+                <li>PySide6より日本語資料や最近の事例が少ない</li>
+                <li>レイアウト管理に慣れが必要</li>
+                <li>独自デザインではQtに劣る</li>
+            </ul>
+            <h3 id="総合比較">総合比較</h3>
+            <p>5段階の相対評価。軽さには、起動速度、依存関係、メモリ使用量、 配布サイズを含む。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ライブラリ</th>
+                        <th>軽さ</th>
+                        <th>見た目</th>
+                        <th>自由度</th>
+                        <th>学習しやすさ</th>
+                        <th>大規模開発</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Tkinter / ttk</td>
+                        <td>5</td>
+                        <td>2</td>
+                        <td>2</td>
+                        <td>5</td>
+                        <td>2</td>
+                    </tr>
+                    <tr>
+                        <td>ttkbootstrap</td>
+                        <td>4</td>
+                        <td>3</td>
+                        <td>2</td>
+                        <td>4</td>
+                        <td>2</td>
+                    </tr>
+                    <tr>
+                        <td>CustomTkinter</td>
+                        <td>4</td>
+                        <td>4</td>
+                        <td>3</td>
+                        <td>4</td>
+                        <td>2</td>
+                    </tr>
+                    <tr>
+                        <td>PySide6</td>
+                        <td>2</td>
+                        <td>5</td>
+                        <td>5</td>
+                        <td>3</td>
+                        <td>5</td>
+                    </tr>
+                    <tr>
+                        <td>wxPython</td>
+                        <td>3</td>
+                        <td>4</td>
+                        <td>3</td>
+                        <td>3</td>
+                        <td>4</td>
+                    </tr>
+                    <tr>
+                        <td>Flet</td>
+                        <td>2</td>
+                        <td>5</td>
+                        <td>3</td>
+                        <td>4</td>
+                        <td>3</td>
+                    </tr>
+                    <tr>
+                        <td>NiceGUI</td>
+                        <td>2</td>
+                        <td>5</td>
+                        <td>4</td>
+                        <td>4</td>
+                        <td>4</td>
+                    </tr>
+                    <tr>
+                        <td>Kivy</td>
+                        <td>2</td>
+                        <td>4</td>
+                        <td>5</td>
+                        <td>2</td>
+                        <td>3</td>
+                    </tr>
+                    <tr>
+                        <td>Dear PyGui</td>
+                        <td>4</td>
+                        <td>3</td>
+                        <td>4</td>
+                        <td>3</td>
+                        <td>3</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3 id="用途別のおすすめ">用途別のおすすめ</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>用途</th>
+                        <th>おすすめ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>小さなWindows便利ツール</td>
+                        <td>Tkinter / ttk</td>
+                    </tr>
+                    <tr>
+                        <td>軽さと見た目を両立した小規模ツール</td>
+                        <td>CustomTkinter</td>
+                    </tr>
+                    <tr>
+                        <td>既存Tkinterアプリの外観改善</td>
+                        <td>ttkbootstrap</td>
+                    </tr>
+                    <tr>
+                        <td>きれいで本格的なデスクトップアプリ</td>
+                        <td>PySide6</td>
+                    </tr>
+                    <tr>
+                        <td>Webとデスクトップの両対応</td>
+                        <td>Flet</td>
+                    </tr>
+                    <tr>
+                        <td>ブラウザや社内ネットワークで利用</td>
+                        <td>NiceGUI</td>
+                    </tr>
+                    <tr>
+                        <td>独自UIやタッチ操作</td>
+                        <td>Kivy</td>
+                    </tr>
+                    <tr>
+                        <td>リアルタイムグラフや高速描画</td>
+                        <td>Dear PyGui</td>
+                    </tr>
+                    <tr>
+                        <td>OSになじむネイティブな外観</td>
+                        <td>wxPython</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3 id="選び方">選び方</h3>
+            <ol>
+                <li>小規模で軽さを優先するなら、Tkinterを選ぶ。</li>
+                <li>小規模で見た目も重視するなら、CustomTkinterを選ぶ。</li>
+                <li>長期運用や本格開発なら、PySide6を選ぶ。</li>
+                <li>Webとデスクトップの両対応なら、Fletを選ぶ。</li>
+                <li>独自UIやタッチ操作なら、Kivyを選ぶ。</li>
+                <li>グラフやリアルタイム描画なら、Dear PyGuiを選ぶ。</li>
+            </ol>
+            <p>Windows向けのファイル処理・自動化ツールでは、簡単なものには CustomTkinter、複雑で長期運用するものにはPySide6が実用的である。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://docs.python.org/3/library/tkinter.html">tkinter — Python interface to Tcl/Tk（Python公式ドキュメント）</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://customtkinter.tomschimansky.com/">CustomTkinter Documentation</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://pypi.org/project/customtkinter/">CustomTkinter - PyPI</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://www.ttkbootstrap.org/en/latest/">ttkbootstrap Documentation</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://pypi.org/project/ttkbootstrap/">ttkbootstrap - PyPI</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://doc.qt.io/qtforpython-6/">Qt for Python Documentation（PySide6）</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://pypi.org/project/PySide6/">PySide6 - PyPI</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://flet.dev/docs/">Flet Documentation</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://pypi.org/project/flet/">Flet - PyPI</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://nicegui.io/documentation">NiceGUI Documentation</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://pypi.org/project/nicegui/">NiceGUI - PyPI</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://kivy.org/doc/stable/">Kivy Documentation</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://pypi.org/project/Kivy/">Kivy - PyPI</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://dearpygui.readthedocs.io/en/latest/">Dear PyGui Documentation</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://pypi.org/project/dearpygui/">Dear PyGui - PyPI</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.wxpython.org/">wxPython API Documentation</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://pypi.org/project/wxPython/">wxPython - PyPI</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://devguide.python.org/versions/">Python Developer's Guide: Status of Python versions</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <p>なお、「総合比較」の評価と「用途別のおすすめ」は、上記の公式情報を 踏まえた相対的な評価である。</p>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: 全参考URLと各プロジェクトのPyPI情報を実査し、現行版・Python要件を追加してRule形式へ補正</li>
+                <li>2026-08-24: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

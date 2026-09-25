@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VS CodeのMarkdown PDF拡張機能の使い方</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">VS CodeのMarkdown PDF拡張機能の使い方</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>VS Code拡張「Markdown PDF」のインストールから、MarkdownファイルのPDF出力、出力先や用紙の設定、エラー時の確認方法までを整理する。</p>
+            <h2 id="結論">結論</h2>
+            <p>Markdown PDFをインストールし、出力したいMarkdownファイルをエディターで開いてから、コマンドパレットまたはエディターの右クリックメニューで <code>markdown-pdf: Export (pdf)</code> を実行する。初回のPDF出力では、システムにあるChrome、Edge、Chromiumのいずれかが使われるか、管理対象のChromiumがダウンロードされる。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="インストール">インストール</h3>
+            <ol>
+                <li>VS Codeの拡張機能ビューを開く（<code>Ctrl+Shift+X</code>）。</li>
+                <li><code>Markdown PDF</code> を検索する。</li>
+                <li>発行元が <code>yzane</code> の拡張機能を選び、インストールする。</li>
+            </ol>
+            <h3 id="pdfへの変換">PDFへの変換</h3>
+            <p>変換対象の <code>.md</code> ファイルをVS Codeで開き、次のどちらかを実行する。</p>
+            <p><strong>コマンドパレット</strong></p>
+            <ol>
+                <li><code>F1</code> または <code>Ctrl+Shift+P</code> を押す。</li>
+                <li><code>export</code> と入力する。</li>
+                <li><code>markdown-pdf: Export (pdf)</code> を選ぶ。</li>
+            </ol>
+            <p><strong>エディターの右クリックメニュー</strong></p>
+            <ol>
+                <li>Markdownファイルのエディター上で右クリックする。</li>
+                <li><code>markdown-pdf: Export (pdf)</code> を選ぶ。</li>
+            </ol>
+            <p>HTML、PNG、JPEGで出力するときは、それぞれ <code>markdown-pdf: Export (html)</code>、<code>markdown-pdf: Export (png)</code>、<code>markdown-pdf: Export (jpeg)</code> を選ぶ。すべての形式を一度に作る場合は <code>markdown-pdf: Export (all: pdf, html, png, jpeg)</code> を選択する。</p>
+            <h3 id="出力先とpdfの設定">出力先とPDFの設定</h3>
+            <p>ユーザー設定またはワークスペース設定の <code>settings.json</code> に、必要な設定を追加する。例えば、Markdownファイルと同じ場所にある <code>pdf</code> フォルダーへPDFを出力し、A4縦にする場合は次のように設定する。</p>
+            <pre><code class="language-json">{
+  &quot;markdown-pdf.type&quot;: [&quot;pdf&quot;],
+  &quot;markdown-pdf.outputDirectory&quot;: &quot;./pdf&quot;,
+  &quot;markdown-pdf.format&quot;: &quot;A4&quot;,
+  &quot;markdown-pdf.orientation&quot;: &quot;portrait&quot;
+}</code></pre>
+            <p>設定画面（<code>Ctrl+,</code>）で <code>markdown-pdf</code> を検索すると、利用できる設定を確認できる。プロジェクト単位で設定する場合は、プロジェクトの <code>.vscode/settings.json</code> に記載する。<code>markdown-pdf.outputDirectory</code> を指定しない場合は、出力ファイルは元のMarkdownファイルと同じフォルダーに作成される。</p>
+            <h3 id="保存時に自動変換する">保存時に自動変換する</h3>
+            <p>Markdownファイルを保存するたびに自動で変換するには、設定に次を追加してVS Codeを再起動する。</p>
+            <pre><code class="language-json">{
+  &quot;markdown-pdf.convertOnSave&quot;: true
+}</code></pre>
+            <p>保存のたびに変換が走るため、必要なファイルやワークスペースに限って有効にする。</p>
+            <h3 id="初回のpdf出力とトラブルシューティング">初回のPDF出力とトラブルシューティング</h3>
+            <p>PDF、PNG、JPEGの出力にはChromiumベースのブラウザーが使われる。拡張機能は、設定で指定した実行ファイル、インストール済みのGoogle Chrome・Microsoft Edge・Chromium、管理対象として自動ダウンロードするChromiumの順に利用を試みる。ブラウザーのダウンロードが必要な場合、ネットワークやプロキシ設定によって完了まで時間がかかることがある。</p>
+            <p>出力に失敗した場合は、拡張機能が表示するエラー通知を確認する。詳しい情報を不具合報告用に収集するには、コマンドパレットから <code>Markdown PDF: Output Diagnostics</code> を実行する。</p>
+            <p>Markdown内の生HTMLは既定でサニタイズされる。スクリプトや一部のHTML要素・属性は出力から除去されることがあるため、HTMLが必要な場合は拡張機能の <code>markdown-pdf.sanitize</code> 設定と公式説明を確認する。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://github.com/yzane/vscode-markdown-pdf/blob/master/README.ja.md">Markdown PDF（日本語README）</a></li>
+                <li>インストール後の出力操作、保存時変換、Chromiumの選択、設定、診断コマンドを確認</li>
+                <li>参照日: 2026-09-24</li>
+                <li><a href="https://marketplace.visualstudio.com/items?itemName=yzane.markdown-pdf">Markdown PDF - Visual Studio Marketplace</a></li>
+                <li>拡張機能の公開ページ、更新内容、サニタイズの既定動作を確認</li>
+                <li>参照日: 2026-09-24</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-24: Markdown PDF拡張機能の導入、出力、設定、トラブル対応をまとめて初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word文書をMarkdownへ高忠実度変換する方法</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">Word文書をMarkdownへ高忠実度変換する方法</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>Word文書（主に <code>.docx</code>）をMarkdownへ変換する方法を、Pythonによる一括自動化、 表・画像・見出しなどの保持、複雑な表を扱う場合の限界という観点で整理する。</p>
+            <h2 id="結論">結論</h2>
+            <p>通常の文書には、<strong>PandocをPythonの<code>subprocess</code>から呼び出す方法</strong>を第一候補とする。 見出し、箇条書き、リンク、脚注、画像、単純な表などの文書構造をまとめて扱え、 <code>--extract-media</code>で画像も分離できる。Pythonからは薄いラッパーである<code>pypandoc</code>も 使えるが、実行コマンドと終了コードが明確な<code>subprocess</code>はバッチ処理を管理しやすい。</p>
+            <p>ただし、<strong>WordとMarkdownの間に完全で可逆な変換はない</strong>。Pandoc自身も、複雑な表は 中間表現に収まらず、表現力の高い形式からMarkdownへの変換は欠落を伴うとしている。 特に次の要素は、一般的なMarkdown表では厳密に保持できない。</p>
+            <ul>
+                <li>縦・横の結合セル</li>
+                <li>入れ子の表</li>
+                <li>セルごとの幅、高さ、余白、罫線、背景色</li>
+                <li>セル内の複数段落、箇条書き、画像</li>
+                <li>行頭・行末で省略されたセル</li>
+            </ul>
+            <p>したがって、目的別に次の方針を採る。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>目的</th>
+                        <th>推奨方式</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>検索、Git管理、LLM入力、通常の閲覧</td>
+                        <td>Pandocで<code>docx</code>から<code>gfm</code>へ直接変換</td>
+                    </tr>
+                    <tr>
+                        <td>結合セルなどの表構造を維持</td>
+                        <td>Markdown内にHTMLの<code>table</code>を残すハイブリッド方式</td>
+                    </tr>
+                    <tr>
+                        <td>見た目をほぼ同じに維持</td>
+                        <td>HTMLまたはPDFを正本とし、Markdownは検索用の派生物にする</td>
+                    </tr>
+                    <tr>
+                        <td>Wordスタイルを独自ルールで意味構造へ変換</td>
+                        <td>MammothでHTML化し、スタイルマップを指定</td>
+                    </tr>
+                    <tr>
+                        <td>多種類の文書を同じPython処理へ載せる</td>
+                        <td>DoclingまたはMarkItDownも候補。ただし実ファイル評価が必要</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>表を絶対に崩せない場合は、純粋なMarkdown表へ変換しない。対象のMarkdownビューアが 生HTMLを許可することを確認したうえで、<code>rowspan</code>、<code>colspan</code>を持つHTML表を埋め込む。 ビューアが生HTMLを無効化する場合は、HTMLファイル、PDF、または元の<code>.docx</code>への リンクを併記する。</p>
+            <p>2026年8月31日時点のPandoc 3.11では、DOCX readerで不均一な行、および通常行の後に 見出し行が現れる表の処理が改善された。ただし、これは読み取り改善であり、GFMに 結合セル、罫線、セル余白などの表現構文がないという根本的な制約は変わらない。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="markdownだけでは厳密な変換ができない理由">Markdownだけでは厳密な変換ができない理由</h3>
+            <p>Wordの表は単純な行列に限らない。結合セルは複数のレイアウトグリッドを占有でき、 行の先頭または末尾のセルを省略でき、セル内に別の表も配置できる。一方、GFMの表は ヘッダー行、区切り行、データ行からなる行列で、<code>rowspan</code>や<code>colspan</code>を指定する構文を 持たない。</p>
+            <p>つまり、変換ツールの性能だけでなく、<strong>出力先のMarkdown自体に表現手段がない</strong>。 セル結合を解除して値を繰り返せばデータは残せるが、見出しのグループ関係など元の 意味は変わる。列幅や罫線色を落とす場合も、内容は同じでも見た目は同じにならない。</p>
+            <h3 id="方式の比較">方式の比較</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>方式</th>
+                        <th>長所</th>
+                        <th>表に関する注意</th>
+                        <th>適する用途</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Pandoc</td>
+                        <td>対応要素が広く、CLIと自動化が安定している。画像抽出やフィルターも利用可能</td>
+                        <td>複雑な表を完全には保持できないと公式に明記されている</td>
+                        <td>第一候補、一般文書の一括変換</td>
+                    </tr>
+                    <tr>
+                        <td><code>pypandoc</code></td>
+                        <td>PandocをPython APIから呼べる。Pandoc同梱版もある</td>
+                        <td>変換能力はPandoc本体と同じで、限界を解消するものではない</td>
+                        <td>Python内でAPIを統一したい場合</td>
+                    </tr>
+                    <tr>
+                        <td>Mammoth</td>
+                        <td>Wordスタイルを意味的なHTMLへ割り当てられる</td>
+                        <td>表は扱えるが罫線などの表書式を無視する。Markdown直接出力は廃止予定で、HTML経由が推奨</td>
+                        <td>定型スタイルの文書をきれいなHTMLへ変換</td>
+                    </tr>
+                    <tr>
+                        <td>Docling</td>
+                        <td>DOCXを読み、統一文書モデルからMarkdown、HTML、JSONへ出力できる</td>
+                        <td>DOCX表の全要素保持は公式の対応形式一覧だけでは保証されない</td>
+                        <td>PDFなども含む共通パイプライン</td>
+                    </tr>
+                    <tr>
+                        <td>MarkItDown</td>
+                        <td>Pythonで導入しやすく、Word、表、リンクなどに対応</td>
+                        <td>公式に、人向けの高忠実度変換には最適でない場合があるとしている</td>
+                        <td>LLM入力、検索、テキスト分析</td>
+                    </tr>
+                    <tr>
+                        <td>WordでHTML保存</td>
+                        <td>Word自身の解釈でHTML化でき、結合セルをHTMLで表現しやすい</td>
+                        <td>WordとWindowsが必要。不要なHTML/CSSの整理が必要</td>
+                        <td>複雑表をHTMLのまま残す場合</td>
+                    </tr>
+                    <tr>
+                        <td><code>python-docx</code>で自作</td>
+                        <td>独自テンプレートに合わせて細かく制御できる</td>
+                        <td>結合、省略、入れ子表の解析が複雑。汎用変換器の自作は高コスト</td>
+                        <td>入力様式が固定された限定用途</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3 id="推奨する基本コマンド">推奨する基本コマンド</h3>
+            <p>Pandocをインストールした後、次のように変換する。</p>
+            <pre><code class="language-powershell">pandoc input.docx `
+  --from=docx `
+  --to=gfm+raw_html `
+  --wrap=none `
+  --extract-media=input_assets `
+  --output=output.md</code></pre>
+            <ul>
+                <li><code>gfm</code>はGitHub Flavored Markdownを出力する。</li>
+                <li><code>+raw_html</code>は出力先で生HTMLを使えるようにする指定である。ただし、この指定だけで</li>
+            </ul>
+            <p>複雑なWord表が自動的にHTML表として完全保持される保証はない。</p>
+            <ul>
+                <li><code>--wrap=none</code>は自動改行による不要な差分を減らす。</li>
+                <li><code>--extract-media</code>は文書内画像を指定フォルダへ展開する。</li>
+                <li>出力先のMarkdownビューアがGFMと生HTMLのどちらを許可するか、先に確認する。</li>
+            </ul>
+            <h3 id="pythonによるフォルダ一括変換">Pythonによるフォルダ一括変換</h3>
+            <p>次の例は、指定フォルダ直下の<code>.docx</code>を変換し、Wordが作る一時ファイルを除外する。 Pandocの異常終了を成功扱いにせず、一時出力が完成してから本番ファイルへ置き換える。</p>
+            <pre><code class="language-python">from __future__ import annotations
+
+import shutil
+import subprocess
+from pathlib import Path
+
+
+def convert_docx(source: Path, output_dir: Path) -&gt; Path:
+    pandoc = shutil.which(&quot;pandoc&quot;)
+    if pandoc is None:
+        raise RuntimeError(&quot;pandocがPATH上に見つかりません&quot;)
+
+    source = source.resolve()
+    output_dir.mkdir(parents=True, exist_ok=True)
+    destination = output_dir / f&quot;{source.stem}.md&quot;
+    temporary = output_dir / f&quot;{source.stem}.md.tmp&quot;
+    media_dir = f&quot;{source.stem}_assets&quot;
+
+    command = [
+        pandoc,
+        str(source),
+        &quot;--from=docx&quot;,
+        &quot;--to=gfm+raw_html&quot;,
+        &quot;--wrap=none&quot;,
+        f&quot;--extract-media={media_dir}&quot;,
+        f&quot;--output={temporary.name}&quot;,
+    ]
+
+    try:
+        subprocess.run(
+            command,
+            cwd=output_dir,
+            check=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        temporary.unlink(missing_ok=True)
+        raise
+
+    temporary.replace(destination)
+    return destination
+
+
+def convert_folder(input_dir: Path, output_dir: Path) -&gt; list[Path]:
+    sources = sorted(
+        path
+        for path in input_dir.glob(&quot;*.docx&quot;)
+        if not path.name.startswith(&quot;~$&quot;)
+    )
+    return [convert_docx(source, output_dir) for source in sources]
+
+
+if __name__ == &quot;__main__&quot;:
+    converted = convert_folder(Path(&quot;input&quot;), Path(&quot;output&quot;))
+    for path in converted:
+        print(path)</code></pre>
+            <p>実行例:</p>
+            <pre><code class="language-powershell">python convert_docx.py</code></pre>
+            <p><code>pypandoc</code>を使う場合も、実体はPandocである。通常版は別途Pandocが必要で、 <code>pypandoc<em>binary</code>はPandocを同梱する。再現性が必要な運用では、Pandocまたは <code>pypandoc</em>binary</code>のバージョンを固定する。</p>
+            <h3 id="複雑な表を保持する方法">複雑な表を保持する方法</h3>
+            <h4 id="1-html表をmarkdownへ埋め込む">1. HTML表をMarkdownへ埋め込む</h4>
+            <p>結合セルを次のようなHTMLとして残す。</p>
+            <pre><code class="language-html">&lt;table&gt;
+  &lt;tr&gt;
+    &lt;th colspan=&quot;2&quot;&gt;上期&lt;/th&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td rowspan=&quot;2&quot;&gt;売上&lt;/td&gt;
+    &lt;td&gt;4月&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td&gt;5月&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;</code></pre>
+            <p>この方式はセル結合の構造を表せるが、次を満たす場合に限って有効である。</p>
+            <ol>
+                <li>利用するMarkdown処理系が生HTMLを削除しない。</li>
+                <li>HTMLの<code>table</code>、<code>rowspan</code>、<code>colspan</code>を許可する。</li>
+                <li>必要な見た目をHTML属性または許可されたCSSで再現できる。</li>
+            </ol>
+            <p>GitHubなど公開先ごとのHTMLサニタイズ規則に依存するため、最終表示先で確認する。</p>
+            <h4 id="2-wordからhtmlを作る">2. WordからHTMLを作る</h4>
+            <p>WindowsにMicrosoft Wordがある場合、Word Automationの<code>Document.SaveAs2</code>と <code>wdFormatFilteredHTML</code>を使ってHTMLへ保存できる。表をHTMLのままMarkdownへ埋め込む 方式は、純粋なMarkdown表に落とすより結合構造を保ちやすい。</p>
+            <p>ただし、Filtered HTMLでも完全なピクセル一致を保証するものではない。Word由来の CSS整理、画像パスの移動、不要な要素の除去、および最終ビューアでの表示確認が必要に なる。サーバーでWordの自動操作を行う構成は避け、デスクトップ上の管理されたバッチ として使う。</p>
+            <h4 id="3-表が複雑なら変換を止める">3. 表が複雑なら変換を止める</h4>
+            <p>高忠実度を必須条件にする場合は、黙って単純化するより、次の要素を事前検出して 要確認として停止する方が安全である。</p>
+            <ul>
+                <li>OOXMLの<code>w:gridSpan</code>または<code>w:vMerge</code>がある</li>
+                <li>表の中に別の<code>w:tbl</code>がある</li>
+                <li><code>w:gridBefore</code>または<code>w:gridAfter</code>による省略セルがある</li>
+                <li>セル内に複数段落、箇条書き、画像がある</li>
+            </ul>
+            <p>これらを含む文書はHTML表ルートへ振り分けるか、元の<code>.docx</code>を正本として残す。 <code>python-docx</code>の通常の行セル列挙は、結合セルの値を各グリッド位置へ繰り返す近似を 行うため、単純な二次元配列だけを比較して「構造が保持された」と判定してはいけない。</p>
+            <h3 id="変換後の検証">変換後の検証</h3>
+            <p>「コマンドが成功した」ことと「文書が正しく変換された」ことを分けて確認する。 実運用前に、少なくとも次の要素を持つ基準用DOCXを作成する。</p>
+            <ol>
+                <li>見出し1～3、通常段落、太字、斜体、リンク</li>
+                <li>番号付き・番号なし・入れ子の箇条書き</li>
+                <li>単純な表、横結合、縦結合、入れ子表</li>
+                <li>セル内の複数段落、箇条書き、画像</li>
+                <li>本文画像、脚注、改ページ、テキストボックス</li>
+                <li>日本語、英数字、記号、改行</li>
+            </ol>
+            <p>検証は次の順で行う。</p>
+            <ul>
+                <li><strong>機械検証:</strong> Pandocの終了コード、出力ファイル、画像ファイル、リンク切れを確認する。</li>
+                <li><strong>構造検証:</strong> 見出し数、表数、行列数、セル本文、画像数、脚注数を元文書と照合する。</li>
+                <li><strong>複雑表検証:</strong> 結合数と結合範囲、入れ子表数をOOXMLまたはHTMLの</li>
+            </ul>
+            <p><code>rowspan</code>、<code>colspan</code>と照合する。</p>
+            <ul>
+                <li><strong>表示検証:</strong> 実際に使うMarkdownビューアで、原本と並べて目視確認する。</li>
+                <li><strong>回帰検証:</strong> 変換器のバージョン更新時に同じ基準文書を再変換し、差分を確認する。</li>
+            </ul>
+            <p>厳密な運用では、文書ごとに元DOCX、変換済みMarkdown、抽出画像、変換ログを同じ 識別子で保存する。Markdownだけを残して元文書を破棄してはならない。</p>
+            <h3 id="選定の目安">選定の目安</h3>
+            <ul>
+                <li>まずPandocで代表的な実文書を10件程度変換する。</li>
+                <li>単純な表だけで要件を満たすなら、そのままバッチ化する。</li>
+                <li>結合表が崩れる場合は、表だけHTMLとして残せる処理へ切り替える。</li>
+                <li>見た目の一致が要件なら、Markdown化を正本化の手段にせず、HTMLまたはPDFを正本に</li>
+            </ul>
+            <p>する。</p>
+            <ul>
+                <li>LLMへの入力が主目的であれば、MarkItDownやDoclingも同じ評価用文書で比較する。</li>
+            </ul>
+            <p>公式の対応形式一覧だけで精度を判断しない。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://pandoc.org/MANUAL.html">Pandoc User's Guide</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://github.com/jgm/pandoc/releases/tag/3.11">Pandoc 3.11 release notes</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://github.github.com/gfm/#tables-extension-">GitHub Flavored Markdown Spec</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://github.com/JessicaTegner/pypandoc">pypandoc README</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://github.com/mwilliamson/python-mammoth">Mammoth .docx to HTML converter</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docling-project.github.io/docling/usage/supported_formats/">Docling Supported formats</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docling-project.github.io/docling/getting_started/quickstart/">Docling Quickstart</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://github.com/microsoft/markitdown">Microsoft MarkItDown</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://python-docx.readthedocs.io/en/latest/user/tables.html">python-docx: Working with Tables</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://learn.microsoft.com/en-us/office/vba/api/word.saveas2">Document.SaveAs2 method (Word)</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://learn.microsoft.com/en-us/office/vba/api/word.wdsaveformat">WdSaveFormat enumeration (Word)</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: 全参考URLを再確認し、Pandoc 3.11のDOCX表処理改善とMammothのMarkdown直接出力廃止予定を反映</li>
+                <li>2026-08-26: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

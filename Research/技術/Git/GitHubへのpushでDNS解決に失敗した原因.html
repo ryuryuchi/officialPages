@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHubへのpushでDNS解決に失敗した原因</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">GitHubへのpushでDNS解決に失敗した原因</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p><code>git push</code> 実行時に <code>Could not resolve host: github.com</code> が発生した事象について、 GitHub の接続先、DNS、HTTPS、プロキシ設定を確認し、原因の範囲を整理する。</p>
+            <h2 id="結論">結論</h2>
+            <p>障害時のエラーは、Git の HTTPS 通信が始まる前に <code>github.com</code> の IP アドレスを 名前解決できなかったことを示す。このため、その時点では DNS リゾルバー、ネットワーク 接続、または一時的な名前解決経路に問題があった。</p>
+            <p>2026-08-25の再確認では <code>github.com</code> がIPv4アドレス <code>20.27.177.113</code> に解決され、 HTTPSの応答、<code>git ls-remote</code>、<code>git push</code> が成功した。2026-08-31にも同じIPv4アドレス への名前解決とHTTPSの<code>200</code>応答を確認し、Gitのプロキシ設定はなく、WinHTTPも直接接続 だった。したがって、リモートURL、リポジトリ、恒久的なプロキシ設定が原因であった 証拠はなく、<strong>一時的なDNS名前解決失敗</strong>と判断する。</p>
+            <p>ただし、障害発生時のDNS応答やネットワークログは残っていないため、端末、VPN、 組織ネットワーク、ISP、DNSリゾルバーのどこで失敗したかは特定できない。現在の <code>github.com</code>のIPアドレスも恒久値ではなく、GitHubはIP範囲を変更し得るとしているため、 固定値として設定しない。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="失敗時に分かること">失敗時に分かること</h3>
+            <p>失敗した Git のメッセージは次のとおりであった。</p>
+            <pre><code class="language-text">fatal: unable to access &#x27;https://github.com/ryuryuchi/Research.git/&#x27;:
+Could not resolve host: github.com</code></pre>
+            <p>これは認証失敗、リポジトリ不存在、書き込み権限不足ではなく、ホスト名を IP アドレスへ 変換する DNS の段階で失敗したことを示す。HTTP 接続や GitHub の認証より前の段階なので、 このメッセージだけから GitHub 側の障害とは断定できない。</p>
+            <h3 id="再確認時の観測結果">再確認時の観測結果</h3>
+            <p>2026-08-25と2026-08-31に再確認した結果は次のとおり。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>確認項目</th>
+                        <th>結果</th>
+                        <th>判断</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>Resolve-DnsName github.com -Type A -DnsOnly</code></td>
+                        <td>両日とも<code>20.27.177.113</code>を返した</td>
+                        <td>DNSは再び応答している</td>
+                    </tr>
+                    <tr>
+                        <td><code>Resolve-DnsName github.com -Type AAAA -DnsOnly</code></td>
+                        <td>2026-08-31はAAAA応答なし</td>
+                        <td>IPv6レコードがなくてもIPv4で接続可能</td>
+                    </tr>
+                    <tr>
+                        <td><code>curl.exe -I https://github.com</code></td>
+                        <td>両日とも<code>200</code></td>
+                        <td>TLS/HTTPSでGitHubに到達できる</td>
+                    </tr>
+                    <tr>
+                        <td><code>git config --show-origin --get-regexp ...proxy</code></td>
+                        <td>両日とも設定なし</td>
+                        <td>Git固有のプロキシ設定は検出されない</td>
+                    </tr>
+                    <tr>
+                        <td><code>netsh winhttp show proxy</code></td>
+                        <td>両日とも直接接続</td>
+                        <td>WinHTTPの明示プロキシはない</td>
+                    </tr>
+                    <tr>
+                        <td><code>git ls-remote</code></td>
+                        <td>2026-08-25に成功</td>
+                        <td>当日のGitリモート読み取りができた</td>
+                    </tr>
+                    <tr>
+                        <td><code>git push</code></td>
+                        <td>2026-08-25に<code>Everything up-to-date</code></td>
+                        <td>当日の書き込み経路も利用できた</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>これらは再確認時の状態であり、失敗時の DNS 応答を復元するものではない。 GitHub Statusの公開履歴もGitHub側の障害を調べる手掛かりになるが、DNSエラーだけで GitHub側の障害とは判断できない。</p>
+            <h3 id="再発時の確認順序">再発時の確認順序</h3>
+            <p>再発した場合は、push を繰り返す前に次を確認する。</p>
+            <ol>
+                <li><code>Resolve-DnsName github.com -Type A -DnsOnly</code> を実行し、DNS応答、使用したDNS</li>
+            </ol>
+            <p>サーバー、時刻、エラーを保存する。必要なら<code>-Server</code>で組織指定のDNSと別の 許可済みDNSを比較する。</p>
+            <ol>
+                <li><code>curl.exe -I https://github.com</code> を実行し、DNS 後の HTTPS 到達性を確認する。</li>
+                <li><code>git config --show-origin --get-regexp "^(http|https)\..<em>proxy$|^remote\..</em>\.proxy$"</code> と</li>
+            </ol>
+            <p><code>netsh winhttp show proxy</code> でプロキシ設定を確認する。</p>
+            <ol>
+                <li>DNSだけが失敗する場合は、他のドメインも失敗するか、VPN・社内ネットワーク・</li>
+            </ol>
+            <p>ファイアウォール・名前解決キャッシュ・DNSサーバーの状態を確認する。DNSサーバーを 恒久的に変更する前に、組織の ネットワーク方針を確認する。</p>
+            <ol>
+                <li>DNS と HTTPS が成功してから <code>git ls-remote</code>、続いて <code>git push</code> を実行する。</li>
+            </ol>
+            <p>GitHub公式資料では、接続問題の主因としてファイアウォール、プロキシ、組織ネットワーク なども挙げている。またGitHubのIPアドレス一覧はMeta APIで取得できるが、完全な一覧では なく変更もあるため、単一IPの固定登録は避ける。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://git-scm.com/docs/git-config">Git - git-config Documentation</a></li>
+                <li>HTTP プロキシを含む Git 設定の確認方法</li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://learn.microsoft.com/ja-jp/powershell/module/dnsclient/resolve-dnsname">Resolve-DnsName</a></li>
+                <li>Windows PowerShell で DNS 名前解決を確認するコマンドレット</li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://www.githubstatus.com/">GitHub Status</a></li>
+                <li>GitHub サービスの稼働状況を確認する公式ステータスページ</li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.github.com/en/get-started/using-github/troubleshooting-connectivity-problems">Troubleshooting connectivity problems - GitHub Docs</a></li>
+                <li>接続問題で確認すべきファイアウォール、プロキシ、組織ネットワークの公式案内</li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/about-githubs-ip-addresses">About GitHub's IP addresses - GitHub Docs</a></li>
+                <li>GitHubのIP範囲が変更され得ることとMeta APIの制約</li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: 全参考URLを再確認し、DNS・HTTPS・プロキシを再検証。IP固定を避ける注意とGitHub公式の接続切り分けを追加</li>
+                <li>2026-08-25: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

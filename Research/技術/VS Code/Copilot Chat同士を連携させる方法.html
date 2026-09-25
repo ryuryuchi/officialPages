@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copilot Chat同士を連携させる方法</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">Copilot Chat同士を連携させる方法</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>VS CodeのGitHub Copilotで、複数のCopilot Chatやエージェントセッションが 互いに通信、情報共有、並行作業できるかを調査した。独立セッション、 同一セッション内の複数チャット、サブエージェント、共有ファイルによる連携を 区別して整理する。</p>
+            <h2 id="結論">結論</h2>
+            <p><strong>方法はある。</strong> 2026年8月31日時点のVS Code Agent Hostでは、エージェントが セッション一覧の取得、新しいセッションまたはチャットの作成、別セッションの 最近のコンテキストの参照、セッション間の追加メッセージ送信を行える。</p>
+            <p>ただし、すべてのCopilot Chatが自動的に会話履歴を共有するわけではない。 基本単位であるセッションは独立しており、同一セッション内の複数チャットも、 ワークスペースとworktreeは共有するが会話履歴は別である。連携させるには、 Agent Hostのセッション操作、親エージェントからサブエージェントへの委譲、 またはファイルやIssueなどの共有媒体を明示的に使う必要がある。</p>
+            <p>現在のCopilot Agent Host環境で実用的なのは、メインチャットへ 「別チャットを作って調査を依頼し、結果を読み取ってこちらへ統合して」のように 依頼する方法である。単に複数チャットを開くだけでは相互通信しない。 VS Code 1.135では、Copilot CLI、GitHub Copilot app、Claude Code、Codexで作成した 対応ローカルセッションを発見し、VS Codeへ引き継ぐ機能も追加されている。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="連携方法の比較">連携方法の比較</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>方法</th>
+                        <th>会話履歴</th>
+                        <th>コード作業場所</th>
+                        <th>主な連携経路</th>
+                        <th>向いている用途</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Agent Hostのセッション間連携</td>
+                        <td>セッションごとに独立</td>
+                        <td>設定したworkspaceまたはworktree</td>
+                        <td>一覧取得、作成、コンテキスト参照、メッセージ送信</td>
+                        <td>独立したChat同士の明示的な協調</td>
+                    </tr>
+                    <tr>
+                        <td>同一セッション内の複数チャット</td>
+                        <td>チャットごとに独立</td>
+                        <td>同じworkspaceとworktreeを共有</td>
+                        <td>共有ファイル、明示的なメッセージやコンテキスト取得</td>
+                        <td>同じプロジェクトの並行作業</td>
+                    </tr>
+                    <tr>
+                        <td>セッションまたはチャットのfork</td>
+                        <td>分岐地点まで引き継ぐ</td>
+                        <td>元の設定を基に分岐</td>
+                        <td>分岐時に履歴を複製</td>
+                        <td>別案の比較、試行</td>
+                    </tr>
+                    <tr>
+                        <td>親エージェントとサブエージェント</td>
+                        <td>サブエージェントは独立したコンテキスト</td>
+                        <td>親から割り当てられた範囲</td>
+                        <td>親が委譲し、結果を受け取る</td>
+                        <td>調査、レビュー、テストの分担</td>
+                    </tr>
+                    <tr>
+                        <td><code>AGENTS.md</code>や共有ファイル</td>
+                        <td>共有しない</td>
+                        <td>同じファイルを参照可能</td>
+                        <td>Git管理ファイルを仲介</td>
+                        <td>共通ルール、進捗、成果物の共有</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3 id="agent-hostによるセッション間連携">Agent Hostによるセッション間連携</h3>
+            <p>VS Code公式ドキュメントは、Agent Host上のエージェントが次の操作を行えると 明記している。</p>
+            <ul>
+                <li>セッションを一覧表示する</li>
+                <li>新しいセッションまたはチャットを作成する</li>
+                <li>別セッションの最近のコンテキストを読む</li>
+                <li>セッション間で追加メッセージを送る</li>
+            </ul>
+            <p>この仕組みなら、メインチャットをオーケストレーターとして、調査用、実装用、 レビュー用のチャットを作り、それぞれの結果を回収して統合できる。 Agent Hostで利用できる操作は<code>list<em>sessions</code>、<code>create</em>session</code>、<code>create<em>chat</code>、 <code>get</em>session<em>context</code>、<code>send</em>message</code>などとして公式チートシートにも掲載されている。</p>
+            <p>この環境で確認できるセッション操作も、一覧取得、同じセッション内へのチャット追加、 独立セッション作成、会話コンテキスト取得、メッセージ送信に対応している。 メッセージ送信は非同期の新しいターンとして届くため、実行中の相手の推論へ 即座に割り込む操作とは異なる。</p>
+            <h3 id="同一セッション内の複数チャット">同一セッション内の複数チャット</h3>
+            <p>Agent Hostセッションでは、1つのセッション内に複数チャットを作成できる。 各チャットは履歴、タイトル、状態、エージェントまたはモデルの選択が独立している。 一方、workspaceとworktreeは共有する。</p>
+            <p>新規チャットは空の状態で始まり、別チャットの履歴を自動継承しない。 元の会話を引き継いで別案を試す場合は、新規チャットよりforkを使う。</p>
+            <p>workspaceを共有するため、チャットAが保存したファイル変更はチャットBからも 確認できる。ただし、同じファイルを同時編集すると競合、意図しない上書き、 一時的に不整合な状態を読む危険がある。並行実装では担当ファイルを分けるか、 セッションごとにGit worktreeを使う。</p>
+            <p>Agents windowでは<code>/btw &lt;質問&gt;</code>によるside chatも利用できる。これは元チャットの コンテキストを非公開で引き継ぐが、メインチャットの履歴には質問と回答を追加しない。 2026年8月31日時点ではCopilotとClaudeのセッションに限られ、CodexやChat viewでは 利用できない。</p>
+            <h3 id="親エージェントとサブエージェント">親エージェントとサブエージェント</h3>
+            <p>サブエージェントは、独立したCopilot Chat同士を対等につなぐ仕組みではなく、 親エージェントが一部の仕事を委譲する仕組みである。サブエージェントは専用の コンテキストで動作し、結果や状態を親セッションへ返す。</p>
+            <p>Custom agentを調査担当、編集担当、レビュー担当のように定義すると、 Copilotランタイムが依頼内容に応じてサブエージェントとして選択できる。 複雑な作業を役割分担させる場合は、任意のChat同士を直接会話させるより、 この親子構造の方が管理しやすい。</p>
+            <h3 id="間接的な連携">間接的な連携</h3>
+            <p>Agent Hostのセッション操作を使わない場合も、次の共有媒体で間接的に連携できる。</p>
+            <ul>
+                <li><code>AGENTS.md</code>や<code>.github/copilot-instructions.md</code>で全Chatへ共通ルールを渡す</li>
+                <li>Markdown、JSON、テスト結果などを共有ファイルとして読み書きする</li>
+                <li>GitHub Issue、Pull Request、コミットを作業の受け渡しに使う</li>
+                <li>MCPサーバーを介して共通のタスク管理システムへ接続する</li>
+            </ul>
+            <p>これらはChat同士の会話ではない。共有状態を介した協調であり、更新順序、 排他制御、完了条件を別途設計する必要がある。</p>
+            <h3 id="実用的な依頼例">実用的な依頼例</h3>
+            <p>同じAgent Hostセッション内で分担させる場合は、メインチャットへ次のように依頼する。</p>
+            <pre><code class="language-text">このセッションに別チャットを2つ作成してください。
+1つ目には公式ドキュメント調査、2つ目には既存コードの確認を依頼し、
+両方の結果を読み取って、このチャットで結論を統合してください。
+ファイル編集はメインチャットだけが行ってください。</code></pre>
+            <p>別worktreeへ分離したい場合は、次のように依頼する。</p>
+            <pre><code class="language-text">実装用の独立セッションをGit worktreeで作成し、対象機能を実装させてください。
+完了後にそのセッションの結果と差分を確認し、このセッションへ要点を報告してください。</code></pre>
+            <p>利用しているハーネスや権限にセッション操作ツールがない場合、この依頼は実行できない。 その場合は、Agents windowで人がセッションを切り替えるか、共有ファイルやIssueを 仲介させる。</p>
+            <h3 id="注意点">注意点</h3>
+            <ul>
+                <li>独立セッションのコンテキストは自動的に漏れない。連携には明示的な読み取りや</li>
+            </ul>
+            <p>メッセージ送信が必要である。</p>
+            <ul>
+                <li>同一worktreeでの同時編集は避け、担当範囲を分けるかworktreeで隔離する。</li>
+                <li>相手Chatへのメッセージは、新しいターンとして処理される。実行中処理への</li>
+            </ul>
+            <p>強制割り込みや共有メモリの直接書き換えとは異なる。</p>
+            <ul>
+                <li>サブエージェントは親へ報告する委譲構造であり、独立セッション同士の</li>
+            </ul>
+            <p>対等な常時会話とは異なる。</p>
+            <ul>
+                <li>Agents windowと複数チャットはPreviewまたは段階的提供の機能を含むため、</li>
+            </ul>
+            <p>バージョン、ハーネス、組織ポリシーによって利用可否が異なる。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://code.visualstudio.com/docs/agents/concepts/sessions">Sessions and handoff - Visual Studio Code</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://code.visualstudio.com/docs/agents/run/sessions/manage-sessions">Manage agent sessions in VS Code - Visual Studio Code</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://code.visualstudio.com/docs/agents/run/agents-window">Use the Agents window - Visual Studio Code</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://code.visualstudio.com/updates/v1_131">Visual Studio Code 1.131</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.github.com/en/copilot/how-tos/copilot-sdk/features/custom-agents">Custom agents and sub-agent orchestration - GitHub Docs</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.github.com/en/copilot/concepts/agents/copilot-cli/comparing-cli-features">Comparing GitHub Copilot CLI customization features - GitHub Docs</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://code.visualstudio.com/docs/agents/run/subagents">Subagents in Visual Studio Code</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: 全参考URLを再確認し、外部セッションの引き継ぎ、Agent Hostの</li>
+            </ul>
+            <p>セッション操作名、複数チャットとside chat、現行サブエージェント仕様を反映</p>
+            <ul>
+                <li>2026-08-31: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

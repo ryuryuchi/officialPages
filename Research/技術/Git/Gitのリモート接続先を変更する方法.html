@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gitのリモート接続先を変更する方法</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">Gitのリモート接続先を変更する方法</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>ローカルリポジトリに設定済みの Git リモートを、別のリポジトリまたは別の接続方式 （HTTPS / SSH）へ安全に切り替える方法を整理する。</p>
+            <h2 id="結論">結論</h2>
+            <p>現在使っているリモート（通常は <code>origin</code>）を別の接続先に置き換えるには、対象リポジトリ のディレクトリで、<code>git remote -v</code> に表示された実際のリモート名を使って次を実行する。</p>
+            <pre><code class="language-powershell">git remote -v
+git remote set-url &lt;remote-name&gt; &lt;新しいURL&gt;
+git remote -v
+git ls-remote &lt;remote-name&gt;</code></pre>
+            <p><code>git remote set-url</code> は既存リモートの fetch URL を変更する。個別の push URL が未設定なら push にもその URL が使われる。以前の接続先を残しておきたい場合は、置換せず <code>git remote add &lt;名前&gt; __RAW<em>HTML</em>0__</code> で別名のリモートを追加する。</p>
+            <p>URL と接続先リポジトリを誤ると、次の <code>git push</code> の送信先も変わる。切替直後は、まず <code>git ls-remote __RAW<em>HTML</em>0__</code> で読み取り接続を確認してから、意図したブランチだけを明示して push する。</p>
+            <p><code>git ls-remote</code> が GitHub の <code>Repository not found</code> で失敗したときは、URLが誤っている、 対象リポジトリが未作成・削除済み、または現在の認証情報に非公開リポジトリへの権限がない、 のいずれかである。GitHub は非公開リポジトリの存在を隠すため、未存在と権限不足を同じ メッセージで返すことがある。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="1-現在の設定を確認する">1. 現在の設定を確認する</h3>
+            <p>対象のローカルリポジトリへ移動して、リモート名と fetch / push の URL を確認する。</p>
+            <pre><code class="language-powershell">Set-Location &lt;ローカルリポジトリのパス&gt;
+git remote -v</code></pre>
+            <p>一般的なリモート名は <code>origin</code> だが、実際に表示された名前を後続のコマンドで使用する。 <code>origin</code>、ブランチ名の <code>main</code> や <code>master</code> は、リモート名ではない。たとえば表示が <code>Research  https://github.com/ryuryuchi/Research.git</code> であれば、対象名は <code>Research</code> である。 存在しない名前で <code>git remote set-url</code> を実行すると <code>No such remote</code> で失敗する。</p>
+            <h3 id="2-既存の接続先を置き換える">2. 既存の接続先を置き換える</h3>
+            <p>同じリモート名の接続先だけを変更する場合は、次のように実行する。</p>
+            <pre><code class="language-powershell"># HTTPS の例。remote-name は git remote -v で確認した名前に置き換える
+git remote set-url &lt;remote-name&gt; https://github.com/OWNER/NEW-REPOSITORY.git
+
+# SSH の例
+git remote set-url &lt;remote-name&gt; git@github.com:OWNER/NEW-REPOSITORY.git</code></pre>
+            <p>このコマンドは指定したリモートの fetch URL を変更する。個別の push URL が設定されていない通常の 構成では、push にも新しい fetch URL が使われる。一方、個別の push URL がすでにある場合は 変更されないため、変更後は両方の設定値と実際の読み取り接続を確認する。</p>
+            <pre><code class="language-powershell">git remote get-url &lt;remote-name&gt;
+git remote get-url --push &lt;remote-name&gt;
+git ls-remote &lt;remote-name&gt;</code></pre>
+            <p><code>git ls-remote __RAW<em>HTML</em>0__</code> が成功すれば、認証とネットワークを含むリモートへの読み取り接続を 確認できる。push 前には、送信するブランチを明示する。</p>
+            <pre><code class="language-powershell">git push -u &lt;remote-name&gt; &lt;ローカルブランチ名&gt;</code></pre>
+            <p>既存のローカルブランチが旧リモートの追跡ブランチを upstream としている場合は、切替後に 新しいリモートへ設定し直す。</p>
+            <pre><code class="language-powershell">git branch --set-upstream-to=&lt;remote-name&gt;/&lt;リモートブランチ名&gt; &lt;ローカルブランチ名&gt;</code></pre>
+            <p>新しいリモートに対象ブランチがまだない場合は、上記の <code>git push -u</code> が push と upstream の 設定を同時に行う。</p>
+            <h3 id="3-repository-not-found-の切り分けと復旧">3. <code>Repository not found</code> の切り分けと復旧</h3>
+            <p>次の順に確認する。</p>
+            <pre><code class="language-powershell"># 1. 設定値を確認する
+git remote -v
+git remote get-url &lt;remote-name&gt;
+
+# 2. 読み取り接続を確認する
+git ls-remote &lt;remote-name&gt;</code></pre>
+            <ul>
+                <li>事実: <code>git ls-remote __RAW<em>HTML</em>0__</code> が <code>Repository not found</code> なら、GitHub はそのURLへの</li>
+            </ul>
+            <p>アクセスを許可していない。</p>
+            <ul>
+                <li>確認: ブラウザーで <code>https://github.com/OWNER/REPOSITORY</code> を開き、意図した所有者・リポジトリ名</li>
+            </ul>
+            <p>で作成済みか確認する。自分の非公開リポジトリなら、Git Credential Manager の認証アカウントが そのリポジトリにアクセスできるアカウントであることも確認する。ブラウザーで確認するときは、 Git接続用の末尾 <code>.git</code> を除いたURLを使う。</p>
+            <ul>
+                <li>判断: 新URLが未作成または権限不足で、元の接続先で作業を継続する場合は、成功を確認済みの旧URLへ</li>
+            </ul>
+            <p>直ちに戻す。新しいGitHubアカウントへ移行する目的なら、先にそのアカウントで空のリポジトリを作成し、 認証を済ませてから再設定する。</p>
+            <pre><code class="language-powershell"># 旧URLへ戻す例
+git remote set-url &lt;remote-name&gt; https://github.com/OLD-OWNER/REPOSITORY.git
+git ls-remote &lt;remote-name&gt;</code></pre>
+            <h3 id="4-古い接続先を残して併用する">4. 古い接続先を残して併用する</h3>
+            <p>移行中などで旧リモートも保持したい場合は、既存のリモートを変更せず、新しいリモートを 追加する。</p>
+            <pre><code class="language-powershell">git remote add new-origin https://github.com/OWNER/NEW-REPOSITORY.git
+git remote -v
+git ls-remote new-origin
+git push -u new-origin &lt;ローカルブランチ名&gt;</code></pre>
+            <p>必要に応じて、名前を付け替えて新しい接続先を <code>origin</code> にできる。これは、リモート名を 標準的な <code>origin</code> に統一したい場合だけ行う。</p>
+            <pre><code class="language-powershell">git remote rename origin old-origin
+git remote rename new-origin origin
+git remote -v</code></pre>
+            <p>不要になった旧リモートを削除する場合は、接続先と upstream 設定を確認してから実行する。 削除すると、そのリモートの設定とリモート追跡ブランチが削除される。</p>
+            <pre><code class="language-powershell">git remote remove old-origin</code></pre>
+            <h3 id="5-fetch-と-push-の接続先を分ける場合">5. fetch と push の接続先を分ける場合</h3>
+            <p><code>git remote set-url --push origin __RAW<em>HTML</em>0__</code> は push URL だけを変更できる。 ただし Git の公式仕様では、同一リモートに設定する fetch URL と push URL は同じ場所を指す べきとされる。上流を fetch し、自分のフォークへ push する用途では、<code>upstream</code> と <code>origin</code> のように別々のリモートを作成する。</p>
+            <pre><code class="language-powershell">git remote add upstream https://github.com/ORIGINAL-OWNER/REPOSITORY.git
+git remote set-url origin https://github.com/MY-ACCOUNT/REPOSITORY.git
+git fetch upstream
+git push origin &lt;ローカルブランチ名&gt;</code></pre>
+            <h3 id="注意点">注意点</h3>
+            <ul>
+                <li>HTTPS から SSH へ変更するには、SSH 公開鍵をホスティングサービス側へ登録し、SSH 接続を</li>
+            </ul>
+            <p>利用できる状態にしておく。HTTPS では、サービスに応じてパスワードではなくトークンや credential helper が必要になる。</p>
+            <ul>
+                <li><code>set-url</code> はリモート名を変更しないため、普段の <code>git pull</code> や <code>git push</code> が向かう先を</li>
+            </ul>
+            <p>確認してから実行する。</p>
+            <ul>
+                <li>切替先に既存履歴と異なるブランチがある場合、push が拒否されることがある。強制 push は</li>
+            </ul>
+            <p>他者の履歴を失わせ得るため、履歴とブランチ保護を確認するまで使用しない。</p>
+            <ul>
+                <li>旧リモートの追跡ブランチ表示が残った場合は、切替先を fetch して内容を確認した後に</li>
+            </ul>
+            <p><code>git remote prune &lt;リモート名&gt;</code> を検討する。これは古いリモート追跡参照を削除する操作である。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://git-scm.com/docs/git-remote">Git - git-remote Documentation</a></li>
+                <li><code>set-url</code>、<code>add</code>、<code>rename</code>、<code>remove</code>、<code>prune</code> の公式仕様</li>
+                <li>参照日: 2026-09-08</li>
+                <li><a href="https://docs.github.com/en/get-started/git-basics/managing-remote-repositories">Managing remote repositories - GitHub Docs</a></li>
+                <li>リモートの追加、URL変更、名前変更、削除の公式手順</li>
+                <li>参照日: 2026-09-08</li>
+                <li><a href="https://git-scm.com/docs/git-branch">Git - git-branch Documentation</a></li>
+                <li>ブランチの upstream 表示と設定に関する公式仕様</li>
+                <li>参照日: 2026-09-08</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-08: GitHub のブラウザー表示でも <code>Page not found</code> となるURLの確認方法を追記</li>
+                <li>2026-09-08: <code>Repository not found</code> の原因、リモート名とブランチ名の違い、旧URLへの復旧手順を追記</li>
+                <li>2026-09-08: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

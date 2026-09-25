@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPT-6 Astraの性能とモデル比較</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">GPT-6 Astraの性能とモデル比較</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>OpenAIのGPT-6 Astraについて、どの程度高性能なのか、GPT-5.6シリーズや Claude Fable 5.1などと何が違うのかを、2026年9月7日時点の公式資料で確認した。 モデル選定時に、性能だけでなく価格、速度、得意分野、公開評価の限界も比較する。</p>
+            <h2 id="結論">結論</h2>
+            <ul>
+                <li>Astraは、OpenAIが「最も高性能」と位置づける、難しいエンドツーエンド作業向けの</li>
+            </ul>
+            <p>最上位モデルである。複雑な推論、コーディング、コンピューター操作、調査、 文書作成を一つの作業フローで行う用途に向く。</p>
+            <ul>
+                <li>「すべての用途で少しずつ速くなったモデル」というより、GPT-5.6 Solよりも</li>
+            </ul>
+            <p>難問・長い作業・ツール利用での成功率を優先したモデルと見るのが適切である。 公式発表のベンチマークではGPT-5.6 Solを上回る結果が報告されているが、 これはOpenAIによる評価であり、独立評価による普遍的な順位ではない。</p>
+            <ul>
+                <li>GPT-5.6シリーズとの最大の差は、Astraが最上位の能力とツール作業を優先する点で</li>
+            </ul>
+            <p>ある。コンテキスト長と最大出力長は同じなので、単純な長文処理だけを目的に Astraへ移行する必要はない。</p>
+            <ul>
+                <li>Claude Fable 5.1は、長時間・長期のエージェント作業と深い推論に特化した競合で、</li>
+            </ul>
+            <p>Astraと同じく高難度タスク向けである。AstraはOpenAI APIのツール統合と コンピューター利用、Fable 5.1はAnthropicの長時間エージェント設計が比較上の 軸になる。どちらが常に上とは断定できず、実タスクの評価が必要である。</p>
+            <ul>
+                <li>価格重視ならGPT-5.6 TerraまたはLuna、速度と費用のバランスならClaude Sonnet 5、</li>
+            </ul>
+            <p>最安の大量処理ならGPT-5.6 LunaやClaude Haiku 4.5が候補になる。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="astraの仕様と-どれくらいすごいか">Astraの仕様と「どれくらいすごいか」</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>項目</th>
+                        <th>GPT-6 Astra</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>モデルID</td>
+                        <td><code>gpt-6-astra</code></td>
+                    </tr>
+                    <tr>
+                        <td>入力</td>
+                        <td>テキスト、画像</td>
+                    </tr>
+                    <tr>
+                        <td>出力</td>
+                        <td>テキスト</td>
+                    </tr>
+                    <tr>
+                        <td>コンテキスト</td>
+                        <td>1,050,000トークン</td>
+                    </tr>
+                    <tr>
+                        <td>最大入力</td>
+                        <td>922,000トークン</td>
+                    </tr>
+                    <tr>
+                        <td>最大出力</td>
+                        <td>128,000トークン</td>
+                    </tr>
+                    <tr>
+                        <td>知識カットオフ</td>
+                        <td>2026年4月30日</td>
+                    </tr>
+                    <tr>
+                        <td>推論effort</td>
+                        <td><code>low</code>、<code>medium</code>、<code>high</code>、<code>xhigh</code>、<code>max</code></td>
+                    </tr>
+                    <tr>
+                        <td>入力価格</td>
+                        <td>100万トークンあたり10ドル</td>
+                    </tr>
+                    <tr>
+                        <td>出力価格</td>
+                        <td>100万トークンあたり50ドル</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>OpenAIの公式発表では、AstraはGPT-5.6 Solに対して、数学・科学、コード、 ソフトウェア脆弱性の発見、ブラウザーやOSを含むコンピューター操作などの評価で 改善したと報告されている。特に、未見の課題を解く能力と、少ない出力トークンで 作業を完了する能力を重視した設計である。</p>
+            <p>ただし、ベンチマークの数値は評価条件、プロンプト、ツール、試行回数に依存する。 「Astraなら人間の仕事を無条件に置き換えられる」という意味ではない。公式発表 自身も、サイバーセキュリティの高度な攻撃手順などは拒否し、提供時点では安全策を 適用していると説明している。</p>
+            <h3 id="gpt-5-6シリーズとの差">GPT-5.6シリーズとの差</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>モデル</th>
+                        <th>主な位置づけ</th>
+                        <th>入力/出力価格（100万トークン）</th>
+                        <th>知識カットオフ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>GPT-6 Astra</td>
+                        <td>最難関の推論、コード、調査、コンピューター利用</td>
+                        <td>$10 / $50</td>
+                        <td>2026-04-30</td>
+                    </tr>
+                    <tr>
+                        <td>GPT-5.6 Sol</td>
+                        <td>GPT-5.6の旗艦、複雑な専門業務</td>
+                        <td>$4 / $20</td>
+                        <td>2026-02-16</td>
+                    </tr>
+                    <tr>
+                        <td>GPT-5.6 Terra</td>
+                        <td>能力とコストのバランス</td>
+                        <td>$2 / $12</td>
+                        <td>2026-02-16</td>
+                    </tr>
+                    <tr>
+                        <td>GPT-5.6 Luna</td>
+                        <td>コスト重視・大量処理</td>
+                        <td>$0.2 / $1.2</td>
+                        <td>2026-02-16</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>4モデルはいずれも公式仕様上は1.05Mコンテキスト、最大128K出力、画像入力、 Web検索・ファイル検索・コード実行・コンピューター利用などに対応する。 したがって差は「長さ」よりも、難しい問題を解く能力、ツールを使った長い作業の 安定性、価格で考えるべきである。AstraはSolの入力価格2.5倍、出力価格2.5倍で、 同じ処理を安く大量に回すモデルではない。</p>
+            <h3 id="claude-fable-5-1や他モデルとの得意分野">Claude Fable 5.1や他モデルとの得意分野</h3>
+            <p>Anthropicの現行モデル一覧では、Fable 5.1は「難しい推論と長期間の エージェント作業」、Opus 5は「複雑なエージェント型コーディングと企業業務」、 Sonnet 5は「速度と知能の組み合わせ」、Haiku 4.5は「最速でニアフロンティアの 知能」と整理されている。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>目的</th>
+                        <th>第一候補</th>
+                        <th>理由</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>最難関の推論、複数ツールをまたぐ長い作業</td>
+                        <td>GPT-6 Astra / Claude Fable 5.1</td>
+                        <td>最上位能力を優先する領域。実タスク評価で選ぶ</td>
+                    </tr>
+                    <tr>
+                        <td>OpenAI APIでコード・調査・PC操作を一体化</td>
+                        <td>GPT-6 Astra</td>
+                        <td>Responses APIと公式ツール群をまとめて使える</td>
+                    </tr>
+                    <tr>
+                        <td>長時間のエージェント作業、長文脈の継続</td>
+                        <td>Claude Fable 5.1</td>
+                        <td>Anthropicがこの用途を明示的に主対象としている</td>
+                    </tr>
+                    <tr>
+                        <td>複雑なコードを能力と費用のバランスで処理</td>
+                        <td>GPT-5.6 Sol / Claude Opus 5</td>
+                        <td>最上位より安く、専門業務向け</td>
+                    </tr>
+                    <tr>
+                        <td>速度、費用、一般的なコード・文章</td>
+                        <td>GPT-5.6 Terra / Claude Sonnet 5</td>
+                        <td>旗艦ほどの費用をかけずに実用性能を得る</td>
+                    </tr>
+                    <tr>
+                        <td>大量の分類、定型変換、低コスト処理</td>
+                        <td>GPT-5.6 Luna / Claude Haiku 4.5</td>
+                        <td>単価または速度を優先する設計</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>これは公式のモデル説明を用途へ対応付けた判断であり、全タスクでの客観的な 勝敗表ではない。日本語品質、ツール呼び出しの癖、拒否率、レイテンシーは、 同じプロンプトと同じツール設定で小さな評価セットを作って確認するのが安全である。</p>
+            <h3 id="実用上の選び方">実用上の選び方</h3>
+            <ol>
+                <li>まずGPT-5.6 SolまたはClaude Opus 5で通常の業務を評価する。</li>
+                <li>長い計画、複数ファイル、ブラウザーやPC操作、難しい推論で失敗が残る場合だけ</li>
+            </ol>
+            <p>AstraまたはFable 5.1へ上げる。</p>
+            <ol>
+                <li>成功率の差が小さい場合はTerra、Sonnet 5、Luna、Haiku 4.5へ下げて費用と</li>
+            </ol>
+            <p>待ち時間を測る。</p>
+            <ol>
+                <li>最新情報が必要な作業では、知識カットオフだけに頼らずWeb検索や資料を明示的に</li>
+            </ol>
+            <p>接続する。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://developers.openai.com/api/docs/models/gpt-6-astra">GPT-6 Astra（OpenAI API公式モデル資料）</a></li>
+                <li>参照日: 2026-09-07</li>
+                <li><a href="https://openai.com/index/gpt-6-astra/">GPT-6 Astra: A new generation of intelligence（OpenAI公式発表）</a></li>
+                <li>参照日: 2026-09-07</li>
+                <li><a href="https://developers.openai.com/api/docs/models/gpt-5.6-sol">GPT-5.6 Sol（OpenAI API公式モデル資料）</a></li>
+                <li>参照日: 2026-09-07</li>
+                <li><a href="https://developers.openai.com/api/docs/models/gpt-5.6-terra">GPT-5.6 Terra（OpenAI API公式モデル資料）</a></li>
+                <li>参照日: 2026-09-07</li>
+                <li><a href="https://developers.openai.com/api/docs/models/gpt-5.6-luna">GPT-5.6 Luna（OpenAI API公式モデル資料）</a></li>
+                <li>参照日: 2026-09-07</li>
+                <li><a href="https://platform.claude.com/docs/en/models/overview">Models overview（Anthropic公式モデル一覧）</a></li>
+                <li>参照日: 2026-09-07</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-07: GPT-6 Astraの公式仕様を確認し、GPT-5.6・Claude Fable 5.1などとの用途、価格、制約を比較</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

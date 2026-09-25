@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excelでスクロールしても指定範囲を表示し続ける方法</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">Excelでスクロールしても指定範囲を表示し続ける方法</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>Excelで画面をスクロールしても、見出しなどの指定した行や列を画面に表示し続ける方法を整理する。</p>
+            <h2 id="結論">結論</h2>
+            <p><code>表示</code>タブの<code>ウィンドウ枠の固定</code>を使用する。固定したい行の1つ下、かつ固定したい列の1つ右にあるセルを選択してから、<code>表示</code> &gt; <code>ウィンドウ枠の固定</code> &gt; <code>ウィンドウ枠の固定</code>を選ぶ。</p>
+            <p>例えば、2行目までとB列までを表示し続けたい場合は、セル<code>C3</code>を選択して固定する。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="行と列を固定する手順">行と列を固定する手順</h3>
+            <ol>
+                <li>表示し続けたい範囲を確認する。</li>
+                <li>固定したい最終行の1つ下、かつ固定したい最終列の1つ右にあるセルを選択する。</li>
+                <li><code>表示</code>タブを開く。</li>
+                <li><code>ウィンドウ枠の固定</code>を選び、メニュー内の<code>ウィンドウ枠の固定</code>を選択する。</li>
+            </ol>
+            <p>選択したセルより上にある行と、左にある列が固定される。</p>
+            <h3 id="選択例">選択例</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>表示し続けたい範囲</th>
+                        <th>選択するセル</th>
+                        <th>固定される範囲</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1行目</td>
+                        <td><code>A2</code></td>
+                        <td>1行目</td>
+                    </tr>
+                    <tr>
+                        <td>1～2行目</td>
+                        <td><code>A3</code></td>
+                        <td>1～2行目</td>
+                    </tr>
+                    <tr>
+                        <td>A列</td>
+                        <td><code>B1</code></td>
+                        <td>A列</td>
+                    </tr>
+                    <tr>
+                        <td>A～B列</td>
+                        <td><code>C1</code></td>
+                        <td>A～B列</td>
+                    </tr>
+                    <tr>
+                        <td>1～2行目とA～B列</td>
+                        <td><code>C3</code></td>
+                        <td>1～2行目とA～B列</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>1行目だけなら、<code>表示</code> &gt; <code>ウィンドウ枠の固定</code> &gt; <code>先頭行の固定</code>を選ぶ方法もある。A列だけなら、同じメニューの<code>先頭列の固定</code>を使用できる。</p>
+            <h3 id="制約と注意点">制約と注意点</h3>
+            <ul>
+                <li>任意の1セルだけを画面上の好きな位置に浮かせ続ける機能ではない。</li>
+                <li>固定できるのは、選択セルより上の連続した行と、左側の連続した列である。</li>
+                <li>目的のセルが表の途中にある場合、そのセルだけを固定することはできない。必要に応じて、目的のセルを含む上側の行または左側の列をまとめて固定する。</li>
+                <li>同じシート内の離れた場所を同時に確認したい場合は、<code>表示</code>の<code>分割</code>も選択肢になる。ただし、これは画面を複数の領域に分けて各領域を個別にスクロールする機能であり、セルを浮かせる機能ではない。</li>
+            </ul>
+            <h3 id="固定を解除する手順">固定を解除する手順</h3>
+            <p><code>表示</code> &gt; <code>ウィンドウ枠の固定</code> &gt; <code>ウィンドウ枠固定の解除</code>を選択する。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://support.microsoft.com/ja-JP/Excel/get-started/freeze-panes-to-lock-rows-and-columns">行と列をロックするためにウィンドウ枠を固定する - Microsoft サポート</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: Microsoft公式手順とリンクの有効性を再確認し、参考資料の参照日を更新</li>
+                <li>2026-08-26: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

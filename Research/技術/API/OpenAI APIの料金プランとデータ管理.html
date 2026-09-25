@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenAI APIの料金プランとデータ管理</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">OpenAI APIの料金プランとデータ管理</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>OpenAI APIを15人程度で利用する場合に、ChatGPTのサブスクリプションとの違い、 APIの料金体系・処理モード・利用ティア、データ保持と管理方法を調査した。 GPT-5.6 Sol、Terra、Lunaを使った場合の概算も示す。</p>
+            <h2 id="結論">結論</h2>
+            <ul>
+                <li><strong>OpenAI APIには、ChatGPT Plusのような固定月額の席数プランはない。</strong></li>
+            </ul>
+            <p>原則として、モデル・入力トークン・出力トークンなどに応じた従量課金である。</p>
+            <ul>
+                <li><strong>ChatGPT Plus、Business、Enterpriseの契約とAPIの請求は別である。</strong></li>
+            </ul>
+            <p>ChatGPTの契約だけではAPIクレジットは付与されない。</p>
+            <ul>
+                <li>15人がリアルタイムに使うなら通常の<strong>Standard</strong>処理を基本にし、</li>
+            </ul>
+            <p>月額の支出上限、プロジェクト単位のAPIキー、レート制限を設定する。 非同期の一括処理は<strong>Batch</strong>、遅延を許容できる低優先度処理は<strong>Flex</strong>が候補になる。</p>
+            <ul>
+                <li>OpenAI APIへ送ったデータは、現行の公式資料では**明示的にオプトインしない限り、</li>
+            </ul>
+            <p>モデルの学習・改善には使われない**。一方、乱用監視ログは標準で最大30日保持される ため、「学習に使われない」と「外部に一切保存されない」は別である。</p>
+            <ul>
+                <li>15人の利用量を「1人20リクエスト/日、月22営業日、1リクエストあたり入力2,000・</li>
+            </ul>
+            <p>出力1,000トークン」と仮定すると、GPT-5.6 Solは月約185ドル、Terraは約106ドル、 Lunaは約11ドルがモデル入出力の概算になる。実際の費用はプロンプト長、ツール、 画像、リトライ、キャッシュ、処理モードで変わる。</p>
+            <ul>
+                <li>機密情報を組織外へ出せない場合は、標準APIではなく、承認が必要な</li>
+            </ul>
+            <p>Zero Data Retention等の適格性を確認するか、ローカルLLMを選ぶ。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="1-apiとchatgptの契約の違い">1. APIとChatGPTの契約の違い</h3>
+            <p>OpenAI API PlatformとChatGPTのサブスクリプションは、請求・利用枠が分離している。 ChatGPT Plus等を契約していてもAPI利用料は別に発生し、API側で支払い方法と利用上限を 設定する必要がある。逆にAPIへ入金してもChatGPTの有料機能は付与されない。</p>
+            <p>したがって、15人で自社システムや社内チャットを作る場合はAPIのOrganizationと Projectを用意し、ブラウザーへAPIキーを直接配布せず、社内サーバーを経由して利用する。 ChatGPTの画面を15人へ提供したい場合は、APIではなくChatGPTのBusinessまたは Enterpriseの契約条件を別途比較する必要がある。</p>
+            <h3 id="2-apiの請求と利用ティア">2. APIの請求と利用ティア</h3>
+            <p>新しいAPIアカウントはプリペイド課金が基本で、購入クレジットを使うと残高から 差し引かれる。購入クレジットの有効期限は購入から1年で、原則として返金されない。 自動チャージを使う場合は、残高不足による停止と予想外の請求の両方を管理する。</p>
+            <p>利用ティアは支払い実績に応じて自動的に上がり、レート制限とOpenAIが承認する 月間利用上限が増える。下表の金額は2026年9月17日時点の公式資料に記載された 資格条件・承認月間利用上限であり、実際のRPM・TPMはモデルとOrganizationの ダッシュボードで確認する。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ティア</th>
+                        <th>資格条件</th>
+                        <th>OpenAI承認の月間利用上限</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Free</td>
+                        <td>対象地域のユーザー</td>
+                        <td>100ドル</td>
+                    </tr>
+                    <tr>
+                        <td>Tier 1</td>
+                        <td>5ドル支払い済み</td>
+                        <td>100ドル</td>
+                    </tr>
+                    <tr>
+                        <td>Tier 2</td>
+                        <td>50ドル支払い済み</td>
+                        <td>500ドル</td>
+                    </tr>
+                    <tr>
+                        <td>Tier 3</td>
+                        <td>100ドル支払い済み</td>
+                        <td>1,000ドル</td>
+                    </tr>
+                    <tr>
+                        <td>Tier 4</td>
+                        <td>250ドル支払い済み</td>
+                        <td>5,000ドル</td>
+                    </tr>
+                    <tr>
+                        <td>Tier 5</td>
+                        <td>1,000ドル支払い済み</td>
+                        <td>200,000ドル</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>ここでいう承認月間利用上限は、ユーザーが設定するハード上限とは別である。 OpenAIの承認上限とは別に、OrganizationまたはProjectに月間のSpend alertと hard spend limitを設定できる。15人で始める場合は、通知用のSpend alertと、 暴走時に429で停止するhard spend limitを併用するのが安全である。</p>
+            <h3 id="3-処理モードと使い分け">3. 処理モードと使い分け</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>モード</th>
+                        <th>料金・特性</th>
+                        <th>15人利用での用途</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Standard</td>
+                        <td>通常の従量課金。リアルタイム応答向け</td>
+                        <td>社内チャット、対話型アプリ</td>
+                    </tr>
+                    <tr>
+                        <td>Batch</td>
+                        <td>Standardより50%安く、別枠の高いレート制限。完了は24時間以内</td>
+                        <td>夜間の要約、分類、評価、埋め込み作成</td>
+                    </tr>
+                    <tr>
+                        <td>Flex</td>
+                        <td>Batchと同じ料金水準。遅延やリソース不足による一時利用不可がある</td>
+                        <td>非本番の評価、低優先度の非同期処理</td>
+                    </tr>
+                    <tr>
+                        <td>Fast</td>
+                        <td>Pay-as-you-goの柔軟性を保ちながら低遅延を狙う追加処理モード</td>
+                        <td>応答速度を優先する利用者向け</td>
+                    </tr>
+                    <tr>
+                        <td>Scale Tier</td>
+                        <td>トークン単位を事前購入し、予測可能なスループットを確保する方式</td>
+                        <td>大規模・高信頼な本番処理</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>Batchは即時応答用ではなく、Flexは本番の必須処理にそのまま使う前提ではない。 FastやScale Tierの適用モデル、料金、利用可否はモデル・契約によって変わるため、 導入時に価格ページとOrganizationの設定画面で再確認する。</p>
+            <h3 id="4-gpt-5-6の料金目安">4. GPT-5.6の料金目安</h3>
+            <p>価格ページの短いコンテキスト向け、100万トークンあたりの料金を示す。 キャッシュ入力、キャッシュ書き込み、長いコンテキスト、画像・音声などは別料金になる。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>モデル</th>
+                        <th>Standard入力</th>
+                        <th>Standard出力</th>
+                        <th>Batch/Flex入力</th>
+                        <th>Batch/Flex出力</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>GPT-5.6 Sol</td>
+                        <td>4ドル</td>
+                        <td>20ドル</td>
+                        <td>2ドル</td>
+                        <td>10ドル</td>
+                    </tr>
+                    <tr>
+                        <td>GPT-5.6 Terra</td>
+                        <td>2ドル</td>
+                        <td>12ドル</td>
+                        <td>1ドル</td>
+                        <td>6ドル</td>
+                    </tr>
+                    <tr>
+                        <td>GPT-5.6 Luna</td>
+                        <td>0.20ドル</td>
+                        <td>1.20ドル</td>
+                        <td>0.10ドル</td>
+                        <td>0.60ドル</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h4 id="15人での試算例">15人での試算例</h4>
+            <p>次の仮定で計算する。</p>
+            <ul>
+                <li>利用者15人</li>
+                <li>1人あたり1日20リクエスト</li>
+                <li>月22営業日</li>
+                <li>1リクエストあたり入力2,000トークン、出力1,000トークン</li>
+            </ul>
+            <p>月間では6,600リクエスト、入力13.2百万トークン、出力6.6百万トークンになる。 この条件でのStandard処理のモデル料金は次のとおりである。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>モデル</th>
+                        <th>月額概算（Standard）</th>
+                        <th>Batch/Flex料金水準の概算</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>GPT-5.6 Sol</td>
+                        <td>184.80ドル</td>
+                        <td>92.40ドル</td>
+                    </tr>
+                    <tr>
+                        <td>GPT-5.6 Terra</td>
+                        <td>105.60ドル</td>
+                        <td>52.80ドル</td>
+                    </tr>
+                    <tr>
+                        <td>GPT-5.6 Luna</td>
+                        <td>10.56ドル</td>
+                        <td>5.28ドル</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>これはトークン料金だけの試算であり、税、検索・コンピューター操作などのツール、 画像・音声、長文入力、リトライ、キャッシュ書き込み、アプリケーションサーバー費用は 含まない。実際の設計では、少なくとも2週間の実測使用量から見積もる。</p>
+            <h3 id="5-データ利用と保持">5. データ利用と保持</h3>
+            <p>OpenAI公式の「Your data」資料では、2023年3月1日以降、APIへ送信したデータは 明示的に共有へオプトインしない限り、OpenAIモデルの学習・改善には使われないと 説明されている。</p>
+            <p>ただし、次の区別が必要である。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>項目</th>
+                        <th>Standard APIの扱い</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>モデル学習への利用</td>
+                        <td>オプトインしない限り利用しない</td>
+                    </tr>
+                    <tr>
+                        <td>乱用監視ログ</td>
+                        <td>プロンプト・応答等を含む場合があり、標準では最大30日保持</td>
+                    </tr>
+                    <tr>
+                        <td>API機能のアプリケーション状態</td>
+                        <td>エンドポイントや機能によって保存期間が異なる</td>
+                    </tr>
+                    <tr>
+                        <td>Zero Data Retention</td>
+                        <td>適格な顧客がOpenAIの事前承認を受けて利用</td>
+                    </tr>
+                    <tr>
+                        <td>Modified Abuse Monitoring</td>
+                        <td>適格な顧客が事前承認を受け、監視ログから顧客コンテンツを除外</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>Zero Data Retentionを有効にしても、全エンドポイント・全機能が同じ扱いになるとは 限らない。会話、ファイル、エージェント、スレッド等の状態を保存する機能を使う場合は、 対象エンドポイントの保存条件を個別に確認する必要がある。</p>
+            <h3 id="6-15人で使う場合の推奨設定">6. 15人で使う場合の推奨設定</h3>
+            <ol>
+                <li>Organization内に用途別のProjectを作り、社内チャット用と検証用を分ける。</li>
+                <li>APIキーはサーバー側だけに置き、利用者ごとにキーを配布しない。</li>
+                <li>ProjectごとにSpend alertとhard spend limitを設定する。</li>
+                <li>1ユーザーあたりのリクエスト数、入力サイズ、最大出力トークン、同時実行数を制限する。</li>
+                <li>Standardは対話、Batch/Flexは非同期処理へ分ける。</li>
+                <li>機密情報はマスキングし、アプリケーションログへプロンプトや応答を丸ごと残さない。</li>
+                <li>契約上のデータ保持要件が厳しい場合は、Zero Data Retention等の適格性を営業へ確認し、</li>
+            </ol>
+            <p>承認を得られない場合はローカルLLMを優先する。</p>
+            <p>関連するローカル実行のハードウェア要件は、 <a href="../AI/ローカルLLMのPC要件と15人利用の構成.html">ローカルLLMのPC要件と15人利用の構成</a>を参照する。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://developers.openai.com/api/docs/pricing">Pricing（OpenAI API公式）</a></li>
+                <li>参照日: 2026-09-17</li>
+                <li><a href="https://developers.openai.com/api/docs/guides/rate-limits">Rate limits（OpenAI API公式）</a></li>
+                <li>参照日: 2026-09-17</li>
+                <li><a href="https://help.openai.com/en/articles/8264644-how-can-i-set-up-prepaid-billing">Setting up and managing prepaid API billing（OpenAI Help）</a></li>
+                <li>参照日: 2026-09-17</li>
+                <li><a href="https://developers.openai.com/api/docs/guides/spend-limits">Spend limits（OpenAI API公式）</a></li>
+                <li>参照日: 2026-09-17</li>
+                <li><a href="https://developers.openai.com/api/docs/guides/your-data">Data controls in the OpenAI platform（OpenAI API公式）</a></li>
+                <li>参照日: 2026-09-17</li>
+                <li><a href="https://developers.openai.com/api/docs/guides/batch">Batch API（OpenAI API公式）</a></li>
+                <li>参照日: 2026-09-17</li>
+                <li><a href="https://developers.openai.com/api/docs/guides/flex-processing">Flex processing（OpenAI API公式）</a></li>
+                <li>参照日: 2026-09-17</li>
+                <li><a href="https://developers.openai.com/api/docs/guides/fast-mode">Fast mode（OpenAI API公式）</a></li>
+                <li>参照日: 2026-09-17</li>
+                <li><a href="https://openai.com/api-scale-tier/">Scale Tier for API Customers（OpenAI公式）</a></li>
+                <li>参照日: 2026-09-17</li>
+                <li><a href="https://help.openai.com/en/articles/9039756-managing-billing-for-chatgpt-and-the-api-platform">Managing billing for ChatGPT and the API platform（OpenAI Help）</a></li>
+                <li>参照日: 2026-09-17</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-17: APIの請求、利用ティア、処理モード、GPT-5.6料金、データ保持、15人利用の管理方法を公式資料から調査して初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

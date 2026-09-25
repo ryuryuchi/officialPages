@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VS Code GitHub Copilot Chatの承認を緩くする方法</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">VS Code GitHub Copilot Chatの承認を緩くする方法</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>VS Code の GitHub Copilot Chat で、エージェントがファイル編集、ターミナル実行、外部アクセスを行うたびに表示される承認を減らす方法を調査した。</p>
+            <h2 id="結論">結論</h2>
+            <p>最初に試す方法は、チャット入力欄の権限ドロップダウンで <strong>Assisted permissions</strong> を選ぶことである。リスクが低いとモデルが判定したツール呼び出しを自動承認し、リスクがある操作だけ確認できるため、承認回数と安全性のバランスがよい。</p>
+            <p>特定の操作だけ毎回承認される場合は、確認ダイアログで「現在のワークスペース」または「今後すべて」を選ぶか、<code>Chat: Manage Tool Approval</code> コマンドで対象ツールを恒久承認する。ターミナルは <code>chat.tools.terminal.autoApprove</code> で、開発に必要なコマンドだけを許可リストへ追加する。</p>
+            <p><strong>Bypass Approvals</strong> と <strong>Autopilot</strong> は全ツールを自動承認する。信頼できるローカルのリポジトリだけで使い、通常は Agent Sandbox を有効にしてから選ぶ。外部サイトの取得結果、MCP サーバー、秘密情報を含むファイル、破壊的なコマンドまで自動承認され得るため、常用は推奨しない。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="すぐに承認回数を減らす手順">すぐに承認回数を減らす手順</h3>
+            <ol>
+                <li>VS Code の Chat ビューでエージェントのチャットを開く。</li>
+                <li>チャット入力欄にある権限（Permissions）ドロップダウンを開く。</li>
+                <li><strong>Assisted permissions</strong> を選ぶ。</li>
+            </ol>
+            <ul>
+                <li>初回は警告を確認する。</li>
+                <li>この選択は現在のチャットセッションに適用される。</li>
+            </ul>
+            <ol>
+                <li>新しいセッションでも既定にしたい場合は、設定で <code>chat.permissions.default</code> を希望する権限レベルに変更する。</li>
+            </ol>
+            <p><code>Assisted permissions</code> が表示されない場合は、設定 <code>chat.assistedPermissions.enabled</code> を有効化する。この権限レベルは Agent Host 上で動作するエージェントで利用できる。</p>
+            <h3 id="操作別に恒久承認する方法">操作別に恒久承認する方法</h3>
+            <p>確認ダイアログでは、1回だけでなく、現在のセッション、現在のワークスペース、以後すべての呼び出しという範囲を選択できる。よく使う安全な操作には「現在のワークスペース」を選ぶと、別プロジェクトには影響を広げずに済む。</p>
+            <p>まとめて管理するには、コマンドパレット（Windows: <code>Ctrl+Shift+P</code>）で <strong>Chat: Manage Tool Approval</strong> を実行する。MCP サーバーや拡張機能ごと、または個別ツールごとに、次の承認を設定できる。</p>
+            <ul>
+                <li><strong>Pre-approval</strong>: 実行前の確認を省略する。</li>
+                <li><strong>Post-approval</strong>: 外部データの実行結果をチャットへ渡す前の確認を省略する。</li>
+            </ul>
+            <p>不要になった恒久承認は <strong>Chat: Reset Tool Confirmations</strong> で全消去できる。個別に見直す場合は <code>Chat: Manage Tool Approval</code> を使う。</p>
+            <h3 id="ターミナル承認を減らす方法">ターミナル承認を減らす方法</h3>
+            <p>ターミナルは単一ツールで任意のコマンドを実行できるため、ツール全体ではなくコマンドごとに承認される。VS Code は既定で一部の安全なコマンドを自動承認し、<code>rm</code> や <code>del</code> のような危険なコマンドは手動承認を要求する。</p>
+            <p>設定 JSON の <code>chat.tools.terminal.autoApprove</code> に、日常的に使う読み取り専用または開発用コマンドを追加する。例:</p>
+            <pre><code class="language-jsonc">{
+  &quot;chat.tools.terminal.autoApprove&quot;: {
+    &quot;mkdir&quot;: true,
+    &quot;/^git (status|show\\b.*)$/&quot;: true,
+    &quot;del&quot;: false
+  }
+}</code></pre>
+            <ul>
+                <li>値 <code>true</code> は自動承認、<code>false</code> は常に手動承認である。</li>
+                <li><code>/.../</code> で正規表現を指定できる。</li>
+                <li>複合コマンドでは、すべてのサブコマンドが許可ルールに一致し、拒否ルールに一致しない場合だけ自動承認される。</li>
+                <li><code>chat.tools.terminal.enableAutoApprove</code> を <code>false</code> にすると、ターミナルの自動承認を完全に無効にできる。</li>
+            </ul>
+            <p>最初から <code>npm</code> や <code>git</code> 全体を許可するより、<code>git status</code>、テスト実行、ビルド実行など実際に必要なコマンドに絞った正規表現ルールから始めるのが安全である。</p>
+            <h3 id="全承認を省略する選択肢">全承認を省略する選択肢</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>選択肢</th>
+                        <th>動作</th>
+                        <th>推奨用途</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Default Approvals</td>
+                        <td>設定済みの個別承認ルールに従う</td>
+                        <td>通常の利用</td>
+                    </tr>
+                    <tr>
+                        <td>Assisted permissions</td>
+                        <td>モデルが低リスクと判断した操作を自動承認</td>
+                        <td>承認を減らす第一候補</td>
+                    </tr>
+                    <tr>
+                        <td>Bypass Approvals</td>
+                        <td>すべてのツール呼び出しを自動承認</td>
+                        <td>信頼済みのローカル作業</td>
+                    </tr>
+                    <tr>
+                        <td>Autopilot</td>
+                        <td>全自動承認に加え、完了まで自律反復する</td>
+                        <td>小さく隔離した、明確な作業</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p><strong>Bypass Approvals</strong> は権限ドロップダウン、<strong>Autopilot</strong> はエージェントモードのドロップダウンから選択する。いずれも初回は警告の確認が必要であり、組織の管理ポリシーがある場合は、そのポリシーによる承認・拒否が優先される。</p>
+            <p>Autopilotはエラーの自動再試行と確認質問への自動回答も行う。 <code>chat.autopilot.advanced.enabled</code>を有効にするAdvanced Autopilot（Preview）では、 別の小型モデルが各ターン後に完了判定を行い、未完了なら次のターンへ指針を渡す。</p>
+            <h3 id="安全に緩くするための推奨構成">安全に緩くするための推奨構成</h3>
+            <ol>
+                <li>信頼できるフォルダーだけをワークスペースとして開く。</li>
+                <li><strong>Assisted permissions</strong> を使う。</li>
+                <li>頻繁に使う安全なツールはワークスペース単位で Pre-approval を設定する。</li>
+                <li>ターミナルは必要なコマンドだけ <code>chat.tools.terminal.autoApprove</code> に追加し、<code>del</code> などは明示的に <code>false</code> のままにする。</li>
+                <li>macOS、Linux、WSL2で利用できる場合は Agent Sandbox（Preview）を有効化する。</li>
+            </ol>
+            <p>サンドボックス内で実行するターミナルコマンドは、ファイルシステムとネットワークの 境界で制限され、VS Code は確認なしで実行できる。Windowsネイティブは対象外である。</p>
+            <ol>
+                <li>Web 取得の応答内容、MCP ツール、<code>.env</code> などの秘密情報を含み得るファイルの編集は、恒久承認の対象にしない。</li>
+            </ol>
+            <p>URL 取得はリクエスト先の承認と、取得結果をチャットへ渡す前の承認の2段階である。<code>chat.tools.urls.autoApprove</code> で URL やドメインの自動承認を設定できるが、ユーザー生成コンテンツを含むサイトでは、結果の確認を残すべきである。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://code.visualstudio.com/docs/agents/run/approvals">Manage approvals and permissions - Visual Studio Code</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://code.visualstudio.com/docs/agents/concepts/trust-and-safety">Trust and safety - Visual Studio Code</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://code.visualstudio.com/docs/agents/overview">Build with agents in VS Code - Visual Studio Code</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: 全参考URLと承認仕様を再確認し、最小権限のコマンド例、</li>
+            </ul>
+            <p>管理対象ルールの優先、Advanced Autopilot、Sandboxの対応OSとPreview状態を反映</p>
+            <ul>
+                <li>2026-08-25: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

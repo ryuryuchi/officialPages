@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>robots.txtの仕様と書き方</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">robots.txtの仕様と書き方</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>Webサイトの<code>robots.txt</code>について、目的、標準仕様（Robots Exclusion Protocol: REP）、実際に記載する項目、書式と照合の規則、利用時の注意を整理する。</p>
+            <h2 id="結論">結論</h2>
+            <p><code>robots.txt</code>は、検索エンジンなどのクローラーへ「どのURLパスをクロールしてよいか」を伝えるための公開テキストファイルである。サイトのルートに小文字で<code>/robots.txt</code>として置き、UTF-8の<code>text/plain</code>で配信する。</p>
+            <p>標準で中心となる項目は、対象クローラーを指定する<code>User-agent</code>、許可する<code>Allow</code>、禁止する<code>Disallow</code>である。ルールはアクセス制御でもインデックス削除手段でもない。非公開情報は認証で保護し、検索結果から確実に除外したいHTML等は、クロール可能な状態で<code>noindex</code>を返すか、認証・削除など目的に合う方法を使う。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="役割と適用範囲">役割と適用範囲</h3>
+            <ul>
+                <li><strong>事実</strong>: REPは、クローラーにURIへのアクセス方法を知らせ、クローラーが尊重することを求めるプロトコルである。RFC 9309は、これは認可（アクセス権の制御）ではないと明記している。</li>
+                <li><strong>事実</strong>: HTTP(S)での標準的な配置先は<code>https://example.com/robots.txt</code>である。<code>https://example.com/folder/robots.txt</code>のようなサブディレクトリ内のファイルは、Googleのrobots.txtとしては有効ではない。</li>
+                <li><strong>事実</strong>: Googleでは、ルールはその<code>scheme</code>、ホスト、ポートの組合せだけに適用される。したがって、<code>https://example.com/robots.txt</code>は<code>https://www.example.com/</code>、<code>http://example.com/</code>、別ポートには自動では適用されない。</li>
+                <li><strong>判断</strong>: 本番サイトでは、公開するホストごとに必要性を確認して配置する。クロールを制限する理由がなければ、空の<code>robots.txt</code>を置く必要はない。</li>
+            </ul>
+            <h3 id="基本の書式">基本の書式</h3>
+            <p>各行は<code>項目名: 値</code>で書く。項目名は大文字・小文字を区別しないが、パスは大文字・小文字を区別するものとして書く。行頭・行末の空白は避け、説明には<code>#</code>から始めるコメントを使う。</p>
+            <pre><code class="language-text"># 全クローラーを対象にするグループ
+User-agent: *
+
+# 管理画面と検索結果ページはクロールさせない
+Disallow: /admin/
+Disallow: /search
+
+# /private/全体を禁止しつつ、この公開ファイルだけは許可する
+Disallow: /private/
+Allow: /private/public-guide.pdf
+
+# サイトマップの場所（検索エンジン実装で広く対応）
+Sitemap: https://example.com/sitemap.xml</code></pre>
+            <p>空行はグループ内で使用できる。<code>User-agent</code>から次の<code>User-agent</code>またはファイル末尾までが一つのグループであり、連続する複数の<code>User-agent</code>は同じルール群を共有する。</p>
+            <pre><code class="language-text">User-agent: ExampleBot
+User-agent: AnotherBot
+Disallow: /download/
+
+User-agent: *
+Disallow:</code></pre>
+            <p>最後の<code>Disallow:</code>は空のパスであり、禁止ルールとしては無視される。そのため、上の例では一般のクローラーにクロール制限をかけない。</p>
+            <h3 id="標準の項目と検索エンジン固有の項目">標準の項目と検索エンジン固有の項目</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>項目</th>
+                        <th>意味</th>
+                        <th>RFC 9309での位置付け</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>User-agent</code></td>
+                        <td>ルールを適用するクローラー名。<code>*</code>は汎用グループ</td>
+                        <td>規定</td>
+                    </tr>
+                    <tr>
+                        <td><code>Disallow</code></td>
+                        <td>指定パスへのクロールを禁止する</td>
+                        <td>規定</td>
+                    </tr>
+                    <tr>
+                        <td><code>Allow</code></td>
+                        <td>指定パスへのクロールを許可する</td>
+                        <td>規定</td>
+                    </tr>
+                    <tr>
+                        <td><code>Sitemap</code></td>
+                        <td>XMLサイトマップまたはサイトマップインデックスの絶対URL</td>
+                        <td>拡張項目。RFCはクローラーが解釈してよいとしている</td>
+                    </tr>
+                    <tr>
+                        <td><code>Crawl-delay</code></td>
+                        <td>リクエスト間隔を示す慣習的な拡張</td>
+                        <td>RFCには規定されず、Googleは対応しない</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p><code>Sitemap</code>は特定の<code>User-agent</code>グループに属さない。Googleの説明では完全修飾URLで書き、複数行を指定できる。サイトマップのURLはrobots.txtと同じホストでなくてもよい。</p>
+            <h3 id="パスの照合規則">パスの照合規則</h3>
+            <ul>
+                <li><strong>事実</strong>: クローラーは、自身の製品トークンに一致する<code>User-agent</code>グループを大文字・小文字を区別せずに選ぶ。複数グループが一致するとき、RFC 9309ではそれらのルールを結合する。一致がなければ<code>User-agent: *</code>を使い、それもなければ制限は適用されない。</li>
+                <li><strong>事実</strong>: <code>Allow</code>と<code>Disallow</code>はURLパスの先頭から照合し、最も長く一致するルールを使う。同じ長さで<code>Allow</code>と<code>Disallow</code>が競合する場合は、<code>Allow</code>を優先する。</li>
+                <li><strong>事実</strong>: <code>*</code>は0文字以上の任意文字、<code>$</code>はパターン末尾を表す。<code>#</code>以降はコメントである。これらはRFC 9309でクローラーが対応すべき特殊文字として規定されている。</li>
+                <li><strong>事実</strong>: 日本語などASCII外の文字、および予約文字をパスに含める場合、RFC 9309ではUTF-8のパーセントエンコードをして照合する。実務ではURLに表示されるエンコード済みのパスを書く。</li>
+            </ul>
+            <p>照合例は次のとおりである。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ルール</th>
+                        <th>対象になる例</th>
+                        <th>対象外の例</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>Disallow: /draft/</code></td>
+                        <td><code>/draft/a.html</code></td>
+                        <td><code>/drafts/a.html</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>Disallow: /*.pdf$</code></td>
+                        <td><code>/manual.pdf</code></td>
+                        <td><code>/manual.pdf?lang=ja</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>Allow: /private/public-guide.pdf</code></td>
+                        <td><code>/private/public-guide.pdf</code></td>
+                        <td><code>/private/other.pdf</code></td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3 id="書くときの実務ルール">書くときの実務ルール</h3>
+            <ol>
+                <li>クロールを減らす目的を明確にする。ログイン後の画面、重複・検索結果URL、負荷が大きいパラメータURLなどが候補になる。</li>
+                <li>禁止したい範囲をディレクトリ単位でまとめ、必要な公開物だけ長い<code>Allow</code>ルールで例外にする。</li>
+                <li>CSS、JavaScript、画像など、検索エンジンがページを理解・描画するために必要なリソースは、原則として禁止しない。</li>
+                <li>URLを実際に確認してから、先頭の<code>/</code>を含むパスを書く。<code>/admin/</code>と<code>/admin</code>は一致範囲が異なる。</li>
+                <li>ファイルをUTF-8のプレーンテキストで保存し、<code>Content-Type: text/plain</code>で配信する。RFC 9309はルートの小文字<code>/robots.txt</code>を要求する。</li>
+                <li>公開後に<code>https://対象ホスト/robots.txt</code>を取得して、リダイレクト、HTTPエラー、文字化けがないことを確認する。Googleは通常最大24時間キャッシュするため、変更の即時反映は保証されない。</li>
+            </ol>
+            <h3 id="目的別に使い分けること">目的別に使い分けること</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>目的</th>
+                        <th>適切な方法</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>クロール負荷を減らす</td>
+                        <td><code>robots.txt</code>の<code>Disallow</code></td>
+                    </tr>
+                    <tr>
+                        <td>検索結果に表示させない</td>
+                        <td>クロールを許可した上で<code>noindex</code>、または認証・削除など</td>
+                    </tr>
+                    <tr>
+                        <td>非公開ページ・ファイルを守る</td>
+                        <td>認証・認可、ネットワーク制限などのアクセス制御</td>
+                    </tr>
+                    <tr>
+                        <td>URL一覧をクローラーへ知らせる</td>
+                        <td>XMLサイトマップを用意し、必要に応じて<code>Sitemap</code>を記載</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p><strong>注意</strong>: robots.txtでクロールを禁止したURLでも、外部リンクなどからURL自体が検索結果に現れる可能性がある。また、ルールに従わないクローラーを技術的に止めるものではない。機密情報のパスを<code>Disallow</code>に書くと、むしろその存在を公表することにもなる。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://www.rfc-editor.org/rfc/rfc9309.html">RFC 9309: Robots Exclusion Protocol</a></li>
+                <li>参照日: 2026-09-08</li>
+                <li><a href="https://developers.google.com/search/docs/crawling-indexing/robots/intro">Google Search Central: robots.txt の概要</a></li>
+                <li>参照日: 2026-09-08</li>
+                <li><a href="https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec">Google for Developers: Google における robots.txt 仕様の解釈</a></li>
+                <li>参照日: 2026-09-08</li>
+                <li><a href="https://www.sitemaps.org/protocol.html">Sitemaps.org: Sitemap XML形式</a></li>
+                <li>参照日: 2026-09-08</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-08: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

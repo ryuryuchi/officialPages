@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copilot ChatにおけるAGENTS.mdの役割</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">Copilot ChatにおけるAGENTS.mdの役割</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>VS Code の GitHub Copilot Chat が <code>AGENTS.md</code> をどのように扱うのか、用途、適用範囲、他のカスタム指示ファイルとの違い、利用時の注意点を調査した。</p>
+            <h2 id="結論">結論</h2>
+            <p><code>AGENTS.md</code> は、AI コーディングエージェントへプロジェクト固有の作業方法を伝えるための Markdown ファイルである。「エージェント向けの README」と考えると分かりやすい。ビルド・テスト手順、コーディング規約、構成上の制約、変更後の確認項目などを記載すると、同じ説明をチャットごとに繰り返さずに済む。</p>
+            <p>VS Code はワークスペースのルートにある <code>AGENTS.md</code> を検出し、その内容をワークスペース内のすべてのチャット要求へ自動的に加える。対応は既定で有効であり、<code>chat.useAgentsMdFile</code> で切り替えられる。これは Copilot Chat の応答やエージェント作業を誘導する指示であり、ルールを機械的に強制する仕組みではない。</p>
+            <p>複数の AI エージェントで同じ指示を共有したい場合は <code>AGENTS.md</code> が適している。Copilot 専用の全体指示だけでよければ <code>.github/copilot-instructions.md</code>、ファイルやフォルダーごとに明確な条件を指定したければ <code>.github/instructions/*.instructions.md</code> も選択肢になる。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="基本的な役割">基本的な役割</h3>
+            <p><code>AGENTS.md</code> は、公開されたシンプルな共通形式であり、特定製品だけに閉じた設定ファイルではない。一般の README が主に人間へプロジェクトを説明するのに対し、<code>AGENTS.md</code> はコーディングエージェントへ、作業時に守るべき情報を予測可能な場所で提供する。</p>
+            <p>VS Code の公式ドキュメントでは、ルートの <code>AGENTS.md</code> は「常時適用される指示」に分類される。Copilot Chat はファイルを単に参考資料として表示するのではなく、その内容をチャットのコンテキストへ追加して応答生成に利用する。</p>
+            <p>適した内容は次のとおりである。</p>
+            <ul>
+                <li>セットアップ、ビルド、テスト、lint、型チェックの正しいコマンドと実行順序</li>
+                <li>採用技術、主要ディレクトリ、アーキテクチャ上の境界</li>
+                <li>命名、書式、エラー処理、依存関係の追加などに関する規約</li>
+                <li>変更してはいけないファイルや、避けるべき実装方法</li>
+                <li>変更後に必ず実施する検証と、作業の完了条件</li>
+            </ul>
+            <p>指示は自然言語の Markdown で記載できる。曖昧な理念よりも、実際に検証したコマンド、具体的なパス、明確な禁止事項を短く記載する方が有効である。</p>
+            <h3 id="vs-codeでの適用範囲">VS Codeでの適用範囲</h3>
+            <p>ワークスペースのルートに置いた <code>AGENTS.md</code> は、そのワークスペース内のすべてのチャット要求へ自動適用される。設定は次の2つである。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>設定</th>
+                        <th>役割</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>chat.useAgentsMdFile</code></td>
+                        <td><code>AGENTS.md</code> 対応全体の有効・無効を切り替える。対応は既定で有効</td>
+                    </tr>
+                    <tr>
+                        <td><code>chat.useNestedAgentsMdFiles</code></td>
+                        <td>サブフォルダー内の複数の <code>AGENTS.md</code> を利用する実験的機能を切り替える</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>ネストした <code>AGENTS.md</code> の対応は、2026年8月31日時点でも実験的であり、既定では 無効である。有効にすると、VS Code はワークスペースのサブフォルダーを再帰的に 検索し、見つけた各ファイルと相対パスをチャットのコンテキストへ追加する。 その後、エージェントが編集中のファイルに応じて利用する指示を判断する。</p>
+            <p>GitHub の一般向けドキュメントには「ディレクトリツリー内で最も近い <code>AGENTS.md</code> が優先される」とある。一方、VS Code のドキュメントは、ネスト版について「相対パスをコンテキストへ加え、エージェントが使用する指示を判断する」と説明している。また、複数の指示ファイルを結合する場合の順序は保証されない。したがって、VS Code では親子の指示に矛盾を作らず、「近いファイルが必ず機械的に上書きする」とは想定しない方が安全である。</p>
+            <h3 id="他のカスタム指示との違い">他のカスタム指示との違い</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ファイル</th>
+                        <th>主な用途</th>
+                        <th>適用方法</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>AGENTS.md</code></td>
+                        <td>複数の AI コーディングエージェントで共有できるプロジェクト指示</td>
+                        <td>ルート版は全チャット要求。ネスト版は実験的</td>
+                    </tr>
+                    <tr>
+                        <td><code>.github/copilot-instructions.md</code></td>
+                        <td>GitHub Copilot 向けのプロジェクト全体指示</td>
+                        <td>全チャット要求へ常時適用</td>
+                    </tr>
+                    <tr>
+                        <td><code>.github/instructions/NAME.instructions.md</code></td>
+                        <td>言語、ファイル種別、フォルダー、タスク別の指示</td>
+                        <td><code>applyTo</code>のglobまたは説明との意味的な一致に基づき適用</td>
+                    </tr>
+                    <tr>
+                        <td><code>CLAUDE.md</code></td>
+                        <td>Claude系ツールとも共有する常時適用の指示</td>
+                        <td>ルート、<code>.claude</code>、ホームなどから検出</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>これらは排他的ではなく、複数が同じ要求へ同時に加えられる場合がある。VS Code は 複数ファイルの特定の結合順序を保証していないため、同じ事項を異なる表現で 重複させたり、相反する命令を書いたりしないことが重要である。 なお、Custom instructionsは入力中のインライン候補には適用されない。</p>
+            <p>選択の目安は次のとおりである。</p>
+            <ol>
+                <li>複数の AI ツールで共通利用するなら、ルートの <code>AGENTS.md</code> を基本にする。</li>
+                <li>Copilot だけで使う全体規約なら、<code>.github/copilot-instructions.md</code> でもよい。</li>
+                <li>フロントエンドとバックエンドなど適用対象を明示的に分けるなら、安定した <code>applyTo</code> を持つ <code>.instructions.md</code> を優先する。</li>
+                <li>モノレポでネストした <code>AGENTS.md</code> を使う場合は、実験的設定を有効にし、親子間で矛盾しないようにする。</li>
+            </ol>
+            <h3 id="できることとできないこと">できることとできないこと</h3>
+            <p><code>AGENTS.md</code> により期待できる効果は、エージェントの探索量やコマンド試行錯誤を減らし、生成コードと検証手順をプロジェクトの方針へ近づけることである。</p>
+            <p>ただし、次の点には注意が必要である。</p>
+            <ul>
+                <li>指示は言語モデルへのコンテキストであり、アクセス制御、ポリシーエンジン、CI の代替ではない。</li>
+                <li>指示に書いただけでコマンドやテストが自動実行されるわけではない。</li>
+                <li>内容が長すぎる、曖昧、古い、または他の指示と矛盾する場合は、応答品質が下がり得る。</li>
+                <li>VS Code 公式資料が保証している対象はチャット要求であり、通常のインラインコード補完へ同じように適用されるとは限らない。</li>
+            </ul>
+            <p>重要な制約は、CI、lint、型チェック、権限設定などでも別途強制する必要がある。<code>AGENTS.md</code> は、それらをエージェントが正しく実行するための案内として使う。</p>
+            <h3 id="最小例">最小例</h3>
+            <pre><code class="language-markdown"># Project instructions
+
+## Setup
+- Use Node.js 22 and run `npm ci` before the first build.
+
+## Implementation
+- Keep domain logic under `src/domain`.
+- Do not import database adapters from domain modules.
+
+## Validation
+- Run `npm run lint`, `npm run typecheck`, and `npm test` after changes.
+- Do not report completion while any of these commands fail.</code></pre>
+            <p>実際のファイルには、そのリポジトリで確認済みの内容だけを記載し、コマンドや構成が変わった際に更新する。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://code.visualstudio.com/docs/agent-customization/custom-instructions">Use custom instructions in VS Code - Visual Studio Code</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.github.com/en/copilot/how-tos/configure-custom-instructions-in-your-ide/add-repository-instructions-in-your-ide">Adding repository custom instructions for GitHub Copilot in your IDE - GitHub Docs</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/add-custom-instructions/add-repository-instructions">Adding repository custom instructions for GitHub Copilot - GitHub Docs</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://github.com/agentsmd/agents.md">AGENTS.md - agentsmd/agents.md</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://github.com/microsoft/vscode/blob/main/extensions/copilot/CHANGELOG.md">VS Code Copilot extension CHANGELOG - microsoft/vscode</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: 全参考URLを再確認し、ネスト対応が引き続き実験的であること、</li>
+            </ul>
+            <p><code>CLAUDE.md</code>対応、インライン候補への非適用を反映</p>
+            <ul>
+                <li>2026-08-26: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

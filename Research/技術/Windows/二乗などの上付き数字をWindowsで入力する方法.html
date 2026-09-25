@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二乗などの上付き数字をWindowsで入力する方法</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">二乗などの上付き数字をWindowsで入力する方法</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>Windowsで「x²」「x³」のような上付き数字を入力する方法を、入力先が通常のテキスト欄かMicrosoft Wordかに分けて整理する。</p>
+            <h2 id="結論">結論</h2>
+            <p>通常のテキスト欄では、まず次の文字をコピーして使う方法が確実である。</p>
+            <pre><code class="language-text">⁰ ¹ ² ³ ⁴ ⁵ ⁶ ⁷ ⁸ ⁹</code></pre>
+            <p>Windows標準機能を使う場合は、入力中に <code>Windows</code> + <code>.</code>（ピリオド）で記号パネルを開くか、「文字コード表」を起動して文字をコピーする。Microsoft Wordでは、<code>00B2</code> と入力して <code>Alt</code> + <code>X</code> を押すと <code>²</code> に変換できる。また、任意の数字や文字を上付きにする場合は、対象を選択して <code>Ctrl</code> + <code>Shift</code> + <code>+</code> を押す。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="1-すぐ使う場合は上付き数字をコピーする">1. すぐ使う場合は上付き数字をコピーする</h3>
+            <p>二乗・三乗でよく使う文字は次のとおりである。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>用途</th>
+                        <th>文字</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>上付き0〜9</td>
+                        <td><code>⁰¹²³⁴⁵⁶⁷⁸⁹</code></td>
+                    </tr>
+                    <tr>
+                        <td>二乗</td>
+                        <td><code>²</code></td>
+                    </tr>
+                    <tr>
+                        <td>三乗</td>
+                        <td><code>³</code></td>
+                    </tr>
+                    <tr>
+                        <td>上付きの括弧・符号</td>
+                        <td><code>⁽⁾⁺⁻⁼</code></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>これは書式ではなく、Unicodeの別の文字である。そのため、メモ帳、ブラウザー、チャットなど、文字を入力できる場所で使いやすい。一方、すべての文字に上付き版が用意されているわけではなく、フォントによって表示できない場合もある。</p>
+            <h3 id="2-windowsの記号パネルを使う">2. Windowsの記号パネルを使う</h3>
+            <ol>
+                <li>文字を入力できる場所にカーソルを置く。</li>
+                <li><code>Windows</code> + <code>.</code>（ピリオド）を押す。<code>Windows</code> + <code>;</code>（セミコロン）でも開ける。</li>
+                <li>記号の一覧から目的の文字を選ぶ。</li>
+            </ol>
+            <p>Windows 11の絵文字パネルには、絵文字だけでなく記号も含まれている。検索欄で目的の記号を探せるが、上付き数字が常に見つかるとは限らない。その場合は文字コード表か、既存の文字のコピーが確実である。</p>
+            <h3 id="3-文字コード表-で探してコピーする">3. 「文字コード表」で探してコピーする</h3>
+            <ol>
+                <li>スタートメニューで「文字コード表」または <code>charmap</code> を検索して起動する。</li>
+                <li>フォントを選ぶ。通常は既定のフォントのままでよい。</li>
+                <li>一覧から文字を選び、「選択」→「コピー」を押す。</li>
+                <li>入力先で <code>Ctrl</code> + <code>V</code> を押す。</li>
+            </ol>
+            <p>文字コード表は、キーボードにないUnicode文字を探してコピーする方法である。フォントを変えると表示される文字の種類も変わるため、貼り付け先で正しく表示できるフォントを選ぶ。</p>
+            <h3 id="4-wordでunicodeコードを変換する">4. WordでUnicodeコードを変換する</h3>
+            <p>Microsoft Wordでは、Unicodeの16進数コードを入力して <code>Alt</code> + <code>X</code> を押すと、対応する文字へ変換できる。</p>
+            <pre><code class="language-text">2070 + Alt+X → ⁰
+00B9 + Alt+X → ¹
+00B2 + Alt+X → ²
+00B3 + Alt+X → ³
+2074 + Alt+X → ⁴
+2075 + Alt+X → ⁵
+2076 + Alt+X → ⁶
+2077 + Alt+X → ⁷
+2078 + Alt+X → ⁸
+2079 + Alt+X → ⁹</code></pre>
+            <p>手順は次のとおりである。</p>
+            <ol>
+                <li>WordでUnicodeコードを入力する。</li>
+                <li>入力したコードの直後にカーソルを置く。</li>
+                <li><code>Alt</code> + <code>X</code> を押す。</li>
+            </ol>
+            <p>この方法はWordなど対応するアプリで使える方法であり、すべてのWindowsアプリやブラウザーで動作するとは限らない。</p>
+            <h3 id="5-wordで任意の文字を上付きにする">5. Wordで任意の文字を上付きにする</h3>
+            <p>「²」そのものを入力するのではなく、「10」の一部を上に寄せるなど、任意の文字列を上付き表示にする場合は書式設定を使う。</p>
+            <ol>
+                <li>上付きにしたい文字を選択する。</li>
+                <li><code>Ctrl</code> + <code>Shift</code> + <code>+</code> を押す。</li>
+            </ol>
+            <p>解除する場合は、同じショートカットをもう一度押す。リボンの「ホーム」タブにある上付き文字のボタン、またはフォント設定画面から変更することもできる。</p>
+            <h3 id="使い分け">使い分け</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>状況</th>
+                        <th>推奨方法</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>メモ帳、ブラウザー、チャットへ <code>²</code> や <code>³</code> を入力したい</td>
+                        <td>文字をコピーするか、記号パネルを使う</td>
+                    </tr>
+                    <tr>
+                        <td>多数の特殊文字から探したい</td>
+                        <td>文字コード表を使う</td>
+                    </tr>
+                    <tr>
+                        <td>Wordで <code>²</code> などのUnicode文字をコードから入力したい</td>
+                        <td>Unicodeコード + <code>Alt</code> + <code>X</code></td>
+                    </tr>
+                    <tr>
+                        <td>任意の文字列を上付き表示にしたい</td>
+                        <td>Wordの上付き書式 <code>Ctrl</code> + <code>Shift</code> + <code>+</code></td>
+                    </tr>
+                </tbody>
+            </table>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://support.microsoft.com/en-us/windows/hardware/input-devices/windows-keyboard-tips-and-tricks">Windows keyboard tips and tricks | Microsoft Support</a></li>
+                <li>Windowsの絵文字・記号パネルの開き方を確認した。</li>
+                <li>参照日: 2026-09-14</li>
+                <li><a href="https://support.microsoft.com/en-us/word/insert-ascii-or-unicode-character-codes-in-word">Insert ASCII or Unicode character codes in Word | Microsoft Support</a></li>
+                <li>WordでUnicodeコードを使って記号を入力する方法を確認した。</li>
+                <li>参照日: 2026-09-14</li>
+                <li><a href="https://support.microsoft.com/en-us/word/format-text-as-superscript-or-subscript-in-word">Format text as superscript or subscript in Word | Microsoft Support</a></li>
+                <li>Wordで上付き・下付きの書式を設定するショートカットを確認した。</li>
+                <li>参照日: 2026-09-14</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-14: 上付き数字0〜9のUnicodeコード一覧を追加</li>
+                <li>2026-09-14: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

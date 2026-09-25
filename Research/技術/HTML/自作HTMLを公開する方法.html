@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自作HTMLをインターネットに公開する方法</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">自作HTMLをインターネットに公開する方法</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>自作した静的なHTMLファイルを、第三者がブラウザで閲覧できるように公開する方法を整理する。</p>
+            <h2 id="結論">結論</h2>
+            <p>HTML、CSS、JavaScriptだけで動くサイトなら、初心者はGitHub Pagesを使うと公開しやすい。<code>index.html</code>をGitHubリポジトリの公開元に置き、リポジトリのSettingsからPagesを有効にする。単純な静的ファイルはブランチから、独自のビルド工程が必要ならGitHub Actionsから公開する。</p>
+            <p>PHP、データベース、ログイン処理などサーバー側の処理が必要な場合はGitHub Pagesでは動かないため、レンタルサーバーまたは対応するクラウドホスティングを選ぶ。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="公開前に確認すること">公開前に確認すること</h3>
+            <ul>
+                <li>自作HTMLを入口にするなら、公開元の最上位へ<code>index.html</code>を置く。GitHub Pages自体は<code>index.md</code>または<code>README.md</code>も入口ファイルとして検索する。</li>
+                <li>HTMLから読み込むCSS、画像、JavaScriptのパスを確認する。ローカルPC固有のパス（例: <code>C:\...</code>）は公開後に使えない。</li>
+                <li>APIキー、パスワード、個人情報をHTMLやJavaScript、公開リポジトリに含めない。ブラウザに配信したファイルは閲覧者が確認できる。</li>
+                <li>公開URLにアクセスして、スマートフォンでも表示とリンクを確認する。</li>
+            </ul>
+            <h3 id="github-pagesで公開する手順">GitHub Pagesで公開する手順</h3>
+            <ol>
+                <li>GitHubのアカウントを作成し、<code>my-site</code>などの新しいリポジトリを作る。個人またはOrganizationのGitHub Freeでは、GitHub Pages用リポジトリをパブリックにする必要がある。プライベートリポジトリからの公開可否は契約プランによるが、利用できる場合も公開サイト自体はインターネットへ公開される。</li>
+                <li>リポジトリの最上位に<code>index.html</code>と、必要なCSS、画像、JavaScriptをアップロードする。</li>
+                <li>リポジトリで <strong>Settings</strong> → <strong>Pages</strong> を開く。</li>
+                <li><strong>Build and deployment</strong> の <strong>Source</strong> で <strong>Deploy from a branch</strong> を選び、公開するブランチ（通常は<code>main</code>）とフォルダー（通常は<code>/(root)</code>）を選択して保存する。</li>
+                <li>デプロイ完了後、Pages画面に表示されるURLを開く。通常、URLは<code>https://__RAW<em>HTML</em>0__.github.io/&lt;リポジトリ名&gt;/</code>となる。</li>
+                <li>更新時は、公開元にあるファイルを変更してGitHubへpushする。GitHub Pagesが再デプロイするため、少し待ってからURLを再読み込みする。</li>
+            </ol>
+            <p>個人サイトをリポジトリ名なしの<code>https://__RAW<em>HTML</em>0<strong>.github.io/</code>で公開したい場合、リポジトリ名を<code></strong>RAW<em>HTML</em>1__.github.io</code>にする。</p>
+            <p>ブランチ公開で選べる公開元フォルダーは<code>/(root)</code>または<code>/docs</code>である。Jekyll以外のビルド処理を使う場合や生成物専用ブランチを持ちたくない場合は、公式テンプレートを基にGitHub Actions公開を選ぶ。</p>
+            <h3 id="github-pagesが向くケースと向かないケース">GitHub Pagesが向くケースと向かないケース</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>向くケース</th>
+                        <th>向かないケース</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>ポートフォリオ、紹介ページ、作品展示、静的な資料サイト</td>
+                        <td>PHP、Python、Node.jsなどを常時実行するサイト</td>
+                    </tr>
+                    <tr>
+                        <td>HTML/CSS/JavaScriptだけで完結するサイト</td>
+                        <td>独自のデータベースやサーバー側の秘密情報が必要なサイト</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3 id="ほかの公開先">ほかの公開先</h3>
+            <ul>
+                <li><strong>Netlify / Vercel</strong>: GitHubリポジトリと連携して公開したい静的サイトやフロントエンドアプリに向く。フレームワーク用のビルド設定も扱いやすい。</li>
+                <li><strong>レンタルサーバー</strong>: PHPやWordPressを使う場合に向く。契約後、サーバーの公開用フォルダーへFTP/SFTPでファイルをアップロードする。</li>
+                <li><strong>独自ドメイン</strong>: <code>example.com</code>のようなURLを使いたい場合は、ドメインを取得して、公開サービス側の案内に従ってDNS設定を追加する。HTTPS設定が自動提供されるかも確認する。</li>
+            </ul>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://docs.github.com/ja/pages/getting-started-with-github-pages/creating-a-github-pages-site">GitHub Docs: GitHub Pages サイトの作成</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.github.com/ja/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site">GitHub Docs: GitHub Pages サイトの発行ソースの構成</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.github.com/ja/pages/getting-started-with-github-pages/what-is-github-pages">GitHub Docs: GitHub Pages について</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: 全参考URLを再確認し、入口ファイル、公開元、GitHub Actions、プライベートリポジトリの注意を現行仕様へ更新</li>
+                <li>2026-08-25: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

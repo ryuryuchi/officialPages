@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VS Codeの便利機能</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">VS Codeの便利機能</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>QiitaとZennで紹介されているVS Codeの便利機能を調べ、日常的な編集・プロジェクト操作で特に再利用しやすい標準機能を整理する。</p>
+            <h2 id="結論">結論</h2>
+            <p>まず習得する価値が高いのは、コマンドパレット、Quick Open、複数カーソル、組み込みGit、タスク、プロファイルである。いずれも拡張機能なしで利用できる。特に、キーボードで操作名やファイル名を検索する習慣と、繰り返し編集で複数カーソルを使う習慣を付けると、VS Code全体の操作を効率化しやすい。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="まず覚える操作">まず覚える操作</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>機能</th>
+                        <th>Windows の既定ショートカット</th>
+                        <th>主な用途</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>コマンドパレット</td>
+                        <td><code>Ctrl+Shift+P</code> または <code>F1</code></td>
+                        <td>実行したい機能名を検索する。設定、表示切替、Git、タスクなどの入口になる。</td>
+                    </tr>
+                    <tr>
+                        <td>Quick Open</td>
+                        <td><code>Ctrl+P</code></td>
+                        <td>ファイル名を入力してすばやく開く。</td>
+                    </tr>
+                    <tr>
+                        <td>次の一致を選択</td>
+                        <td><code>Ctrl+D</code></td>
+                        <td>選択中の文字列と同じ次の箇所を追加選択する。繰り返し編集向け。</td>
+                    </tr>
+                    <tr>
+                        <td>すべての一致を選択</td>
+                        <td><code>Ctrl+Shift+L</code></td>
+                        <td>選択中の文字列の全出現箇所にカーソルを置く。</td>
+                    </tr>
+                    <tr>
+                        <td>縦方向の複数カーソル</td>
+                        <td><code>Ctrl+Alt+Up</code> / <code>Ctrl+Alt+Down</code></td>
+                        <td>同じ列の複数行を同時に編集する。Linuxの既定値は<code>Shift+Alt+Up</code> / <code>Shift+Alt+Down</code>。グラフィックスドライバーなどと競合する場合がある。</td>
+                    </tr>
+                    <tr>
+                        <td>任意位置へのカーソル追加</td>
+                        <td><code>Alt+Click</code></td>
+                        <td>離れた箇所を同時に編集する。</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>Qiita・Zennの記事では、複数カーソルは同じ語句の置換、複数行への接頭辞・接尾辞の追加、設定値の一括編集で有用と紹介されている。ただし、識別子の名称変更では、言語機能が利用できる場合は <code>F2</code> の「Rename Symbol」を優先する。複数カーソルでは文字列として一致した別の意味の箇所まで変更するおそれがあるためである。</p>
+            <h3 id="組み込みgitとタイムライン">組み込みGitとタイムライン</h3>
+            <p>ソース管理ビューでは、変更の確認、ステージング、コミット、ブランチの切替などをGUIから行える。差分を確認してからステージングする流れにすると、意図しないファイルをコミットに含めにくい。</p>
+            <p>エクスプローラーのタイムラインは、選択したファイルに関係する履歴を時系列で確認するためのビューである。Git履歴を利用するにはリポジトリが必要だが、ローカル履歴を利用できる場合もある。過去の内容を確認・比較する用途には便利だが、バックアップの代わりにはしない。重要な変更はGitへコミットし、リモートへpushする。</p>
+            <h3 id="タスクで定型操作を再利用する">タスクで定型操作を再利用する</h3>
+            <p><code>Tasks: Run Task</code> から、ワークスペースで定義したビルド、テスト、整形などの定型コマンドを実行できる。プロジェクト固有の操作は <code>.vscode/tasks.json</code> に定義しておくと、チーム内で同じ手順を共有しやすい。タスク定義に秘密情報を直接書かず、必要なら環境変数や安全な資格情報管理を使う。</p>
+            <h3 id="プロファイルで用途を分離する">プロファイルで用途を分離する</h3>
+            <p>プロファイルは、設定、拡張機能、テーマ、キーボードショートカット、スニペット、 タスク、MCPサーバーなどを用途別に切り替える機能である。例えば「普段の開発」 「Python作業」「発表・デモ」で分けると、不要な拡張機能や設定の干渉を減らせる。 現在はProfiles editorから作成、切替、エクスポート、インポートを管理できる。</p>
+            <h3 id="おすすめの導入順">おすすめの導入順</h3>
+            <ol>
+                <li><code>Ctrl+P</code> と <code>Ctrl+Shift+P</code> を使い、ファイルとコマンドを検索して開く。</li>
+                <li>繰り返し編集では <code>Ctrl+D</code>、全件なら <code>Ctrl+Shift+L</code> を試す。</li>
+                <li>ソース管理ビューで差分を確認し、必要な変更だけをステージングする。</li>
+                <li>よく実行するテストやビルドをタスクにする。</li>
+                <li>拡張機能や設定が増えたら、用途別プロファイルへ分ける。</li>
+            </ol>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://qiita.com/wraith13/items/f7c9f60a7fe3b0d1e4aa">Visual Studio Code 入門: 1回: コマンドパレット</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://qiita.com/htcd/items/a77b3a8a314db3d56700">VSCode マルチカーソルの活用方法を基礎から徹底解説</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://zenn.dev/0bucoujevh/articles/eac554c2b8ae0e">VSCode 個人的に便利機能まとめ</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://zenn.dev/hacobell_dev/articles/vscode-multi-cursor">VSCode マルチカーソル、使ってますか？</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://code.visualstudio.com/docs/editing/userinterface#_command-palette">User interface - Command Palette</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://code.visualstudio.com/docs/editing/codebasics#_multiple-selections-multicursor">Basic editing</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://code.visualstudio.com/docs/debugtest/tasks">Tasks in Visual Studio Code</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://code.visualstudio.com/docs/configure/profiles">Profiles</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://code.visualstudio.com/docs/editing/userinterface#_timeline-view">User interface - Timeline view</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://code.visualstudio.com/docs/sourcecontrol/overview">Using Git source control in VS Code</a></li>
+                <li>参照日: 2026-08-31</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-08-31: 全参考URLを再確認し、移転した公式URL、Linuxの複数カーソル、</li>
+            </ul>
+            <p>Profiles editorの現行仕様、Git公式資料を反映</p>
+            <ul>
+                <li>2026-08-27: Qiita・Zennの記事と公式資料を基に初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

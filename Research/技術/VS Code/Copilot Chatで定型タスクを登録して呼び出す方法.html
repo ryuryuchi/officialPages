@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copilot Chatで定型タスクを登録して呼び出す方法</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">Copilot Chatで定型タスクを登録して呼び出す方法</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>VS Code の GitHub Copilot に定型タスクを保存して実行する方法を調査した。 Prompt files や Agent Skills による手動実行と、Agents window の Automations による 定期実行を区別し、Custom agents やカスタム指示との使い分けも整理する。</p>
+            <h2 id="結論">結論</h2>
+            <p>Agents window の <strong>Automations</strong> から、保存したプロンプトを手動または時間指定で エージェントに実行させられる。毎時・毎日・毎週の定期実行ができるため、 繰り返し行う変更要約、Issue のトリアージ、バグ候補の確認などに使える。 イベント発生時に起動する汎用トリガーではなく、指定したスケジュールで エージェントセッションを開始する機能である。</p>
+            <p>チャットから定型タスクを名前で呼び出す最も直接的な機能は、<strong>Prompt files</strong> （プロンプトファイル、カスタムスラッシュコマンド）である。 <code>.prompt.md</code> ファイルへ手順を保存し、Copilot Chat で <code>/ファイル名</code> または front matter の <code>name</code> を入力して実行できる。</p>
+            <p>例えば <code>.github/prompts/review-and-test.prompt.md</code> を作ると、通常は <code>/review-and-test</code> で呼び出せる。ファイル変更やテスト実行まで任せる場合は、 front matter の <code>agent: agent</code> を指定する。</p>
+            <p>選択の目安は次のとおりである。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>やりたいこと</th>
+                        <th>適した機能</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Agents windowで定型プロンプトを手動・定期実行する</td>
+                        <td>Agent Automations</td>
+                    </tr>
+                    <tr>
+                        <td>保存した1つの定型タスクを名前で実行する</td>
+                        <td>Prompt file</td>
+                    </tr>
+                    <tr>
+                        <td>手順、スクリプト、テンプレートをまとめ、必要時の自動選択もさせる</td>
+                        <td>Agent Skill</td>
+                    </tr>
+                    <tr>
+                        <td>レビュー担当など、役割、モデル、使用可能ツールを切り替える</td>
+                        <td>Custom agent</td>
+                    </tr>
+                    <tr>
+                        <td>すべての依頼で常に守る規約を設定する</td>
+                        <td>Custom instructions、<code>AGENTS.md</code></td>
+                    </tr>
+                    <tr>
+                        <td>特定イベントでコマンドを必ず実行する</td>
+                        <td>Hooks</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>Prompt files や Agent Skills の指示はモデルが解釈して実行するため、通常の プログラムのように毎回同一結果になる保証はない。絶対に実行させる検証や禁止処理は、 CI、権限設定、Hooks なども併用する。</p>
+            <p>ただし、Agent Host上のCopilotハーネスはPrompt filesを使用しない。現行の Agent Host、Copilot CLI、Copilot cloud agentを対象にする場合はAgent Skillを選ぶ。 VS CodeはPrompt fileからSkillへの1回限りの移行機能も実験的に提供している。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="最短の作成手順">最短の作成手順</h3>
+            <ol>
+                <li>VS Code で GitHub Copilot Chat を開く。</li>
+                <li>チャット欄に <code>/prompts</code> と入力し、Prompt files の設定画面を開く。</li>
+                <li><strong>New Prompt (Workspace)</strong> または <strong>New Prompt (User)</strong> を選ぶ。</li>
+            </ol>
+            <ul>
+                <li>Workspace: 現在のリポジトリだけで使用し、チームと共有できる。</li>
+                <li>User: 自分の複数ワークスペースで使用できる。</li>
+            </ul>
+            <ol>
+                <li>例として <code>review-and-test.prompt.md</code> を作成する。</li>
+                <li>次のように定型手順を書く。</li>
+            </ol>
+            <pre><code class="language-markdown">---
+name: review-and-test
+description: 変更内容をレビューし、関連テストを実行して問題を修正する
+argument-hint: &quot;[対象ファイルまたは機能]&quot;
+agent: agent
+---
+
+対象: ${input:target:対象ファイルまたは機能を指定してください}
+
+次の順序で作業してください。
+
+1. 対象と関連コードを確認する。
+2. バグ、型エラー、既存規約との不一致を確認する。
+3. 必要な修正を行う。
+4. 既存の最小範囲のテスト、lint、型チェックを実行する。
+5. 変更内容と検証結果を簡潔に報告する。
+
+無関係なファイルは変更しないでください。
+テストが失敗したまま完了扱いにしないでください。</code></pre>
+            <p>Workspace の既定保存先は <code>.github/prompts</code> である。手作業で作る場合は、 <code>.github/prompts/review-and-test.prompt.md</code> という配置にする。</p>
+            <p>コマンドパレットから <strong>Chat: New Prompt File</strong> を実行して作成する方法もある。 また、チャットで <code>/create-prompt</code> に続けて作りたいタスクを説明すると、AI に Prompt file のひな型を生成させられる。既存の会話から「この手順を再利用可能な prompt にして」と依頼する方法も公式に案内されている。</p>
+            <h3 id="呼び出し方">呼び出し方</h3>
+            <p>Copilot Chat の入力欄で次のように入力する。</p>
+            <pre><code class="language-text">/review-and-test</code></pre>
+            <p>追加条件を後ろへ続けることもできる。</p>
+            <pre><code class="language-text">/review-and-test src/auth のログイン処理</code></pre>
+            <p>ほかに次の実行方法がある。</p>
+            <ul>
+                <li>コマンドパレットの <strong>Chat: Run Prompt</strong> から選ぶ。</li>
+                <li><code>.prompt.md</code> をエディターで開き、右上の再生ボタンを押す。</li>
+                <li>チャット欄で <code>/</code> を入力し、一覧から選ぶ。</li>
+            </ul>
+            <p><code>name</code> を省略した場合はファイル名がコマンド名になる。<code>description</code> は一覧の説明、 <code>argument-hint</code> は入力候補、<code>agent</code> は実行するエージェントを指定する。 必要に応じて <code>model</code> や <code>tools</code> も front matter で指定できるが、利用できる モデル名やツール名は環境に依存するため、必要になるまで省略する方が保守しやすい。</p>
+            <h3 id="workspaceとuserの選び方">WorkspaceとUserの選び方</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>保存先</th>
+                        <th>既定位置</th>
+                        <th>向いている用途</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Workspace</td>
+                        <td><code>.github/prompts</code></td>
+                        <td>リポジトリ固有のビルド、レビュー、リリース手順をチーム共有</td>
+                    </tr>
+                    <tr>
+                        <td>User</td>
+                        <td>VS Code のユーザープロファイル</td>
+                        <td>自分だけの汎用的な説明、要約、調査手順</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>User Prompt file は UI から作成するのが確実である。Settings Sync の <strong>Prompts and Instructions</strong> を有効にすると、複数端末へ同期できる。</p>
+            <h3 id="agents-windowでautomationを作成する">Agents windowでAutomationを作成する</h3>
+            <p>Agent Automation は、保存したプロンプト、セッション設定、スケジュールを組み合わせ、 エージェントの作業を繰り返し実行する機能である。Prompt fileのように毎回チャットへ コマンドを入力しなくても、Agents windowから手動実行したり、定期実行したりできる。</p>
+            <ol>
+                <li>VS Codeの設定で <code>chat.automations.enabled</code> を有効にする。</li>
+                <li><strong>Chat: Open Agents window</strong> を開き、サイドバーの <strong>Automations</strong> を選ぶ。</li>
+                <li><strong>Create Automation</strong> を選ぶ。変更の要約、Issueのトリアージ、バグ発見などの</li>
+            </ol>
+            <p>テンプレートから始めることもできる。</p>
+            <ol>
+                <li>名前とプロンプトを設定し、対象のWorkspace（または <strong>No workspace</strong>）、</li>
+            </ol>
+            <p>利用するAgent、Model、権限などのセッション設定を選ぶ。</p>
+            <ol>
+                <li>最初は <strong>Manual</strong> にして <strong>Create</strong> し、<strong>Run now</strong> で結果を確認する。</li>
+                <li>問題がないことを確認してからAutomationを編集し、必要なScheduleを選んで保存する。</li>
+            </ol>
+            <p>Scheduleは <strong>Manual</strong>（Run nowを押したときのみ）、<strong>Hourly</strong>（毎時）、 <strong>Daily</strong>（指定時刻に毎日）、<strong>Weekly</strong>（指定曜日・時刻に毎週）である。 DailyとWeeklyの時刻はローカルタイムゾーンを使う。同じAutomationの実行は一度に 1セッションであり、前の実行中に次の予定時刻が来ても並列起動しない。</p>
+            <p>例として、次のようなプロンプトを設定できる。スケジュール登録前に、対象や出力形式、 ファイル変更の可否を具体的に書く。</p>
+            <pre><code class="language-text">現在のブランチで直近24時間のコミットを確認し、機能追加・修正・保守に分類して
+要約してください。コミットへの参照を付け、ドキュメント更新が必要そうな変更を
+指摘してください。ファイルは変更しないでください。</code></pre>
+            <p>Automationsは通常のスクリプトやイベントフックと同じものではない。プロンプトを エージェントが解釈して実行するため、結果は変動し得る。保存しただけで権限確認や 組織ポリシーを回避できるわけではなく、実行時に承認が必要になる場合がある。 エージェントの権限に応じて、ファイルの読み取り、コマンド実行、ファイル変更も 起こり得るため、特に無人の定期実行では権限と指示を確認する。</p>
+            <p>スケジュール実行には、実行するマシンが起動していてスリープしておらず、 エージェントが利用可能である必要がある。Agent Hostを使うスケジュールでは Agent Hostプロセスが実行中であること、その他ではVS Codeウィンドウが実行中である ことが必要であり、アプリを終了した後も動き続ける常時稼働サービスではない。 停止中に逃した予定が後からcatch-up実行されることはあるが、すべての未実行分が 必ず再実行される保証はない。実行ごとに選択したAgentとModelを使うため、 定期実行の利用量にも注意する。</p>
+            <p>Automationは <code>.automation.md</code> ファイルへエクスポートし、別環境でインポートできる。 共有ファイルに含まれるのは名前、プロンプト、スケジュールなどの移植可能な情報で、 Workspace、Provider、Model、権限、有効状態、実行履歴は含まれない。インポート側で 実行設定を選び直す。保存済みAutomationはAgents windowの <strong>Automations</strong> から 編集、有効・無効の切替、複製、実行履歴の確認、停止、削除ができる。</p>
+            <h3 id="prompt-file以外を選ぶ場合">Prompt file以外を選ぶ場合</h3>
+            <h4 id="agent-skills">Agent Skills</h4>
+            <p>Agent Skill は <code>SKILL.md</code> と、任意のスクリプト、テンプレート、例を1フォルダーに まとめる仕組みである。VS Code、Copilot CLI、Copilot cloud agentで利用できる オープン標準であり、複数ファイルや実行用スクリプトを含む、比較的複雑で 持ち運び可能な定型処理に向く。</p>
+            <p>プロジェクト用は次のいずれかに保存する。</p>
+            <ul>
+                <li><code>.github/skills/</code></li>
+                <li><code>.claude/skills/</code></li>
+                <li><code>.agents/skills/</code></li>
+            </ul>
+            <p>個人用は <code>~/.copilot/skills/</code>、<code>~/.claude/skills/</code>、<code>~/.agents/skills/</code> に 保存できる。追加のプロジェクト内保存先は、VS Code設定 <code>chat.agentSkillsLocations</code>で指定できる。</p>
+            <p>最小構成は次のとおりである。フォルダー名と<code>name</code>は一致させる。</p>
+            <pre><code class="language-text">.github/
+└─ skills/
+   └─ release-check/
+      └─ SKILL.md</code></pre>
+            <pre><code class="language-markdown">---
+name: release-check
+description: リリース前の確認を行う。リリース準備を依頼されたときに使う。
+argument-hint: &quot;[対象バージョン]&quot;
+disable-model-invocation: true
+---
+
+# Release check
+
+1. 変更履歴を確認する。
+2. テストとビルドを実行する。
+3. リリース対象の差分と未解決事項を報告する。</code></pre>
+            <p><code>name</code>と<code>description</code>は必須である。<code>name</code>は小文字、数字、ハイフンだけを使い、 最大64文字にする。<code>description</code>には「何をするか」だけでなく「いつ使うか」も 具体的に書く。名前が不正、または親フォルダー名と一致しない場合、Skillは 読み込まれない。</p>
+            <p>作成方法は次のいずれかである。</p>
+            <ol>
+                <li>チャット欄で<code>/skills</code>を入力し、<strong>Configure Skills</strong>を開く。</li>
+                <li><strong>New Skill (Workspace)</strong>または<strong>New Skill (User)</strong>を選ぶ。</li>
+                <li>保存先と名前を選び、生成された<code>SKILL.md</code>へ手順を書く。</li>
+            </ol>
+            <p>コマンドパレットの<strong>Chat: Open Customizations</strong>から<strong>Skills</strong>タブを開いてもよい。 チャットで<code>/create-skill</code>に続けて用途を説明すれば、AIにひな型を生成させられる。</p>
+            <p>呼び出すときは、チャット欄で<code>/</code>を入力して一覧から選ぶか、次のように直接入力する。</p>
+            <pre><code class="language-text">/release-check v1.4.0</code></pre>
+            <p>既定では、Skillはスラッシュコマンドとして手動実行でき、依頼内容と <code>description</code>が一致するとCopilotから自動選択される。呼び出し方はfront matterで 次のように制御できる。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>設定</th>
+                        <th>手動呼び出し</th>
+                        <th>自動選択</th>
+                        <th>用途</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>両方省略</td>
+                        <td>できる</td>
+                        <td>される</td>
+                        <td>一般的なSkill</td>
+                    </tr>
+                    <tr>
+                        <td><code>user-invocable: false</code></td>
+                        <td>できない</td>
+                        <td>される</td>
+                        <td>自動選択専用</td>
+                    </tr>
+                    <tr>
+                        <td><code>disable-model-invocation: true</code></td>
+                        <td>できる</td>
+                        <td>されない</td>
+                        <td>手動実行専用</td>
+                    </tr>
+                    <tr>
+                        <td>両方を設定</td>
+                        <td>できない</td>
+                        <td>されない</td>
+                        <td>実質的に無効</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>スクリプトやテンプレートを含める場合はSkillフォルダー内へ置き、<code>SKILL.md</code>から 相対リンクで明示する。参照されていない追加ファイルは自動では読み込まれない。</p>
+            <pre><code class="language-text">.github/skills/release-check/
+├─ SKILL.md
+└─ scripts/
+   └─ Test-Release.ps1</code></pre>
+            <pre><code class="language-markdown">必要な検証では[リリース確認スクリプト](./scripts/Test-Release.ps1)を実行する。</code></pre>
+            <p>このワークスペースの実例は <code>.github/skills/refresh-research-knowledge/SKILL.md</code>である。チャットで <code>/refresh-research-knowledge</code>と入力するか、「全調査メモの知識を更新して」のように <code>description</code>へ合う依頼をすると選択対象になる。このSkillは <code>scripts/New-ResearchRefreshPlan.ps1</code>を呼び出し、メモ数に応じた分担計画を作る。</p>
+            <p>Skillが一覧へ出ない場合は、次を確認する。</p>
+            <ol>
+                <li><code>SKILL.md</code>という正確なファイル名でSkillフォルダー直下にあるか。</li>
+                <li>YAML front matterに<code>name</code>と<code>description</code>があるか。</li>
+                <li><code>name</code>が親フォルダー名と一致し、使用可能な文字だけで構成されているか。</li>
+                <li><code>user-invocable: false</code>を指定していないか。</li>
+                <li>独自保存先なら<code>chat.agentSkillsLocations</code>へ登録しているか。</li>
+            </ol>
+            <p>共有Skillは実行前に内容と同梱スクリプトを確認する。Skillが指示したコマンドも 通常の権限確認や自動承認設定の対象であり、Skill自体が承認を回避することはない。</p>
+            <p>大きなSkillでは、実験的な<code>context: fork</code>を指定すると、専用のサブエージェントで 実行し、最終結果だけを元の会話へ返せる。この機能には <code>github.copilot.chat.skillTool.enabled</code>の有効化が必要である。</p>
+            <h4 id="custom-agents">Custom agents</h4>
+            <p>Custom agent は <code>.agent.md</code> に役割、指示、モデル、利用可能なツールを定義する。 Workspace の既定保存先は <code>.github/agents</code>、個人用は <code>~/.copilot/agents</code> である。 「定型タスクを1回実行する」というより、「読み取り専用のレビュー担当」 「実装担当」のような作業人格をチャットのエージェント選択欄から切り替える用途に向く。 Prompt file の <code>agent</code> から Custom agent 名を指定して組み合わせることもできる。</p>
+            <h4 id="custom-instructionsとagents-md">Custom instructionsとAGENTS.md</h4>
+            <p><code>.github/copilot-instructions.md</code> やルートの <code>AGENTS.md</code> は、原則として各チャット 要求へ自動的に加えられる。コーディング規約、使用技術、毎回の完了条件などを 覚えさせる用途には向くが、名前を入力して特定タスクを開始する機能ではない。 詳細は <a href="./Copilot%20ChatにおけるAGENTS.mdの役割.html">Copilot ChatにおけるAGENTS.mdの役割</a> を参照する。</p>
+            <h3 id="注意点">注意点</h3>
+            <ul>
+                <li>GitHub の公式資料では、Prompt files は2026年8月31日時点で Public Preview</li>
+            </ul>
+            <p>とされており、仕様が変わる可能性がある。</p>
+            <ul>
+                <li>VS Code の Agent Host 上で動くエージェントは Prompt files を使用しない。</li>
+            </ul>
+            <p>Agent Host や Copilot cloud agent でも再利用したい処理は Agent Skill へ 移行する。ローカルの VS Code extension host で動くエージェントでは Prompt files を利用できる。</p>
+            <ul>
+                <li>Agent Automations はAgents windowの機能で、VS Code 1.137でPreviewとして</li>
+            </ul>
+            <p>導入され、1.138のリリースノートでは既定で有効になったと案内されている。 ただし公式ガイドは段階的な提供のためStableで設定が無効な場合があるとしている。 Automationsが見当たらない場合は、VS Codeを更新し、設定 <code>chat.automations.enabled</code> を確認する。</p>
+            <ul>
+                <li>Prompt file が一覧に出ない場合は、保存先、拡張子 <code>.prompt.md</code>、YAML 構文を</li>
+            </ul>
+            <p>確認し、チャットメニューの <strong>Show Agent Debug Logs</strong> で検出エラーを確認する。</p>
+            <ul>
+                <li>ファイル変更やコマンド実行には Agent モードと適切な権限が必要である。</li>
+            </ul>
+            <p>Prompt file 自体が権限確認を回避することはない。</p>
+            <ul>
+                <li>パスワード、API キー、トークンなどを Prompt file や Skill に記載しない。</li>
+            </ul>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://code.visualstudio.com/docs/agent-customization/prompt-files">Use prompt files in VS Code - Visual Studio Code</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://docs.github.com/en/copilot/tutorials/customization-library/prompt-files/your-first-prompt-file">Your first prompt file - GitHub Docs</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://code.visualstudio.com/docs/agents/concepts/customization">Agent customization - Visual Studio Code</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://code.visualstudio.com/docs/agent-customization/agent-skills">Use Agent Skills in VS Code - Visual Studio Code</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://code.visualstudio.com/docs/agent-customization/custom-agents">Custom agents in VS Code - Visual Studio Code</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://code.visualstudio.com/docs/agent-customization/custom-instructions">Use custom instructions in VS Code - Visual Studio Code</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://code.visualstudio.com/docs/agent-customization/hooks">Hooks in Visual Studio Code</a></li>
+                <li>参照日: 2026-08-31</li>
+                <li><a href="https://code.visualstudio.com/docs/agents/run/automations">Create and manage agent automations - Visual Studio Code</a></li>
+                <li>参照日: 2026-09-25</li>
+                <li><a href="https://code.visualstudio.com/updates/v1_137">Visual Studio Code 1.137 Release Notes</a></li>
+                <li>参照日: 2026-09-25</li>
+                <li><a href="https://code.visualstudio.com/updates/v1_138">Visual Studio Code 1.138 Release Notes</a></li>
+                <li>参照日: 2026-09-25</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-25: Agents windowのAutomationsについて作成方法、定期実行の範囲、</li>
+            </ul>
+            <p>実行条件・権限・共有方法を追記し、Prompt filesやSkillsとの使い分けを更新</p>
+            <ul>
+                <li>2026-08-31: Agent Skillsの保存先、必須項目、作成・呼び出し方法、</li>
+            </ul>
+            <p>スクリプト参照、呼び出し制御、診断方法、ワークスペース内の実例を追記</p>
+            <ul>
+                <li>2026-08-31: 全参考URLと現行仕様を再確認し、Agent HostではPrompt filesを</li>
+            </ul>
+            <p>使用しない制約、Skill移行、<code>user-invocable</code>、Hooks公式資料を反映</p>
+            <ul>
+                <li>2026-08-31: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

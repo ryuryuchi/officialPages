@@ -9,6 +9,12 @@ if errorlevel 1 (
     exit /b 1
 )
 
+python generate_html.py --all-markdown Research
+if errorlevel 1 (
+    echo Research HTML generation failed.
+    exit /b 1
+)
+
 python update.py
 if errorlevel 1 (
     echo update.py failed.

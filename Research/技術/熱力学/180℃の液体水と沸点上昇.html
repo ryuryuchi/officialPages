@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>180℃の液体水と沸点上昇</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">180℃の液体水と沸点上昇</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>180℃の水を液体として存在させられるか、また、常圧で高沸点の物質を 溶かすことによって実現できるかを整理する。</p>
+            <h2 id="結論">結論</h2>
+            <ul>
+                <li><strong>純水を180℃の液体にすることは可能</strong>。密閉された圧力容器内で、</li>
+            </ul>
+            <p>180℃における飽和蒸気圧の約1.003 MPa（約10.03 bar、いずれも絶対圧） より高い圧力を保てばよい。</p>
+            <ul>
+                <li>大気圧を約0.101 MPaとすると、必要なゲージ圧は最低でも約0.902 MPa</li>
+            </ul>
+            <p>（約9.0 bar）に相当する。実際には局所的な沸騰を避ける余裕も必要になる。</p>
+            <ul>
+                <li><strong>高沸点・不揮発性の物質を溶かして沸点を上げる考え方も理論上正しい</strong>。</li>
+            </ul>
+            <p>ただし、食塩水のような通常の希薄溶液では上昇幅が小さく、180℃には届かない。</p>
+            <ul>
+                <li>常圧で180℃付近まで液体でいられる例は、非常に濃い塩化カルシウム水溶液や</li>
+            </ul>
+            <p>水酸化ナトリウム水溶液などに限られる。この場合は「180℃のお湯」というより、 水を一部含む高濃度の腐食性薬液である。</p>
+            <ul>
+                <li>家庭で密閉容器を加熱して作ってはいけない。容器破裂に加え、減圧時に液体の</li>
+            </ul>
+            <p>一部が瞬間的に蒸気化するフラッシュ沸騰が起き、熱水と蒸気が噴出する危険がある。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="純水の場合">純水の場合</h3>
+            <p>液体の沸点は、その液体の蒸気圧が周囲の圧力に等しくなる温度である。 1気圧では水の沸点は約100℃だが、圧力を上げれば100℃を超えても液体を保てる。</p>
+            <p>NISTがIAPWS-95に基づいて作成した水・蒸気表では、180℃の純水の飽和圧力は 約1.0028 MPa（10.028 bar、絶対圧）である。この圧力では液体と蒸気が共存でき、 これより十分高い圧力なら単相の液体として保てる。</p>
+            <p>これは通常の圧力鍋よりかなり高い条件である。必要なのは、温度・圧力・腐食性に 適合した圧力容器、安全弁、圧力計、温度制御などを備えた専門設備であり、 単に密閉した鍋や瓶ではない。</p>
+            <h3 id="溶質による沸点上昇">溶質による沸点上昇</h3>
+            <p>不揮発性の溶質を水へ加えると水の蒸気圧が下がるため、外圧と等しくなるまで さらに高い温度が必要になる。これが沸点上昇である。</p>
+            <p>希薄溶液では、沸点上昇はおおむね次式で表される。</p>
+            <pre><code class="language-text">ΔTb = i Kb m</code></pre>
+            <ul>
+                <li><code>ΔTb</code>: 沸点の上昇量</li>
+                <li><code>i</code>: ファントホッフ係数</li>
+                <li><code>Kb</code>: 水の沸点上昇定数（約0.512 K kg/mol）</li>
+                <li><code>m</code>: 質量モル濃度</li>
+            </ul>
+            <p>100℃から180℃へ80 K上げるには、希薄溶液の式を形式的に使っても <code>i × m</code> が約156 mol/kg必要になる。この濃度域では希薄溶液の式は適用できず、 多くの物質は先に溶解度限界へ達する。この計算は、通常の食塩水では 実現できないほど大きな上昇量であることを示す目安にすぎない。</p>
+            <p>一方、塩化カルシウムと水の相図では、高温で塩化カルシウムが約4分の3を占める 極端な濃厚組成において、常圧の沸騰曲線が175～180℃付近に達する。 濃厚な水酸化ナトリウム水溶液にも同程度の沸点を持つ組成がある。 したがって「溶質で180℃の液体を作る」こと自体は可能だが、次の違いがある。</p>
+            <ul>
+                <li>液体の大部分が溶質となり、水の性質とは大きく異なる。</li>
+                <li>蒸発すると水だけが優先的に失われ、濃度と沸点が変化する。</li>
+                <li>強い腐食性、高粘度、析出・固化など、加圧純水とは異なる危険が加わる。</li>
+                <li>水酸化ナトリウムなどは皮膚や眼に重篤な化学熱傷を起こす。</li>
+            </ul>
+            <h3 id="安全面">安全面</h3>
+            <p>180℃の加圧水は、圧力を急に下げると新しい圧力での沸点を大きく超えた状態になる。 そのため一部が急激に蒸気へ変わり、体積膨張とともに熱水を噴出させる。 圧力容器の破損や誤開放も重大事故につながる。</p>
+            <p>実験・工業用途では、対象条件に定格された圧力容器を、教育を受けた担当者が 設備の手順に従って扱う必要がある。家庭で試す用途には適さない。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://www.nist.gov/srd/nistir-5078">NISTIR 5078: Thermodynamic Properties of Water</a></li>
+                <li>参照日: 2026-09-02</li>
+                <li><a href="https://iapws.org/technical-guidance/release/IAPWS-95">IAPWS-95: Formulation for the Thermodynamic Properties of Ordinary Water Substance</a></li>
+                <li>参照日: 2026-09-02</li>
+                <li><a href="https://lienhard.mit.edu/physical-properties-of-saline-water/">Physical Properties of Saline Water - MIT Lienhard Research Group</a></li>
+                <li>参照日: 2026-09-02</li>
+                <li><a href="https://www.science.smith.edu/~jbrady/petrology/igrocks-diagrams/binary/H2O-CaCl2.php">H2O-CaCl2 Diagram - Smith College</a></li>
+                <li>参照日: 2026-09-02</li>
+                <li><a href="https://ingredi.com/content/pdfs/CCP050<em>Calcium-Chloride-Anhydrous</em>Physical-Properties-Guide.pdf">Calcium Chloride: A Guide to Physical Properties</a></li>
+                <li>参照日: 2026-09-02</li>
+                <li><a href="https://www.osha.gov/sites/default/files/publications/OSHAQUICKFACTS-LAB-SAFETY-AUTOCLAVES-STERILIZERS.pdf">OSHA Quick Facts: Laboratory Safety - Autoclaves and Sterilizers</a></li>
+                <li>参照日: 2026-09-02</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-02: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

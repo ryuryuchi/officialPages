@@ -1,4 +1,4 @@
-"""Generate HTML pages from index.md files.
+"""Generate HTML pages from Markdown files.
 
 The generator intentionally uses only the Python standard library so it can be
 run in GitHub Pages repositories without a package installation step.
@@ -18,6 +18,13 @@ from urllib.parse import urlparse
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 FRONT_MATTER_BOUNDARY = "---"
+SKIPPED_DIRECTORY_NAMES = {
+    ".git",
+    ".venv",
+    "venv",
+    "__pycache__",
+    "node_modules",
+}
 
 
 def safe_url(value: str) -> str:
@@ -29,7 +36,7 @@ def safe_url(value: str) -> str:
     return html.escape(value.strip(), quote=True)
 
 
-def inline_markdown(value: str) -> str:
+def inline_markdown(value: str, rewrite_markdown_links: bool = False) -> str:
     """Render the inline Markdown used by the site's pages."""
 
     raw_html: list[str] = []
@@ -56,17 +63,22 @@ def inline_markdown(value: str) -> str:
         ),
         value,
     )
+
+    def render_link(match: re.Match[str]) -> str:
+        target = match.group(2)
+        if rewrite_markdown_links:
+            target = markdown_page_url(target)
+        title = (
+            f' title="{html.escape(match.group(3), quote=True)}"'
+            if match.group(3)
+            else ""
+        )
+        label = inline_markdown(match.group(1), rewrite_markdown_links)
+        return f'<a href="{safe_url(target)}"{title}>{label}</a>'
+
     value = re.sub(
         r"\[([^\]]+)\]\((\S+?)(?:\s+[\"']([^\"']*)[\"'])?\)",
-        lambda match: (
-            f'<a href="{safe_url(match.group(2))}"'
-            + (
-                f' title="{html.escape(match.group(3), quote=True)}"'
-                if match.group(3)
-                else ""
-            )
-            + f">{inline_markdown(match.group(1))}</a>"
-        ),
+        render_link,
         value,
     )
     value = re.sub(
@@ -79,6 +91,19 @@ def inline_markdown(value: str) -> str:
 
     for index, tag in enumerate(raw_html):
         value = value.replace(f"__RAW_HTML_{index}__", tag)
+    return value
+
+
+def markdown_page_url(value: str) -> str:
+    """Point local Markdown links to their generated HTML pages."""
+
+    parsed = urlparse(value.strip())
+    if (
+        not parsed.scheme
+        and not parsed.netloc
+        and parsed.path.lower().endswith(".md")
+    ):
+        return parsed._replace(path=f"{parsed.path[:-3]}.html").geturl()
     return value
 
 
@@ -108,35 +133,48 @@ def is_table_separator(line: str) -> bool:
     return len(cells) > 0 and all(re.fullmatch(r":?-+:?", cell) for cell in cells)
 
 
-def render_table(lines: list[str]) -> str:
+def render_table(lines: list[str], rewrite_markdown_links: bool = False) -> str:
     headers = split_table_row(lines[0])
     rows = [split_table_row(line) for line in lines[2:]]
     output = ["<table>", "    <thead>", "        <tr>"]
-    output.extend(f"            <th>{inline_markdown(cell)}</th>" for cell in headers)
+    output.extend(
+        f"            <th>{inline_markdown(cell, rewrite_markdown_links)}</th>"
+        for cell in headers
+    )
     output.extend(["        </tr>", "    </thead>", "    <tbody>"])
     for row in rows:
         output.append("        <tr>")
         for index in range(len(headers)):
             cell = row[index] if index < len(row) else ""
-            output.append(f"            <td>{inline_markdown(cell)}</td>")
+            output.append(
+                f"            <td>{inline_markdown(cell, rewrite_markdown_links)}</td>"
+            )
         output.append("        </tr>")
     output.extend(["    </tbody>", "</table>"])
     return "\n".join(output)
 
 
-def render_list(lines: list[str], ordered: bool) -> list[str]:
+def render_list(
+    lines: list[str], ordered: bool, rewrite_markdown_links: bool = False
+) -> list[str]:
     tag = "ol" if ordered else "ul"
     output = [f"<{tag}>"]
     pattern = r"^\s*\d+[.)]\s+(.+)$" if ordered else r"^\s*[-+*]\s+(.+)$"
     for line in lines:
         match = re.match(pattern, line)
         if match:
-            output.append(f"    <li>{inline_markdown(match.group(1))}</li>")
+            output.append(
+                f"    <li>{inline_markdown(match.group(1), rewrite_markdown_links)}</li>"
+            )
     output.append(f"</{tag}>")
     return output
 
 
-def render_blocks(lines: list[str], used_ids: set[str] | None = None) -> list[str]:
+def render_blocks(
+    lines: list[str],
+    used_ids: set[str] | None = None,
+    rewrite_markdown_links: bool = False,
+) -> list[str]:
     """Render block-level Markdown and return indented HTML lines."""
 
     used_ids = used_ids if used_ids is not None else set()
@@ -168,8 +206,12 @@ def render_blocks(lines: list[str], used_ids: set[str] | None = None) -> list[st
             inner = lines[index + 1 : end]
             if inner and re.fullmatch(r"\s*<summary>.*</summary>\s*", inner[0], flags=re.IGNORECASE):
                 summary = re.sub(r"^\s*<summary>|</summary>\s*$", "", inner.pop(0), flags=re.IGNORECASE)
-                output.append(f"    <summary>{inline_markdown(summary)}</summary>")
-            for rendered_line in render_blocks(inner, used_ids):
+                output.append(
+                    f"    <summary>{inline_markdown(summary, rewrite_markdown_links)}</summary>"
+                )
+            for rendered_line in render_blocks(
+                inner, used_ids, rewrite_markdown_links
+            ):
                 output.append(f"    {rendered_line}")
             output.append("</details>")
             index = end + 1
@@ -196,7 +238,7 @@ def render_blocks(lines: list[str], used_ids: set[str] | None = None) -> list[st
             level = len(heading_match.group(1))
             content = heading_match.group(2)
             output.append(
-                f'<h{level} id="{heading_id(content, used_ids)}">{inline_markdown(content)}</h{level}>'
+                f'<h{level} id="{heading_id(content, used_ids)}">{inline_markdown(content, rewrite_markdown_links)}</h{level}>'
             )
             index += 1
             continue
@@ -213,7 +255,9 @@ def render_blocks(lines: list[str], used_ids: set[str] | None = None) -> list[st
             if end == len(lines):
                 raise ValueError("directive block is missing its closing :::")
             output.append("<blockquote>")
-            for rendered_line in render_blocks(lines[index + 1 : end], used_ids):
+            for rendered_line in render_blocks(
+                lines[index + 1 : end], used_ids, rewrite_markdown_links
+            ):
                 output.append(f"    {rendered_line}")
             output.append("</blockquote>")
             index = end + 1
@@ -225,7 +269,9 @@ def render_blocks(lines: list[str], used_ids: set[str] | None = None) -> list[st
                 quote_lines.append(re.sub(r"^\s*>\s?", "", lines[index]))
                 index += 1
             output.append("<blockquote>")
-            for rendered_line in render_blocks(quote_lines, used_ids):
+            for rendered_line in render_blocks(
+                quote_lines, used_ids, rewrite_markdown_links
+            ):
                 output.append(f"    {rendered_line}")
             output.append("</blockquote>")
             continue
@@ -240,7 +286,9 @@ def render_blocks(lines: list[str], used_ids: set[str] | None = None) -> list[st
             while index < len(lines) and "|" in lines[index] and lines[index].strip():
                 table_lines.append(lines[index])
                 index += 1
-            output.extend(render_table(table_lines).splitlines())
+            output.extend(
+                render_table(table_lines, rewrite_markdown_links).splitlines()
+            )
             continue
 
         unordered = re.match(r"^\s*[-+*]\s+.+$", line)
@@ -251,7 +299,9 @@ def render_blocks(lines: list[str], used_ids: set[str] | None = None) -> list[st
             while index < len(lines) and re.match(pattern, lines[index]):
                 list_lines.append(lines[index])
                 index += 1
-            output.extend(render_list(list_lines, ordered is not None))
+            output.extend(
+                render_list(list_lines, ordered is not None, rewrite_markdown_links)
+            )
             continue
 
         # Preserve raw HTML blocks that are not Markdown containers.
@@ -275,7 +325,9 @@ def render_blocks(lines: list[str], used_ids: set[str] | None = None) -> list[st
                 break
             paragraph.append(next_line.strip())
             index += 1
-        output.append(f"<p>{inline_markdown(' '.join(paragraph))}</p>")
+        output.append(
+            f"<p>{inline_markdown(' '.join(paragraph), rewrite_markdown_links)}</p>"
+        )
 
     return output
 
@@ -301,7 +353,12 @@ def plain_title(value: str) -> str:
     return html.unescape(value).strip()
 
 
-def render_document(source: Path, output: Path, site_root: Path) -> str:
+def render_document(
+    source: Path,
+    output: Path,
+    site_root: Path,
+    rewrite_markdown_links: bool = False,
+) -> str:
     metadata, lines = read_document(source)
     title = metadata.get("title", "")
     if not title:
@@ -326,7 +383,7 @@ def render_document(source: Path, output: Path, site_root: Path) -> str:
     diary_page = bool(content_lines) and all(
         re.match(r"^\s*[-+*]\s+.+$", line) for line in content_lines
     )
-    rendered = render_blocks(lines)
+    rendered = render_blocks(lines, rewrite_markdown_links=rewrite_markdown_links)
     if diary_page and rendered and rendered[0] == "<ul>":
         rendered[0] = '<ul class="diary-list">'
 
@@ -342,9 +399,14 @@ def render_document(source: Path, output: Path, site_root: Path) -> str:
     </main>"""
     else:
         description = metadata.get("description")
+        description_html = (
+            f"                <p>{inline_markdown(description, rewrite_markdown_links)}</p>"
+            if description
+            else ""
+        )
         header = f"""            <div class="article-header">
                 <h1 class="article-title">{html.escape(title)}</h1>
-{f'                <p>{inline_markdown(description)}</p>' if description else ''}
+{description_html}
             </div>
 """
         main = f"""    <main>
@@ -370,33 +432,45 @@ def render_document(source: Path, output: Path, site_root: Path) -> str:
 """
 
 
-def discover_sources(paths: Iterable[Path]) -> list[Path]:
+def discover_sources(
+    paths: Iterable[Path], all_markdown: bool = False
+) -> list[Path]:
     sources: set[Path] = set()
     for path in paths:
         if not path.exists():
             raise FileNotFoundError(f"入力パスが見つかりません: {path}")
         if path.is_file():
-            if path.name.lower() != "index.md":
-                raise ValueError(f"入力ファイルはindex.mdにしてください: {path}")
+            if path.suffix.lower() != ".md":
+                raise ValueError(f"入力ファイルはMarkdownにしてください: {path}")
             sources.add(path.resolve())
         else:
             sources.update(
                 candidate.resolve()
-                for candidate in path.rglob("index.md")
-                if ".git" not in candidate.parts
+                for candidate in path.rglob("*.md" if all_markdown else "index.md")
+                if not SKIPPED_DIRECTORY_NAMES.intersection(
+                    part.lower() for part in candidate.parts
+                )
             )
     return sorted(sources)
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="index.mdを同じフォルダのindex.htmlへ変換します。"
+        description="Markdownファイルを同じフォルダのHTMLへ変換します。"
     )
     parser.add_argument(
         "paths",
         nargs="*",
         type=Path,
         help="Markdownファイルまたは検索対象フォルダ（省略時はリポジトリ全体）",
+    )
+    parser.add_argument(
+        "--all-markdown",
+        action="store_true",
+        help=(
+            "フォルダ内のすべてのMarkdownを同名のHTMLへ変換する"
+            "（既定はindex.mdのみ）"
+        ),
     )
     parser.add_argument(
         "--site-root",
@@ -407,7 +481,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--output",
         type=Path,
-        help="単一入力時の出力先。既定は入力と同じフォルダのindex.html",
+        help="単一入力時の出力先。既定は入力と同じフォルダの同名HTML",
     )
     parser.add_argument(
         "--check",
@@ -422,16 +496,22 @@ def main(argv: list[str] | None = None) -> int:
     site_root = args.site_root.resolve()
     search_paths = args.paths or [site_root]
     try:
-        sources = discover_sources(search_paths)
+        sources = discover_sources(search_paths, args.all_markdown)
         if not sources:
-            raise ValueError("index.mdが見つかりません")
+            target = "Markdownファイル" if args.all_markdown else "index.md"
+            raise ValueError(f"{target}が見つかりません")
         if args.output and len(sources) != 1:
             raise ValueError("--outputは入力が1件のときだけ指定できます")
 
         changed = False
         for source in sources:
-            output = args.output.resolve() if args.output else source.with_name("index.html")
-            generated = render_document(source, output, site_root)
+            output = args.output.resolve() if args.output else source.with_suffix(".html")
+            generated = render_document(
+                source,
+                output,
+                site_root,
+                rewrite_markdown_links=args.all_markdown,
+            )
             current = output.read_text(encoding="utf-8") if output.exists() else None
             if current != generated:
                 changed = True
