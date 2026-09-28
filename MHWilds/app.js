@@ -1,6 +1,22 @@
 const DATA_BASE = "./data";
 const ARMOR_KINDS = ["head", "chest", "arms", "waist", "legs"];
 const ARMOR_LABELS = { head: "頭", chest: "胴", arms: "腕", waist: "腰", legs: "脚" };
+const WEAPON_KIND_LABELS = {
+  bow: "弓",
+  "charge-blade": "チャージアックス",
+  "dual-blades": "双剣",
+  "great-sword": "大剣",
+  gunlance: "ガンランス",
+  hammer: "ハンマー",
+  "heavy-bowgun": "ヘビィボウガン",
+  "hunting-horn": "狩猟笛",
+  "insect-glaive": "操虫棍",
+  lance: "ランス",
+  "light-bowgun": "ライトボウガン",
+  "long-sword": "太刀",
+  "switch-axe": "スラッシュアックス",
+  "sword-shield": "片手剣",
+};
 const MAX_ARMOR_PER_PART = 24;
 const MAX_PARTIAL_BUILDS = 450;
 const MAX_CHARM_CANDIDATES = 320;
@@ -96,13 +112,17 @@ function selectedWeapon() {
   return state.weapons.find((weapon) => String(weapon.id) === elements.weapon.value) || null;
 }
 
+function weaponKindLabel(kind) {
+  return WEAPON_KIND_LABELS[kind] || kind;
+}
+
 function currentTargetsMet(totals) {
   return state.targets.every((target) => (totals.get(target.id) || 0) >= target.level);
 }
 
 function populateControls() {
   const kinds = [...new Set(state.weapons.map((weapon) => weapon.kind))].sort();
-  elements.weaponKind.replaceChildren(new Option("指定なし", ""), ...kinds.map((kind) => new Option(kind, kind)));
+  elements.weaponKind.replaceChildren(new Option("指定なし", ""), ...kinds.map((kind) => new Option(weaponKindLabel(kind), kind)));
   ["skill", "skillLevel", "addSkill", "search"].forEach((name) => { elements[name].disabled = false; });
   updateSkillOptions();
   updateWeaponOptions();
@@ -142,7 +162,7 @@ function updateWeaponOptions() {
   const kind = elements.weaponKind.value;
   const weapons = state.weapons.filter((weapon) => !kind || weapon.kind === kind)
     .sort((a, b) => a.name.localeCompare(b.name, "ja"));
-  elements.weapon.replaceChildren(new Option("武器なし", ""), ...weapons.map((weapon) => new Option(`${weapon.name} (${weapon.kind})`, weapon.id)));
+  elements.weapon.replaceChildren(new Option("武器なし", ""), ...weapons.map((weapon) => new Option(`${weapon.name}（${weaponKindLabel(weapon.kind)}）`, weapon.id)));
   elements.weapon.disabled = false;
 }
 
