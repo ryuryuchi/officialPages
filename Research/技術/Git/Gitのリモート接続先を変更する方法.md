@@ -1,6 +1,6 @@
 ---
 作成日: 2026-09-08
-更新日: 2026-09-08
+更新日: 2026-10-08
 タグ:
   - Git
   - リモート
@@ -14,7 +14,7 @@
 
 ## 概要
 
-ローカルリポジトリに設定済みの Git リモートを、別のリポジトリまたは別の接続方式
+ローカルリポジトリに設定済みのGitリモートを、別のリポジトリまたは別の接続方式
 （HTTPS / SSH）へ安全に切り替える方法を整理する。
 
 ## 結論
@@ -37,16 +37,16 @@ URL と接続先リポジトリを誤ると、次の `git push` の送信先も�
 `git ls-remote <remote-name>` で読み取り接続を確認してから、意図したブランチだけを明示して
 push する。
 
-`git ls-remote` が GitHub の `Repository not found` で失敗したときは、URLが誤っている、
+`git ls-remote` がGitHubの `Repository not found` で失敗したときは、URLが誤っている、
 対象リポジトリが未作成・削除済み、または現在の認証情報に非公開リポジトリへの権限がない、
-のいずれかである。GitHub は非公開リポジトリの存在を隠すため、未存在と権限不足を同じ
+のいずれかである。GitHubは非公開リポジトリの存在を隠すため、未存在と権限不足を同じ
 メッセージで返すことがある。
 
 ## 詳細
 
 ### 1. 現在の設定を確認する
 
-対象のローカルリポジトリへ移動して、リモート名と fetch / push の URL を確認する。
+対象のローカルリポジトリへ移動して、リモート名とfetch/pushのURLを確認する。
 
 ```powershell
 Set-Location <ローカルリポジトリのパス>
@@ -87,7 +87,7 @@ git ls-remote <remote-name>
 git push -u <remote-name> <ローカルブランチ名>
 ```
 
-既存のローカルブランチが旧リモートの追跡ブランチを upstream としている場合は、切替後に
+既存のローカルブランチが旧リモートの追跡ブランチをupstreamとしている場合は、切替後に
 新しいリモートへ設定し直す。
 
 ```powershell
@@ -156,9 +156,9 @@ git remote remove old-origin
 
 ### 5. fetch と push の接続先を分ける場合
 
-`git remote set-url --push origin <push用URL>` は push URL だけを変更できる。
-ただし Git の公式仕様では、同一リモートに設定する fetch URL と push URL は同じ場所を指す
-べきとされる。上流を fetch し、自分のフォークへ push する用途では、`upstream` と `origin`
+`git remote set-url --push origin <push用URL>` はpush URLだけを変更できる。
+ただしGitの公式仕様では、同一リモートに設定するfetch URLとpush URLは同じ場所を指す
+べきとされる。上流をfetchし、自分のフォークへpushする用途では、`upstream`と`origin`
 のように別々のリモートを作成する。
 
 ```powershell
@@ -170,8 +170,8 @@ git push origin <ローカルブランチ名>
 
 ### 注意点
 
-- HTTPS から SSH へ変更するには、SSH 公開鍵をホスティングサービス側へ登録し、SSH 接続を
-  利用できる状態にしておく。HTTPS では、サービスに応じてパスワードではなくトークンや
+- HTTPSからSSHへ変更するには、SSH公開鍵をホスティングサービス側へ登録し、SSH接続を
+  利用できる状態にしておく。HTTPSでは、サービスに応じてパスワードではなくトークンや
   credential helper が必要になる。
 - `set-url` はリモート名を変更しないため、普段の `git pull` や `git push` が向かう先を
   確認してから実行する。
@@ -194,6 +194,7 @@ git push origin <ローカルブランチ名>
 
 ## 更新履歴
 
+- 2026-10-08: yomiyasuの原則に基づき本文を推敲
 - 2026-09-08: GitHub のブラウザー表示でも `Page not found` となるURLの確認方法を追記
 - 2026-09-08: `Repository not found` の原因、リモート名とブランチ名の違い、旧URLへの復旧手順を追記
 - 2026-09-08: 初版を作成

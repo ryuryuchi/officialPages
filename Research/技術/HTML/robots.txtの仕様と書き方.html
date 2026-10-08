@@ -18,7 +18,7 @@
             <p>Webサイトの<code>robots.txt</code>について、目的、標準仕様（Robots Exclusion Protocol: REP）、実際に記載する項目、書式と照合の規則、利用時の注意を整理する。</p>
             <h2 id="結論">結論</h2>
             <p><code>robots.txt</code>は、検索エンジンなどのクローラーへ「どのURLパスをクロールしてよいか」を伝えるための公開テキストファイルである。サイトのルートに小文字で<code>/robots.txt</code>として置き、UTF-8の<code>text/plain</code>で配信する。</p>
-            <p>標準で中心となる項目は、対象クローラーを指定する<code>User-agent</code>、許可する<code>Allow</code>、禁止する<code>Disallow</code>である。ルールはアクセス制御でもインデックス削除手段でもない。非公開情報は認証で保護し、検索結果から確実に除外したいHTML等は、クロール可能な状態で<code>noindex</code>を返すか、認証・削除など目的に合う方法を使う。</p>
+            <p>主な項目は、対象クローラーを指定する<code>User-agent</code>、許可する<code>Allow</code>、禁止する<code>Disallow</code>である。ルールはアクセス制御でもインデックス削除手段でもない。非公開情報は認証で保護し、検索結果から確実に除外したいHTML等は、クロール可能な状態で<code>noindex</code>を返すか、認証・削除など目的に合う方法を使う。</p>
             <h2 id="詳細">詳細</h2>
             <h3 id="役割と適用範囲">役割と適用範囲</h3>
             <ul>
@@ -131,7 +131,7 @@ Disallow:</code></pre>
                 <li>ファイルをUTF-8のプレーンテキストで保存し、<code>Content-Type: text/plain</code>で配信する。RFC 9309はルートの小文字<code>/robots.txt</code>を要求する。</li>
                 <li>公開後に<code>https://対象ホスト/robots.txt</code>を取得して、リダイレクト、HTTPエラー、文字化けがないことを確認する。Googleは通常最大24時間キャッシュするため、変更の即時反映は保証されない。</li>
             </ol>
-            <h3 id="目的別に使い分けること">目的別に使い分けること</h3>
+            <h3 id="目的別の使い分け">目的別の使い分け</h3>
             <table>
                 <thead>
                     <tr>
@@ -172,6 +172,7 @@ Disallow:</code></pre>
             </ul>
             <h2 id="更新履歴">更新履歴</h2>
             <ul>
+                <li>2026-10-08: yomiyasuの原則に基づき本文を推敲</li>
                 <li>2026-09-08: 初版を作成</li>
             </ul>
             </div>

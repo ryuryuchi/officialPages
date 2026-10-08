@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pandoc出力を装飾する方法</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">Pandoc出力を装飾する方法</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>PythonからPandocを使ってMarkdownなどの文書をHTML、Word、PDFへ変換するとき、 CSSなどで見た目を整えられるか、出力形式ごとの方法と制約を調べた。</p>
+            <h2 id="結論">結論</h2>
+            <p><strong>Pandocでは出力形式に応じた方法で体裁を整えられる。</strong> HTMLならCSS、Wordなら Wordのスタイルを定義した参照DOCX、PDFならPDFエンジンに応じた設定やテンプレートを 使う。CSSをそのまま適用できるのはHTML出力、またはHTMLを経由してPDFを作る場合で、 どの形式にも共通のCSSを適用する仕組みではない。</p>
+            <p>Pythonで使う<code>pypandoc</code>はPandoc本体を呼び出すラッパーであり、変換機能や出力形式別の オプションはPandocに従う。<code>extra_args</code>へPandocのコマンドライン引数をリストで渡すと、 PythonからCSSや参照DOCXなどを指定できる。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="pandocとpythonラッパーの役割">PandocとPythonラッパーの役割</h3>
+            <p>PandocはMarkdown、HTML、Wordなどの文書形式を相互変換するツールである。文書を内部の 構造表現に読み込み、出力形式に合わせて書き出す。そのため、装飾方法は出力形式ごとに 異なる。</p>
+            <p>Pythonから利用する場合、選択肢の一つは<code>pypandoc</code>である。これはPandocの薄いラッパー なので、<code>pypandoc</code>だけで全ての変換処理が完結するわけではない。通常の<code>pypandoc</code> パッケージでは別途Pandocのインストールが必要で、Pandocを含む配布物として <code>pypandoc_binary</code>も提供されている。</p>
+            <h3 id="htmlにcssを適用する">HTMLにCSSを適用する</h3>
+            <p>Pandocへ<code>--css</code>を渡すと、生成するHTMLから外部CSSを読み込める。CSSリンクを含む <code>__RAW<em>HTML</em>0__</code>が必要なため、HTMLファイル全体を出力する<code>--standalone</code>も指定する。</p>
+            <pre><code class="language-python">from pathlib import Path
+
+import pypandoc
+
+
+source = Path(&quot;input.md&quot;)
+pypandoc.convert_file(
+    source,
+    to=&quot;html&quot;,
+    outputfile=&quot;output.html&quot;,
+    extra_args=[
+        &quot;--standalone&quot;,
+        &quot;--css=style.css&quot;,
+    ],
+)</code></pre>
+            <p>CSSの例は次のとおり。</p>
+            <pre><code class="language-css">body {
+  max-width: 48rem;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  color: #222;
+  font-family: sans-serif;
+  line-height: 1.7;
+}
+
+h1,
+h2 {
+  color: #174a7e;
+}
+
+blockquote {
+  border-left: 4px solid #8aaac8;
+  margin-left: 0;
+  padding-left: 1rem;
+}</code></pre>
+            <p>このCSSはHTMLの表示を整えるもので、元のMarkdownファイル自体の見た目を変えるもの ではない。Markdownの表示は、HTMLに変換した後にブラウザーやMarkdownビューアーが どのCSSを使うかで決まる。</p>
+            <p>CSSは生成されたHTMLから参照されるため、配布先でもCSSを参照できるようにする。 <code>style.css</code>をHTMLと同じ場所に置く、適切な相対パスを指定する、またはWeb上の公開先を 指定するなど、HTMLを開く環境に合わせて管理する。</p>
+            <h3 id="word-docx-の見た目を整える">Word（DOCX）の見た目を整える</h3>
+            <p>Word出力ではCSSではなく、<code>--reference-doc</code>で指定する参照DOCXを使う。Wordで参照DOCXの 見出し、本文、表などのスタイルを編集し、それをPandocの出力に反映させる。</p>
+            <pre><code class="language-python">pypandoc.convert_file(
+    &quot;input.md&quot;,
+    to=&quot;docx&quot;,
+    outputfile=&quot;output.docx&quot;,
+    extra_args=[&quot;--reference-doc=reference.docx&quot;],
+)</code></pre>
+            <p>HTMLで使ったCSSがDOCXに適用されるわけではない。Wordファイルとして編集・配布する 用途では、参照DOCX側のスタイルを調整する。</p>
+            <h3 id="pdfの見た目を整える">PDFの見た目を整える</h3>
+            <p>PDFはPandoc単独で直接描画するのではなく、別のPDFエンジンを使って生成する。既定では LaTeXが使われるため、LaTeXの変数やヘッダー設定など、選択したエンジンに対応する方法で 調整する。HTMLを中間形式として使う構成ではCSSを利用できるが、その場合も必要な PDFエンジンのインストールと設定が必要である。</p>
+            <p>つまり、「PDFにしたいからCSSを付ける」だけでは足りず、どのPDFエンジンで出力するかを 決めてからスタイルを選ぶ。</p>
+            <h3 id="出力形式別の選び方">出力形式別の選び方</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>出力先</th>
+                        <th>主なスタイル指定</th>
+                        <th>向いている用途</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>HTML</td>
+                        <td><code>--css</code>、必要に応じてHTMLテンプレート</td>
+                        <td>Web公開、ブラウザーで閲覧</td>
+                    </tr>
+                    <tr>
+                        <td>DOCX</td>
+                        <td><code>--reference-doc</code>で参照DOCXを指定</td>
+                        <td>Wordで編集・共有</td>
+                    </tr>
+                    <tr>
+                        <td>PDF</td>
+                        <td>PDFエンジン別の変数、テンプレート、またはHTML経由のCSS</td>
+                        <td>レイアウトを固定して配布</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>Pythonからは、これらのPandocオプションを<code>extra_args</code>のリストに入れて渡す。独自の 処理を加えたい場合はフィルターも使えるが、CSSやテンプレートが担う見た目の指定とは 役割が異なる。フィルターは変換途中の文書構造を加工する方法である。</p>
+            <p>なお、Pandocは異なる文書形式間で完全に同じ見た目を保つツールではない。元形式の レイアウトや複雑な要素が、出力先の形式でそのまま表現できるとは限らない。実際に使う Markdown、画像、表を含むサンプルで出力を確認する。</p>
+            <p>WordからMarkdownへ変換する方法は、<a href="../Word/Word文書をMarkdownへ高忠実度変換する方法.html">Word文書をMarkdownへ高忠実度変換する方法</a>を参照。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://pandoc.org/MANUAL.html#option--standalone">Pandoc User's Guide: Creating a standalone HTML file</a></li>
+                <li>参照日: 2026-09-25</li>
+                <li><a href="https://pandoc.org/MANUAL.html#option--css">Pandoc User's Guide: <code>--css</code> option</a></li>
+                <li>参照日: 2026-09-25</li>
+                <li><a href="https://pandoc.org/MANUAL.html#option--reference-doc">Pandoc User's Guide: <code>--reference-doc</code> option</a></li>
+                <li>参照日: 2026-09-25</li>
+                <li><a href="https://pandoc.org/MANUAL.html#creating-a-pdf">Pandoc User's Guide: Creating a PDF</a></li>
+                <li>参照日: 2026-09-25</li>
+                <li><a href="https://pandoc.org/MANUAL.html#templates">Pandoc User's Guide: Templates</a></li>
+                <li>参照日: 2026-09-25</li>
+                <li><a href="https://github.com/JessicaTegner/pypandoc">pypandoc README</a></li>
+                <li>参照日: 2026-09-25</li>
+                <li><a href="https://pypi.org/project/pypandoc/">pypandoc - PyPI</a></li>
+                <li>参照日: 2026-09-25</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-10-08: yomiyasuの原則に基づき本文を推敲</li>
+            </ul>
+            <ul>
+                <li>2026-09-25: 初版を作成。HTML/CSS、DOCX参照ファイル、PDFエンジンごとの装飾方法を整理</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

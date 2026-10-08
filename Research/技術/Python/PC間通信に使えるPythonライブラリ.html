@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PC間通信に使えるPythonライブラリ</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">PC間通信に使えるPythonライブラリ</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>Pythonで別々のPC間にデータを送受信する方法を、初めて実用的な通信機能を 作る場合の難易度順に整理する。難易度は、導入と基本的な実装に必要な知識を 基準にした目安であり、通信頻度や運用要件によって変わる。</p>
+            <h2 id="結論">結論</h2>
+            <p>一般的なPC間の要求・応答には、HTTP APIをFastAPIで作り、呼び出し側から HTTPXまたはRequestsで接続する方法が最初の候補となる。双方向の即時通信には WebSocket、複数の送受信者へイベントを配信する用途にはMQTTが適する。</p>
+            <p>低レベルで独自の通信方式を実装する必要がなければ、最初から<code>socket</code>を使う よりも、HTTPやWebSocketなど上位の仕組みを使う方が実装しやすい。別PCから 接続するには、ライブラリ選定とは別に、サーバーPCの待受設定、IPアドレス、 ファイアウォールの許可が必要である。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="難易度順の比較">難易度順の比較</h3>
+            <p>以下は、LAN内のPC間通信を小規模に実装する場合の大まかな順序である。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>順位</th>
+                        <th>方式・ライブラリ</th>
+                        <th>通信の形</th>
+                        <th>向いている用途</th>
+                        <th>難しい点</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>HTTP API（FastAPI + HTTPX / Requests）</td>
+                        <td>要求と応答</td>
+                        <td>データ照会、操作指示、ファイル送受信</td>
+                        <td>サーバーとクライアントを分けて作る</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>WebSocket（<code>websockets</code>、またはFastAPI）</td>
+                        <td>接続を保つ双方向通信</td>
+                        <td>チャット、状態表示、連続した操作</td>
+                        <td>接続の開始・切断や非同期処理</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>MQTT（Eclipse Paho MQTT）</td>
+                        <td>ブローカー経由の配信</td>
+                        <td>センサー値、イベント、複数PCへの通知</td>
+                        <td>MQTTブローカーの用意と管理</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>ZeroMQ（PyZMQ）</td>
+                        <td>要求・応答、配信など複数のパターン</td>
+                        <td>プロセス間・PC間のメッセージング</td>
+                        <td>通信パターンと接続構成の選択</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>gRPC（gRPC Python）</td>
+                        <td>定義した手続きの呼び出し</td>
+                        <td>型付きのAPI、サービス間通信</td>
+                        <td>Protocol Buffersとコード生成</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td><code>socket</code>（Python標準ライブラリ）</td>
+                        <td>TCPまたはUDPの低レベル通信</td>
+                        <td>独自プロトコル、通信の仕組みの学習</td>
+                        <td>メッセージ境界、再接続、エラー処理などを自分で設計</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>難易度は一律ではない。たとえば、MQTTはクライアント側の送受信コードは比較的 単純だが、ブローカーを別途準備する分、運用開始までの作業が増える。<code>socket</code>は 追加パッケージなしで始められる一方、受信データの分割・結合や複数接続の管理を 自分で扱う必要がある。</p>
+            <h3 id="各方式の概要">各方式の概要</h3>
+            <h4 id="1-http-api-fastapiとhttpxまたはrequests">1. HTTP API: FastAPIとHTTPXまたはRequests</h4>
+            <ul>
+                <li>サーバーPCでFastAPIのAPIを動かし、別PCからHTTPクライアントでアクセスする。</li>
+                <li>要求を送って応答を受け取る形式に向く。JSONのほか、HTTP経由でファイルも</li>
+            </ul>
+            <p>送受信できる。</p>
+            <ul>
+                <li>ブローカーやコード生成ツールは不要。APIの形を決めれば、別の言語の</li>
+            </ul>
+            <p>クライアントからも利用しやすい。</p>
+            <ul>
+                <li>クライアント側は同期処理ならRequests、同期・非同期の両方を使いたい場合は</li>
+            </ul>
+            <p>HTTPXが候補となる。</p>
+            <ul>
+                <li>常時接続やサーバーからの即時プッシュが不要な業務ツール、PC操作、データ取得の</li>
+            </ul>
+            <p>最初の実装に向く。</p>
+            <h4 id="2-websocket-websocketsまたはfastapi">2. WebSocket: <code>websockets</code>またはFastAPI</h4>
+            <ul>
+                <li>TCP上の接続を維持し、同じ接続で双方がメッセージを送受信する。</li>
+                <li>チャット、ライブ更新、遠隔操作のように、サーバーからも継続的に通知したい</li>
+            </ul>
+            <p>場合に向く。</p>
+            <ul>
+                <li>通常のHTTP要求・応答に比べて、接続状態、切断、再接続などの扱いが増える。</li>
+                <li>FastAPIにはWebSocket用のエンドポイント機能がある。<code>websockets</code>はWebSocket</li>
+            </ul>
+            <p>サーバーとクライアントの機能を提供する。</p>
+            <h4 id="3-mqtt-eclipse-paho-mqtt">3. MQTT: Eclipse Paho MQTT</h4>
+            <ul>
+                <li>Python側にはEclipse Paho MQTTを使い、別途MQTTブローカーを動かす。</li>
+                <li>送信側はトピックにメッセージを発行し、受信側はトピックを購読する。</li>
+            </ul>
+            <p>送受信側が互いの接続先を直接管理しなくてもブローカーを介して配信できる。</p>
+            <ul>
+                <li>PCが複数ある場合の状態通知、機器データ、イベント配信に向く。</li>
+                <li>PCが2台だけで単純にAPIを呼び合いたい場合は、ブローカーの運用が余分になる</li>
+            </ul>
+            <p>可能性がある。</p>
+            <h4 id="4-zeromq-pyzmq">4. ZeroMQ: PyZMQ</h4>
+            <ul>
+                <li>PyZMQはØMQをPythonから利用するためのバインディングで、要求・応答や</li>
+            </ul>
+            <p>Publish/Subscribeなど複数のメッセージングパターンを選べる。</p>
+            <ul>
+                <li>基本的な構成で専用のブローカーを必須としない。構成によっては中継役を設ける。</li>
+                <li>HTTP APIよりも通信の構成を意識して選ぶ必要があるため、複数プロセスや</li>
+            </ul>
+            <p>メッセージ配送を設計する経験がある場合に向く。</p>
+            <h4 id="5-grpc-grpc-python">5. gRPC: gRPC Python</h4>
+            <ul>
+                <li>Protocol Buffersでサービスとデータ形式を定義し、クライアント・サーバー用の</li>
+            </ul>
+            <p>Pythonコードを生成して利用する。</p>
+            <ul>
+                <li>APIの型や契約を明確に保ちたい、複数のサービスから同じAPIを使いたい場合に</li>
+            </ul>
+            <p>向く。</p>
+            <ul>
+                <li>単純な2台間のデータ送受信には準備が多くなりやすい。<code>.proto</code>ファイルと</li>
+            </ul>
+            <p>コード生成ツールの管理も必要になる。</p>
+            <h4 id="6-socket-python標準ライブラリ">6. <code>socket</code>: Python標準ライブラリ</h4>
+            <ul>
+                <li>標準ライブラリだけでTCPまたはUDP通信を行える。</li>
+                <li>TCPは接続型で順序を保ったバイト列のやり取りに使われる。UDPはデータグラムを</li>
+            </ul>
+            <p>送受信し、到達保証や順序保証はTCPと同じ形では提供されない。</p>
+            <ul>
+                <li>TCPを使っても、1回の<code>recv()</code>がアプリケーションの1メッセージ全体に一致する</li>
+            </ul>
+            <p>とは限らない。長さ情報や区切り文字など、メッセージ境界を設計する必要がある。</p>
+            <ul>
+                <li>通信の仕組みを学ぶ場合や独自プロトコルが必要な場合には有効だが、一般的な</li>
+            </ul>
+            <p>アプリではHTTPなどの上位方式を先に検討する。</p>
+            <h3 id="用途別の選び方">用途別の選び方</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>やりたいこと</th>
+                        <th>まず検討する方式</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>PCから別PCへ指示やデータを送り、結果を受け取る</td>
+                        <td>FastAPI + HTTPX / Requests</td>
+                    </tr>
+                    <tr>
+                        <td>画面をリアルタイムに更新する、双方向に連続送受信する</td>
+                        <td>WebSocket</td>
+                    </tr>
+                    <tr>
+                        <td>複数のPCや機器へイベントを配信する</td>
+                        <td>MQTT + Eclipse Paho</td>
+                    </tr>
+                    <tr>
+                        <td>独自のメッセージ配送パターンを組み合わせる</td>
+                        <td>PyZMQ</td>
+                    </tr>
+                    <tr>
+                        <td>スキーマを共有したサービス間通信を行う</td>
+                        <td>gRPC</td>
+                    </tr>
+                    <tr>
+                        <td>TCP/UDPの仕組みや独自プロトコルを扱う</td>
+                        <td><code>socket</code></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>LAN内で相手PCを手動で指定したくない場合、<code>zeroconf</code>はmDNS/DNS-SDを使った サービスの登録・発見に利用できる。ただし、これはデータを送受信する通信方式の 代わりではなく、接続先を見つける補助である。</p>
+            <h3 id="pc間接続で確認すること">PC間接続で確認すること</h3>
+            <ol>
+                <li>サーバー側のアプリを起動し、接続を受け付けるネットワークインターフェースと</li>
+            </ol>
+            <p>ポートを設定する。<code>localhost</code>または<code>127.0.0.1</code>だけで待ち受ける設定では、 別PCから接続できない。</p>
+            <ol>
+                <li>クライアント側からサーバーPCのLAN内IPアドレスとポートへ接続する。</li>
+                <li>Windowsファイアウォールで必要な受信通信を許可する。Wi-Fiのゲストネットワーク</li>
+            </ol>
+            <p>など、端末間通信が遮断されるネットワークも確認する。</p>
+            <ol>
+                <li>インターネット越しに接続する場合は、NATやファイアウォール、認証、暗号化も</li>
+            </ol>
+            <p>考慮する。LAN内の接続例をそのままインターネットに公開しない。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://fastapi.tiangolo.com/tutorial/">FastAPI Tutorial - User Guide</a></li>
+                <li>参照日: 2026-10-07</li>
+                <li><a href="https://www.python-httpx.org/quickstart/">HTTPX QuickStart</a></li>
+                <li>参照日: 2026-10-07</li>
+                <li><a href="https://fastapi.tiangolo.com/advanced/websockets/">WebSockets - FastAPI</a></li>
+                <li>参照日: 2026-10-07</li>
+                <li><a href="https://websockets.readthedocs.io/en/stable/intro/index.html">Getting started - websockets</a></li>
+                <li>参照日: 2026-10-07</li>
+                <li><a href="https://eclipse.dev/paho/files/paho.mqtt.python/html/index.html">Eclipse Paho MQTT Python Client</a></li>
+                <li>参照日: 2026-10-07</li>
+                <li><a href="https://pyzmq.readthedocs.io/en/latest/">PyZMQ Documentation</a></li>
+                <li>参照日: 2026-10-07</li>
+                <li><a href="https://zguide.zeromq.org/docs/chapter1/">ZeroMQ Guide - Basics</a></li>
+                <li>参照日: 2026-10-07</li>
+                <li><a href="https://grpc.io/docs/languages/python/quickstart/">gRPC Python Quickstart</a></li>
+                <li>参照日: 2026-10-07</li>
+                <li><a href="https://docs.python.org/3/library/socket.html">socket — Low-level networking interface</a></li>
+                <li>参照日: 2026-10-07</li>
+                <li><a href="https://docs.python.org/3/howto/sockets.html">Socket Programming HOWTO</a></li>
+                <li>参照日: 2026-10-07</li>
+                <li><a href="https://python-zeroconf.readthedocs.io/en/latest/">python-zeroconf documentation</a></li>
+                <li>参照日: 2026-10-07</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-10-07: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

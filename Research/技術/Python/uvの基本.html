@@ -165,7 +165,7 @@ uv add requests
 
 # 3. main.pyを編集した後、uv管理環境で実行する
 uv run python main.py</code></pre>
-            <p><code>main.py</code> の例:</p>
+            <p><code>main.py</code> の例は次のとおり。</p>
             <pre><code class="language-python">import requests
 
 response = requests.get(&quot;https://example.com&quot;, timeout=10)
@@ -242,6 +242,9 @@ print(response.status_code)</code></pre>
                 <li>参照日: 2026-08-31</li>
             </ul>
             <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-10-08: yomiyasuの原則に基づき本文を推敲</li>
+            </ul>
             <ul>
                 <li>2026-08-31: 全参考URLを再確認し、uv 0.12.7、<code>uv init</code>の現行既定、PEP 751の<code>pylock.toml</code>対応を反映</li>
                 <li>2026-08-26: 初版を作成</li>

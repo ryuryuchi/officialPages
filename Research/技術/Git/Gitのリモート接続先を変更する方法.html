@@ -15,7 +15,7 @@
             </div>
             <div class="article-body">
             <h2 id="概要">概要</h2>
-            <p>ローカルリポジトリに設定済みの Git リモートを、別のリポジトリまたは別の接続方式 （HTTPS / SSH）へ安全に切り替える方法を整理する。</p>
+            <p>ローカルリポジトリに設定済みのGitリモートを、別のリポジトリまたは別の接続方式 （HTTPS / SSH）へ安全に切り替える方法を整理する。</p>
             <h2 id="結論">結論</h2>
             <p>現在使っているリモート（通常は <code>origin</code>）を別の接続先に置き換えるには、対象リポジトリ のディレクトリで、<code>git remote -v</code> に表示された実際のリモート名を使って次を実行する。</p>
             <pre><code class="language-powershell">git remote -v
@@ -24,10 +24,10 @@ git remote -v
 git ls-remote &lt;remote-name&gt;</code></pre>
             <p><code>git remote set-url</code> は既存リモートの fetch URL を変更する。個別の push URL が未設定なら push にもその URL が使われる。以前の接続先を残しておきたい場合は、置換せず <code>git remote add &lt;名前&gt; __RAW<em>HTML</em>0__</code> で別名のリモートを追加する。</p>
             <p>URL と接続先リポジトリを誤ると、次の <code>git push</code> の送信先も変わる。切替直後は、まず <code>git ls-remote __RAW<em>HTML</em>0__</code> で読み取り接続を確認してから、意図したブランチだけを明示して push する。</p>
-            <p><code>git ls-remote</code> が GitHub の <code>Repository not found</code> で失敗したときは、URLが誤っている、 対象リポジトリが未作成・削除済み、または現在の認証情報に非公開リポジトリへの権限がない、 のいずれかである。GitHub は非公開リポジトリの存在を隠すため、未存在と権限不足を同じ メッセージで返すことがある。</p>
+            <p><code>git ls-remote</code> がGitHubの <code>Repository not found</code> で失敗したときは、URLが誤っている、 対象リポジトリが未作成・削除済み、または現在の認証情報に非公開リポジトリへの権限がない、 のいずれかである。GitHubは非公開リポジトリの存在を隠すため、未存在と権限不足を同じ メッセージで返すことがある。</p>
             <h2 id="詳細">詳細</h2>
             <h3 id="1-現在の設定を確認する">1. 現在の設定を確認する</h3>
-            <p>対象のローカルリポジトリへ移動して、リモート名と fetch / push の URL を確認する。</p>
+            <p>対象のローカルリポジトリへ移動して、リモート名とfetch/pushのURLを確認する。</p>
             <pre><code class="language-powershell">Set-Location &lt;ローカルリポジトリのパス&gt;
 git remote -v</code></pre>
             <p>一般的なリモート名は <code>origin</code> だが、実際に表示された名前を後続のコマンドで使用する。 <code>origin</code>、ブランチ名の <code>main</code> や <code>master</code> は、リモート名ではない。たとえば表示が <code>Research  https://github.com/ryuryuchi/Research.git</code> であれば、対象名は <code>Research</code> である。 存在しない名前で <code>git remote set-url</code> を実行すると <code>No such remote</code> で失敗する。</p>
@@ -44,7 +44,7 @@ git remote get-url --push &lt;remote-name&gt;
 git ls-remote &lt;remote-name&gt;</code></pre>
             <p><code>git ls-remote __RAW<em>HTML</em>0__</code> が成功すれば、認証とネットワークを含むリモートへの読み取り接続を 確認できる。push 前には、送信するブランチを明示する。</p>
             <pre><code class="language-powershell">git push -u &lt;remote-name&gt; &lt;ローカルブランチ名&gt;</code></pre>
-            <p>既存のローカルブランチが旧リモートの追跡ブランチを upstream としている場合は、切替後に 新しいリモートへ設定し直す。</p>
+            <p>既存のローカルブランチが旧リモートの追跡ブランチをupstreamとしている場合は、切替後に 新しいリモートへ設定し直す。</p>
             <pre><code class="language-powershell">git branch --set-upstream-to=&lt;remote-name&gt;/&lt;リモートブランチ名&gt; &lt;ローカルブランチ名&gt;</code></pre>
             <p>新しいリモートに対象ブランチがまだない場合は、上記の <code>git push -u</code> が push と upstream の 設定を同時に行う。</p>
             <h3 id="3-repository-not-found-の切り分けと復旧">3. <code>Repository not found</code> の切り分けと復旧</h3>
@@ -83,16 +83,16 @@ git remote -v</code></pre>
             <p>不要になった旧リモートを削除する場合は、接続先と upstream 設定を確認してから実行する。 削除すると、そのリモートの設定とリモート追跡ブランチが削除される。</p>
             <pre><code class="language-powershell">git remote remove old-origin</code></pre>
             <h3 id="5-fetch-と-push-の接続先を分ける場合">5. fetch と push の接続先を分ける場合</h3>
-            <p><code>git remote set-url --push origin __RAW<em>HTML</em>0__</code> は push URL だけを変更できる。 ただし Git の公式仕様では、同一リモートに設定する fetch URL と push URL は同じ場所を指す べきとされる。上流を fetch し、自分のフォークへ push する用途では、<code>upstream</code> と <code>origin</code> のように別々のリモートを作成する。</p>
+            <p><code>git remote set-url --push origin __RAW<em>HTML</em>0__</code> はpush URLだけを変更できる。 ただしGitの公式仕様では、同一リモートに設定するfetch URLとpush URLは同じ場所を指す べきとされる。上流をfetchし、自分のフォークへpushする用途では、<code>upstream</code>と<code>origin</code> のように別々のリモートを作成する。</p>
             <pre><code class="language-powershell">git remote add upstream https://github.com/ORIGINAL-OWNER/REPOSITORY.git
 git remote set-url origin https://github.com/MY-ACCOUNT/REPOSITORY.git
 git fetch upstream
 git push origin &lt;ローカルブランチ名&gt;</code></pre>
             <h3 id="注意点">注意点</h3>
             <ul>
-                <li>HTTPS から SSH へ変更するには、SSH 公開鍵をホスティングサービス側へ登録し、SSH 接続を</li>
+                <li>HTTPSからSSHへ変更するには、SSH公開鍵をホスティングサービス側へ登録し、SSH接続を</li>
             </ul>
-            <p>利用できる状態にしておく。HTTPS では、サービスに応じてパスワードではなくトークンや credential helper が必要になる。</p>
+            <p>利用できる状態にしておく。HTTPSでは、サービスに応じてパスワードではなくトークンや credential helper が必要になる。</p>
             <ul>
                 <li><code>set-url</code> はリモート名を変更しないため、普段の <code>git pull</code> や <code>git push</code> が向かう先を</li>
             </ul>
@@ -119,6 +119,7 @@ git push origin &lt;ローカルブランチ名&gt;</code></pre>
             </ul>
             <h2 id="更新履歴">更新履歴</h2>
             <ul>
+                <li>2026-10-08: yomiyasuの原則に基づき本文を推敲</li>
                 <li>2026-09-08: GitHub のブラウザー表示でも <code>Page not found</code> となるURLの確認方法を追記</li>
                 <li>2026-09-08: <code>Repository not found</code> の原因、リモート名とブランチ名の違い、旧URLへの復旧手順を追記</li>
                 <li>2026-09-08: 初版を作成</li>

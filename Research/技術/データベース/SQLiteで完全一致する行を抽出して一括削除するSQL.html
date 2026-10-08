@@ -15,7 +15,7 @@
             </div>
             <div class="article-body">
             <h2 id="概要">概要</h2>
-            <p>SQLiteのテーブルから、指定した値と完全一致する行を検索するSQLと、検索条件をそのまま使って該当行を一括削除するSQLを整理する。</p>
+            <p>SQLiteのテーブルから、指定した値と完全一致する行を検索するSQLと、その条件で該当行を一括削除するSQLを整理する。</p>
             <h2 id="結論">結論</h2>
             <p>1列の完全一致なら <code>WHERE 列名 = ?</code> を使う。複数列の値がすべて一致する行なら、各列を <code>AND</code> でつなぐ。</p>
             <pre><code class="language-sql">-- 抽出
@@ -110,7 +110,7 @@ JOIN (
   ON p.product_code = d.product_code
  AND p.product_name = d.product_name
  AND p.price = d.price;</code></pre>
-            <p>ただし、この結合例は判定列に <code>NULL</code> があると通常の <code>=</code> では結合できない。<code>NULL</code> も同じ値として扱う必要がある場合は、SQLiteの <code>IS</code> を使う。</p>
+            <p>ただし、この結合例では、判定列に <code>NULL</code> があると通常の <code>=</code> では結合できない。<code>NULL</code> も同じ値として扱う必要がある場合は、SQLiteの <code>IS</code> を使う。</p>
             <pre><code class="language-sql">  ON p.product_code IS d.product_code
  AND p.product_name IS d.product_name
  AND p.price IS d.price</code></pre>
@@ -159,6 +159,7 @@ COMMIT;
             <h2 id="更新履歴">更新履歴</h2>
             <ul>
                 <li>2026-09-10: 重複行の抽出と代表1件を残す一括削除を追記</li>
+                <li>2026-10-08: yomiyasuの原則に基づき本文を推敲</li>
                 <li>2026-09-10: SQLiteの完全一致検索、一括削除、NULL比較、トランザクションを整理した初版を作成</li>
             </ul>
             </div>

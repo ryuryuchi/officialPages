@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C・C++のカバレッジ計測方法とツール</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">C・C++のカバレッジ計測方法とツール</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>「C系統のソース」はC/C++のソースコードを指すものとして、カバレッジを 実際に計測してレポートに出力する手順を調べた。GCC、Clang、Visual Studioなどの 開発環境別の方法と、一般的なツールの役割・選び方を整理する。</p>
+            <h2 id="結論">結論</h2>
+            <ul>
+                <li>C/C++のカバレッジは、概ね「計測用オプション付きでビルド → テストや</li>
+            </ul>
+            <p>対象プログラムを実行 → 収集データからレポート生成」の3段階で出す。</p>
+            <ul>
+                <li>LinuxやGCC中心のプロジェクトでは、GCCの<code>gcov</code>で計測し、<code>gcovr</code>で</li>
+            </ul>
+            <p>テキストやHTML等のレポートにする方法が手軽である。<code>lcov</code>と<code>genhtml</code>も 広く使われるHTMLレポート手段である。</p>
+            <ul>
+                <li>Clangを使う場合は、Clangのソースベース計測（<code>llvm-profdata</code>と<code>llvm-cov</code>）</li>
+            </ul>
+            <p>を選ぶとよい。これはGCC互換のgcov形式とは別の計測方式である。</p>
+            <ul>
+                <li>WindowsのMSVCではVisual Studioのコードカバレッジ機能を候補にする。</li>
+            </ul>
+            <p>Visual Studio以外や既存のPDB対応環境では選択肢が異なるため、コンパイラ、 IDE、CIで採用済みの方式に合わせる。</p>
+            <ul>
+                <li>新規導入では、既に保守終了・アーカイブ済みのOpenCppCoverageを標準選択に</li>
+            </ul>
+            <p>しない。組み込み等の特殊なコンパイラではBullseyeCoverageのような商用製品も 候補になる。</p>
+            <ul>
+                <li>SonarQubeなどの品質基盤は、通常カバレッジを自分で計測するのではなく、</li>
+            </ul>
+            <p>対応形式の外部レポートを取り込む。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="1-計測からレポートまでの流れ">1. 計測からレポートまでの流れ</h3>
+            <ol>
+                <li>カバレッジ計測に対応したコンパイラとレポートツールを決める。</li>
+                <li>対象となる製品コードとテストコードを、計測オプション付きでビルドし直す。</li>
+                <li>テストプログラムまたは対象アプリケーションを実行し、計測データを出す。</li>
+                <li><code>gcovr</code>、<code>llvm-cov</code>などで行・分岐の集計やHTML/XML等のレポートを作る。</li>
+                <li>未実行箇所を確認し、必要なテストを追加する。</li>
+            </ol>
+            <p>テストを実行するだけでは計測できない。通常のビルド済みバイナリには カバレッジ計測コードが入っていないため、原則として対象の翻訳単位を計測 オプション付きで再コンパイルする。実行データが前回分と混ざらないよう、 専用のビルドディレクトリを使い、測定前にそのビルドを作り直す運用が安全である。</p>
+            <h3 id="2-gccとgcovrでhtmlレポートを出す例">2. GCCとgcovrでHTMLレポートを出す例</h3>
+            <p>次の例では、<code>src/discount.c</code>を<code>tests/test_discount.c</code>から呼び出す簡単な テスト実行ファイルがあるものとする。以下はLinuxやMinGW等のGCC系コマンドの 例であり、実プロジェクトでは既存のMakefileやCMakeのビルド設定に計測フラグを 加える。</p>
+            <pre><code class="language-sh">mkdir -p build-cov
+cd build-cov
+
+gcc --coverage -O0 -g -I../src \
+  -c ../src/discount.c -o discount.o
+gcc --coverage -O0 -g -I../src \
+  -c ../tests/test_discount.c -o test_discount.o
+gcc --coverage -o test_discount discount.o test_discount.o
+
+./test_discount
+gcovr --root .. --html-details coverage.html</code></pre>
+            <p><code>coverage.html</code>をブラウザーで開くと、ファイルや行ごとの実行状態を確認できる。 コマンドラインに概要を出すだけなら、最後の行を<code>gcovr --root ..</code>にする。</p>
+            <p>主な役割は次の通り。</p>
+            <ul>
+                <li><code>--coverage</code>: GCCで計測用コードを有効にするコンパイル・リンクオプション。</li>
+            </ul>
+            <p><code>-fprofile-arcs -ftest-coverage</code>の組み合わせに相当する。</p>
+            <ul>
+                <li><code>-O0</code>: 最適化による行や制御フローの変化を抑え、ソース上で読みやすい結果を</li>
+            </ul>
+            <p>得やすくするための例。実運用の最適化済みビルドとの結果は同一とは限らない。</p>
+            <ul>
+                <li><code>-g</code>: デバッグ情報を付ける例。</li>
+                <li><code>gcovr</code>: GCCのカバレッジデータを集め、テキスト、HTML、XML等の形式に整える。</li>
+                <li><code>gcov</code>: GCCが生成する実行データを解析する基本ツール。<code>gcovr</code>が内部で呼び出す。</li>
+            </ul>
+            <p><code>.gcno</code>はコンパイル時に作られる計測対象の情報、<code>.gcda</code>は計測付きプログラムを 実行したときに作られる実行回数データである。これらは通常、対応するオブジェクト ファイルと関連付いた場所に出力される。ソースとビルドディレクトリを分けた場合は、 ビルドディレクトリから<code>gcovr --root &lt;ソースルート&gt;</code>を実行する。</p>
+            <p>複数の<code>.c</code>/<code>.cpp</code>ファイルや静的ライブラリに分かれている場合、測定したい各翻訳 単位を計測付きで再ビルドする必要がある。フラグを追加しただけで古いオブジェクト ファイルが残っていると、その古いコードはカバレッジ対象にならないことがある。</p>
+            <h3 id="3-clangとllvm-covでレポートを出す例">3. Clangとllvm-covでレポートを出す例</h3>
+            <p>Clangのソースベース計測では、計測用オプション付きでバイナリをビルドし、 実行時に<code>.profraw</code>を出力する。その後<code>llvm-profdata</code>でデータをまとめ、 <code>llvm-cov</code>でHTMLレポートを作る。</p>
+            <pre><code class="language-sh">mkdir -p build-cov
+clang -fprofile-instr-generate -fcoverage-mapping -O0 -g \
+  src/discount.c tests/test_discount.c -o build-cov/test_discount
+
+LLVM_PROFILE_FILE=&quot;build-cov/coverage-%p.profraw&quot; \
+  ./build-cov/test_discount
+
+llvm-profdata merge -sparse build-cov/coverage-*.profraw \
+  -o build-cov/coverage.profdata
+llvm-cov show build-cov/test_discount \
+  -instr-profile=build-cov/coverage.profdata \
+  --format=html --output-dir=build-cov/html</code></pre>
+            <p>生成された<code>build-cov/html/index.html</code>を開いて確認する。複数プロセスや複数の テスト実行で<code>.profraw</code>が衝突しないよう、例では<code>%p</code>（プロセスID）をファイル名に 含めている。Clangのバージョンに対応した<code>llvm-profdata</code>と<code>llvm-cov</code>を使う。</p>
+            <p>Clangには別にGCC互換のgcov形式で計測する方法もある。GCC向けの<code>--coverage</code>を 使う方式と、上記のソースベース方式を混在させるのではなく、選んだ方式に応じた データ形式とレポートツールを揃える。</p>
+            <p>組み込みや安全性重視の開発でMC/DCを測る要件がある場合、Clangのソースベース 計測では<code>-fcoverage-mcdc</code>が用意されている。ただし、採用可能なコンパイラ版や 対象環境、レポートツールの対応を個別に確認する。</p>
+            <h3 id="4-windows-visual-studioでの計測">4. Windows・Visual Studioでの計測</h3>
+            <p>MSVCを使うWindowsネイティブC++プロジェクトでは、Visual Studioの <strong>Analyze Code Coverage</strong>機能、またはMicrosoftの<code>Microsoft.CodeCoverage.Console</code> を候補にする。IDE上のテストを対象にする方法と、コマンドラインで実行ファイルを 計測する方法があり、CIに組み込むときは対象プロジェクトの種類に合った手順を選ぶ。</p>
+            <p>Visual Studioの版・エディションや計測方式により、対応条件と操作が異なる。 実行ファイルだけでなく、対象ライブラリ、シンボル（PDB）、リンク設定などが 正しく揃っているか公式手順で確認する。レポートをSonarQubeに取り込む場合は、 Visual Studio Coverage XML用の設定を使用する。</p>
+            <p>Microsoftのコンソール計測ツールは、ネイティブコードも対象にできる <code>dotnet-coverage</code>の拡張として提供されている。具体的なオプションや設定は Visual Studioの版とシナリオに合わせて公式手順を確認する。</p>
+            <p>MSVCを使わないWindows環境では、Clang/LLVMのWindows対応状況、MinGWのGCCと gcovr、既存のCI製品に合わせて選ぶ。古いPDBベースの計測ツールは、OSやVisual Studioの更新との互換性を別途確認する。</p>
+            <h3 id="5-よく使われるツールの比較">5. よく使われるツールの比較</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ツール</th>
+                        <th>主な役割・環境</th>
+                        <th>向いているケース・注意点</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>gcov</code></td>
+                        <td>GCCの計測データを解析する</td>
+                        <td>GCC標準の基本ツール。直接の出力は主に行単位のテキスト</td>
+                    </tr>
+                    <tr>
+                        <td><code>gcovr</code></td>
+                        <td>gcov等のデータをまとめてレポート化する</td>
+                        <td>GCC系で導入しやすい。HTMLやCobertura等に加え、SonarQube向け出力形式も選べる</td>
+                    </tr>
+                    <tr>
+                        <td><code>lcov</code> / <code>genhtml</code></td>
+                        <td>gcov系等のデータを収集・加工し、HTML表示する</td>
+                        <td>ブラウザーで閲覧しやすい。<code>.info</code>形式の中間ファイルやフィルターを活用できる</td>
+                    </tr>
+                    <tr>
+                        <td><code>llvm-profdata</code> / <code>llvm-cov</code></td>
+                        <td>Clang/LLVMのプロファイルを統合・表示する</td>
+                        <td>Clangのソースベース計測やLLVM環境で有力。GCC互換gcovモードとは区別する</td>
+                    </tr>
+                    <tr>
+                        <td>Visual Studio Code Coverage</td>
+                        <td>MSVCネイティブC++等の計測とIDE/CI表示</td>
+                        <td>WindowsとVisual Studioを中心に開発している場合に便利。版ごとの要件を確認する</td>
+                    </tr>
+                    <tr>
+                        <td>OpenCppCoverage</td>
+                        <td>Windows向けのPDBベースC++計測</td>
+                        <td>既存環境との互換性を確認する用途。公式リポジトリが保守終了・アーカイブ済みのため、新規採用は慎重にする</td>
+                    </tr>
+                    <tr>
+                        <td>BullseyeCoverage</td>
+                        <td>商用のC/C++計測ツール</td>
+                        <td>多様な組み込みコンパイラやターゲットの対応が必要な場合に候補。ライセンス費用と対象版を確認する</td>
+                    </tr>
+                    <tr>
+                        <td>Xcode Coverage</td>
+                        <td>Apple開発環境のテストカバレッジ表示</td>
+                        <td>macOS/iOS等のXcodeプロジェクトで標準のビルド・テスト環境に沿って使う</td>
+                    </tr>
+                    <tr>
+                        <td>SonarQube</td>
+                        <td>外部レポートの取り込みと品質分析</td>
+                        <td>計測器そのものではない。レポート形式と解析設定を一致させる</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p><code>gcovr</code>からSonarQube向けレポートを出す場合は、<code>gcovr --sonarqube coverage.xml</code> を使い、SonarQube側でそのレポートを取り込む。Cobertura形式など別形式を設定する 前に、C/C++解析でサポートされる形式と対応パラメーターを確認する。</p>
+            <h3 id="6-環境に応じた選び方">6. 環境に応じた選び方</h3>
+            <ul>
+                <li><strong>GCCを使うLinux・組み込みLinux</strong>: まず<code>gcovr</code>を検討する。HTMLレポートや</li>
+            </ul>
+            <p>CI用XMLが必要なら、既存CIが要求する出力形式を確認する。</p>
+            <ul>
+                <li><strong>Clang/LLVMを使うLinuxやmacOS</strong>: <code>llvm-profdata</code>と<code>llvm-cov</code>による</li>
+            </ul>
+            <p>ソースベース計測を検討する。XcodeプロジェクトではXcode標準のカバレッジ機能も 候補になる。</p>
+            <ul>
+                <li><strong>MSVCを使うWindows</strong>: Visual Studio標準のカバレッジ機能を先に確認する。</li>
+            </ul>
+            <p>IDEでの確認を優先するか、コマンドラインのCIレポートを必要とするかで運用を決める。</p>
+            <ul>
+                <li><strong>独自の組み込みコンパイラ・実機ターゲット</strong>: コンパイラの計測ランタイム、</li>
+            </ul>
+            <p>ターゲット上でのデータ保存・回収可否、ホスト側レポート変換を確認する。 GCC/Clangのオプションをそのまま適用できるとは限らない。BullseyeCoverage等の 対応表も選定材料になる。</p>
+            <ul>
+                <li><strong>複数言語を一つの品質基盤で管理</strong>: 言語別の計測ツールで測り、基盤側の</li>
+            </ul>
+            <p>対応フォーマットへ変換して取り込む。基盤が表示する総合値だけを見て、元の カバレッジデータやテスト結果を捨てない。</p>
+            <h3 id="7-よくあるつまずき">7. よくあるつまずき</h3>
+            <ul>
+                <li><strong>計測フラグ付きで全対象を再ビルドしていない</strong>: 対象翻訳単位の一部が</li>
+            </ul>
+            <p>未計測となる。カバレッジ専用のクリーンなビルドディレクトリを作る。</p>
+            <ul>
+                <li><strong>コンパイラと解析ツールの組み合わせが違う</strong>: GCCのデータを別バージョンの</li>
+            </ul>
+            <p><code>gcov</code>や不一致のLLVMツールで読むと、解析に失敗したり不完全になったりする。</p>
+            <ul>
+                <li><strong>前回の実行データが残っている</strong>: GCCの<code>.gcda</code>は既存データへ実行回数を</li>
+            </ul>
+            <p>追加し得る。再現可能な比較のため、測定条件とデータの初期化方法を統一する。</p>
+            <ul>
+                <li><strong>対象外コードの除外が広すぎる</strong>: テスト不足を隠す結果になる。生成コード等を</li>
+            </ul>
+            <p>除外する場合も、対象・理由・ルールを記録する。</p>
+            <ul>
+                <li><strong>集計値だけを見て品質とみなす</strong>: カバレッジはテスト対象の実行度であり、</li>
+            </ul>
+            <p>期待結果を検証するアサーションの質や仕様の網羅性とは別である。一般的な指標の 違いや限界は<a href="./開発におけるカバレッジの意味.html">開発におけるカバレッジの意味</a> を参照する。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://gcc.gnu.org/onlinedocs/gcc/Gcov.html">Gcov - Using the GNU Compiler Collection (GCC)</a></li>
+                <li>参照日: 2026-09-29</li>
+                <li><a href="https://gcovr.com/en/stable/getting-started.html">Getting Started - gcovr</a></li>
+                <li>参照日: 2026-09-29</li>
+                <li><a href="https://gcovr.com/en/stable/guide/compiling.html">Compiling for Coverage - gcovr</a></li>
+                <li>参照日: 2026-09-29</li>
+                <li><a href="https://clang.llvm.org/docs/SourceBasedCodeCoverage.html">Source-based Code Coverage - Clang</a></li>
+                <li>参照日: 2026-09-29</li>
+                <li><a href="https://llvm.org/docs/CommandGuide/llvm-cov.html">llvm-cov - LLVM Command Guide</a></li>
+                <li>参照日: 2026-09-29</li>
+                <li><a href="https://learn.microsoft.com/en-us/visualstudio/test/using-code-coverage-to-determine-how-much-code-is-being-tested?view=visualstudio">Determine code testing coverage - Visual Studio | Microsoft Learn</a></li>
+                <li>参照日: 2026-09-29</li>
+                <li><a href="https://learn.microsoft.com/en-us/visualstudio/test/microsoft-code-coverage-console-tool">Microsoft.CodeCoverage.Console tool - Visual Studio | Microsoft Learn</a></li>
+                <li>参照日: 2026-09-29</li>
+                <li><a href="https://github.com/microsoft/codecoverage">Microsoft code coverage tools</a></li>
+                <li>参照日: 2026-09-29</li>
+                <li><a href="https://docs.sonarsource.com/sonarqube-server/analyzing-source-code/test-coverage/c-family-test-coverage">C / C++ / Objective-C test coverage - SonarQube Server</a></li>
+                <li>参照日: 2026-09-29</li>
+                <li><a href="https://github.com/linux-test-project/lcov">LCOV - Linux Test Project</a></li>
+                <li>参照日: 2026-09-29</li>
+                <li><a href="https://github.com/OpenCppCoverage/OpenCppCoverage">OpenCppCoverage repository</a></li>
+                <li>参照日: 2026-09-29</li>
+                <li><a href="https://www.bullseye.com/platform.html">Supported Platforms and Tools - BullseyeCoverage</a></li>
+                <li>参照日: 2026-09-29</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-10-08: yomiyasuの原則に基づき本文を推敲</li>
+                <li>2026-09-29: C/C++の計測手順、環境別ツール、レポート出力と注意点を公式資料に基づいて初版作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

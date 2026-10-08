@@ -45,7 +45,7 @@
                     </tr>
                     <tr>
                         <td>見た目をほぼ同じに維持</td>
-                        <td>HTMLまたはPDFを正本とし、Markdownは検索用の派生物にする</td>
+                        <td>HTMLまたはPDFを基準にし、Markdownは検索用の派生物にする</td>
                     </tr>
                     <tr>
                         <td>Wordスタイルを独自ルールで意味構造へ変換</td>
@@ -229,7 +229,7 @@ if __name__ == &quot;__main__&quot;:
                 <li><code>w:gridBefore</code>または<code>w:gridAfter</code>による省略セルがある</li>
                 <li>セル内に複数段落、箇条書き、画像がある</li>
             </ul>
-            <p>これらを含む文書はHTML表ルートへ振り分けるか、元の<code>.docx</code>を正本として残す。 <code>python-docx</code>の通常の行セル列挙は、結合セルの値を各グリッド位置へ繰り返す近似を 行うため、単純な二次元配列だけを比較して「構造が保持された」と判定してはいけない。</p>
+            <p>これらを含む文書はHTML表ルートへ振り分けるか、元の<code>.docx</code>を基準として残す。 <code>python-docx</code>の通常の行セル列挙は、結合セルの値を各グリッド位置へ繰り返す近似を 行うため、単純な二次元配列だけを比較して「構造が保持された」と判定してはいけない。</p>
             <h3 id="変換後の検証">変換後の検証</h3>
             <p>「コマンドが成功した」ことと「文書が正しく変換された」ことを分けて確認する。 実運用前に、少なくとも次の要素を持つ基準用DOCXを作成する。</p>
             <ol>
@@ -257,13 +257,14 @@ if __name__ == &quot;__main__&quot;:
                 <li>まずPandocで代表的な実文書を10件程度変換する。</li>
                 <li>単純な表だけで要件を満たすなら、そのままバッチ化する。</li>
                 <li>結合表が崩れる場合は、表だけHTMLとして残せる処理へ切り替える。</li>
-                <li>見た目の一致が要件なら、Markdown化を正本化の手段にせず、HTMLまたはPDFを正本に</li>
-            </ul>
-            <p>する。</p>
-            <ul>
+                <li>見た目の一致が要件なら、Markdown化を基準にせず、HTMLまたはPDFを基準にする。</li>
                 <li>LLMへの入力が主目的であれば、MarkItDownやDoclingも同じ評価用文書で比較する。</li>
             </ul>
             <p>公式の対応形式一覧だけで精度を判断しない。</p>
+            <ul>
+                <li>MarkdownからHTML、Word、PDFへ出力する際の装飾方法は、</li>
+            </ul>
+            <p><a href="../Python/Pandoc出力を装飾する方法.html">Pandoc出力を装飾する方法</a>を参照。</p>
             <h2 id="参考資料">参考資料</h2>
             <ul>
                 <li><a href="https://pandoc.org/MANUAL.html">Pandoc User's Guide</a></li>
@@ -291,6 +292,8 @@ if __name__ == &quot;__main__&quot;:
             </ul>
             <h2 id="更新履歴">更新履歴</h2>
             <ul>
+                <li>2026-10-08: yomiyasuの原則に基づき本文を推敲</li>
+                <li>2026-09-25: 関連するPandoc出力の装飾メモへのリンクを追加</li>
                 <li>2026-08-31: 全参考URLを再確認し、Pandoc 3.11のDOCX表処理改善とMammothのMarkdown直接出力廃止予定を反映</li>
                 <li>2026-08-26: 初版を作成</li>
             </ul>

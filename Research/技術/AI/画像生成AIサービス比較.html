@@ -145,6 +145,13 @@
                 </tbody>
             </table>
             <p>用途別に選ぶと、<strong>最高の一枚絵はMidjourney</strong>、<strong>自然言語での修正はChatGPTまたはGemini</strong>、<strong>文字入りデザインはIdeogram</strong>、<strong>Adobe資産と商用ワークフローはFirefly</strong>がそれぞれ有力である。</p>
+            <h3 id="svg-ベクター画像を作る場合">SVG・ベクター画像を作る場合</h3>
+            <ul>
+                <li>プロンプトから<strong>編集可能なベクター画像をSVGとして直接得たい</strong>なら、Adobe Fireflyの「テキストからベクター生成」が最も目的に直結する。生成したバリエーションをSVG形式でダウンロードし、後から編集できる。</li>
+                <li><strong>アイコン、図、簡単なイラストなどをSVGコードとして作り、既存のWebサイトやアプリに組み込みたい</strong>なら、GitHub Copilotで事足りる。Copilotは専用のベクター画像生成器ではなく、SVGマークアップを含むコードを作成・編集する使い方になる。</li>
+                <li>「SVGが一番得意なAIモデル」を一律に決める公式の比較結果は確認できない。作風を含むベクター制作ならFirefly、仕様をコードに反映して細かく調整するならCopilot、というように成果物と作業方法で選ぶ。</li>
+                <li>ChatGPTの画像生成機能は画像の作成・編集を案内しているが、参照した公式ガイドには編集可能なSVGとしての直接出力は記載されていない。画像生成サービスの一般的な見栄えの順位を、そのままSVG生成の順位として扱わない。</li>
+            </ul>
             <h2 id="詳細">詳細</h2>
             <h3 id="比較条件">比較条件</h3>
             <ul>
@@ -153,9 +160,41 @@
             </ul>
             <p>比較した。年払いの割引額、税、為替は比較に入れていない。ChatGPT GoとGoogle AIの 下位プランは地域差があるため、契約画面の現地価格を優先する。</p>
             <ul>
-                <li>各社に無料枠がある場合でも、クレジット量、速度、利用可能モデル、公開・非公開設定が異なる。無料であることを品質・生成量が同等である意味には扱わない。</li>
+                <li>各社に無料枠がある場合でも、クレジット量、速度、利用可能モデル、公開・非公開設定が異なる。無料枠があることは、品質や生成量が同等であることを意味しない。</li>
                 <li>商用利用の可否は、出力、利用プラン、機能の正式版／ベータ版、第三者の権利で条件が変わる。公開前に各社の現行利用規約を確認する。</li>
             </ul>
+            <h3 id="svg-ベクター出力の選び方">SVG・ベクター出力の選び方</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>作りたいもの</th>
+                        <th>第一候補</th>
+                        <th>理由と注意点</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>プロンプトから作る編集可能なベクター素材</td>
+                        <td>Adobe Firefly</td>
+                        <td>テキストからベクターを生成し、SVG形式でダウンロードできる。編集にはIllustratorなどのベクター編集ツールが便利。</td>
+                    </tr>
+                    <tr>
+                        <td>SVGコードのアイコン、図、Web用パーツ</td>
+                        <td>GitHub Copilot</td>
+                        <td>SVGマークアップをコードとして作成・修正し、プロジェクト内のHTML/CSSやJavaScriptと一緒に管理できる。専用ベクター生成機能ではないため、見た目はプレビューして調整する。</td>
+                    </tr>
+                    <tr>
+                        <td>写真風・質感重視のイラスト</td>
+                        <td>画像生成AIで画像を生成</td>
+                        <td>通常の画像生成はSVGベクター出力とは異なる。ラスタ画像を自動トレースしてSVGにすると、複雑な形状ではパスが増え、編集しにくくなることがある。</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>CopilotにSVGコードを依頼するときは、サイズと<code>viewBox</code>、配色、背景の有無、外部画像やフォントへの依存を避ける条件を指定する。生成後はブラウザーやSVGプレビューで実際に表示し、形状・文字・拡大縮小時の崩れを確認する。たとえば、次のように依頼できる。</p>
+            <blockquote>
+                <p>256×256の単体SVGを作成してください。viewBoxは<code>0 0 256 256</code>、背景は透明、色は3色以内、外部画像・外部フォントに依存しないでください。図形は後から編集しやすいグループに分け、完成したSVGコード全体を出力してください。題材は「ここに作りたいものを書く」。</p>
+            </blockquote>
+            <p>GitHub Copilotが利用できるモデルはプランや利用場所によって異なり、対応状況も変わる。GitHub公式のモデル比較は一般的なタスク別の案内であり、SVG生成専用の性能順位ではないため、使えるモデルで同じ仕様を試し、プレビューと修正のしやすさで選ぶ。</p>
             <h3 id="サービスごとの選定理由">サービスごとの選定理由</h3>
             <h4 id="chatgpt">ChatGPT</h4>
             <p>画像生成を文章の会話と同じUIで扱えるため、「この部分だけ変える」「文字を読みやすくする」 といった反復がしやすい。現行のChatGPT Images 2.0は、旧4o Image Generationの後継で、 APIでは<code>gpt-image-1.5</code>として提供される。Goは最安だが、Plusはより高度で正確な画像生成を 明記しているため、品質重視ではPlusも比較する。</p>
@@ -203,9 +242,21 @@
                 <li>参照日: 2026-08-31</li>
                 <li><a href="https://leonardo.ai/pricing/">Leonardo.Ai Pricing</a></li>
                 <li>参照日: 2026-08-31</li>
+                <li><a href="https://helpx.adobe.com/firefly/web/generate-vectors/text-to-vector/generate-vectors-using-text-prompts.html">Generate vectors using text prompts | Firefly</a></li>
+                <li>参照日: 2026-10-06</li>
+                <li><a href="https://docs.github.com/en/copilot/get-started/quickstart-for-using-github-copilot-in-your-ide">Quickstart for using GitHub Copilot in your IDE</a></li>
+                <li>参照日: 2026-10-06</li>
+                <li><a href="https://docs.github.com/en/copilot/reference/ai-models/supported-models">Supported AI models in GitHub Copilot</a></li>
+                <li>参照日: 2026-10-06</li>
+                <li><a href="https://docs.github.com/en/copilot/reference/ai-models/model-comparison">AI model comparison</a></li>
+                <li>参照日: 2026-10-06</li>
+                <li><a href="https://help.openai.com/en/articles/11084440-images-in-chatgpt">Images in ChatGPT</a></li>
+                <li>参照日: 2026-10-06</li>
             </ul>
             <h2 id="更新履歴">更新履歴</h2>
             <ul>
+                <li>2026-10-06: SVG・ベクター画像生成を追記し、Adobe FireflyとGitHub Copilotの用途を区別</li>
+                <li>2026-10-05: 文体を確認し、不自然な表現を修正</li>
                 <li>2026-08-31: 全URLと現行プランを再確認し、ChatGPT Go、Images 2.0、Midjourney V8.2、</li>
             </ul>
             <p>Ideogram Basic掲載終了後の価格、Google AIの地域差を反映</p>

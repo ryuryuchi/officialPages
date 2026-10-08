@@ -1,6 +1,6 @@
 ---
 作成日: 2026-08-26
-更新日: 2026-08-31
+更新日: 2026-10-08
 タグ:
   - Python
   - uv
@@ -246,7 +246,7 @@ uv add requests
 uv run python main.py
 ```
 
-`main.py` の例:
+`main.py` の例は次のとおり。
 
 ```python
 import requests
@@ -333,6 +333,8 @@ print(response.status_code)
   - 参照日: 2026-08-31
 
 ## 更新履歴
+
+- 2026-10-08: yomiyasuの原則に基づき本文を推敲
 
 - 2026-08-31: 全参考URLを再確認し、uv 0.12.7、`uv init`の現行既定、PEP 751の`pylock.toml`対応を反映
 - 2026-08-26: 初版を作成

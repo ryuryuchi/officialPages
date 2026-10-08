@@ -1,6 +1,6 @@
 ---
 作成日: 2026-08-31
-更新日: 2026-09-25
+更新日: 2026-10-05
 タグ:
   - VS Code
   - GitHub Copilot
@@ -231,7 +231,7 @@ disable-model-invocation: true
 作成方法は次のいずれかである。
 
 1. チャット欄で`/skills`を入力し、**Configure Skills**を開く。
-2. **New Skill (Workspace)**または**New Skill (User)**を選ぶ。
+2. **New Skill (Workspace)** または **New Skill (User)** を選ぶ。
 3. 保存先と名前を選び、生成された`SKILL.md`へ手順を書く。
 
 コマンドパレットの**Chat: Open Customizations**から**Skills**タブを開いてもよい。
@@ -349,6 +349,7 @@ Prompt file の `agent` から Custom agent 名を指定して組み合わせる
 
 ## 更新履歴
 
+- 2026-10-05: 文体を確認し、不自然な表現を修正
 - 2026-09-25: Agents windowのAutomationsについて作成方法、定期実行の範囲、
   実行条件・権限・共有方法を追記し、Prompt filesやSkillsとの使い分けを更新
 - 2026-08-31: Agent Skillsの保存先、必須項目、作成・呼び出し方法、

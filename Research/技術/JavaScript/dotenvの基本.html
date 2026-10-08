@@ -18,7 +18,7 @@
             <p>Node.jsアプリケーションで設定値や秘密情報を環境変数として扱うための <code>dotenv</code>について、役割、導入方法、<code>.env</code>の書式、利用時の注意点を調べた。 Node.js本体に追加された<code>.env</code>対応との使い分けも整理する。</p>
             <h2 id="結論">結論</h2>
             <p><code>dotenv</code>は、プロジェクトの<code>.env</code>ファイルを読み込み、値を <code>process.env</code>へ追加する依存関係のないNode.jsパッケージである。アプリの ソースコードと環境ごとの設定値を分離したい場合に使える。</p>
-            <p>基本的な導入は<code>npm install dotenv</code>後、アプリケーションの早い段階で <code>require('dotenv').config()</code>または<code>import 'dotenv/config'</code>を実行する方法である。 ただし、<code>.env</code>は秘密情報を含み得るため、通常はGitへコミットせず、<code>.gitignore</code> へ追加する。キーをクライアントへ公開するフロントエンドへ渡す用途には、 秘密情報を置いてはならない。</p>
+            <p>基本的な導入は<code>npm install dotenv</code>後、アプリケーションの早い段階で <code>require('dotenv').config()</code>または<code>import 'dotenv/config'</code>を実行する方法である。 ただし、<code>.env</code>は秘密情報を含み得るため、通常はGitへコミットせず、<code>.gitignore</code> へ追加する。キーをクライアントへ公開するフロントエンドに渡す用途では、 秘密情報を置いてはならない。</p>
             <p>Node.jsには<code>.env</code>を読む<code>--env-file</code>と<code>process.loadEnvFile()</code>があるため、 Node.jsだけで完結する新規アプリでは追加パッケージが不要な場合がある。 一方、<code>dotenv</code>はNode.js 12以上で動作し、既存コード、複数ファイルの統合、 <code>parse</code>や<code>populate</code>などのAPIを使う場合に選択肢になる。採用時は対象Node.jsの バージョンと実行環境の方式を統一する。</p>
             <h2 id="詳細">詳細</h2>
             <h3 id="dotenvの役割">dotenvの役割</h3>
@@ -69,7 +69,7 @@ line two&quot;</code></pre>
                 <li>フロントエンドへ埋め込まれる環境変数は利用者から見えるため、秘密情報を入れない。</li>
                 <li>本番では、クラウドのシークレット管理やデプロイ環境の環境変数を優先する。</li>
                 <li><code>process.env</code>の値は文字列なので、型、範囲、必須性を起動時に検証する。</li>
-                <li><code>override: true</code>は、実行環境が意図せず<code>.env</code>で上書きされる危険があるため、</li>
+                <li><code>override: true</code>は、実行環境の値が意図せず<code>.env</code>で上書きされる危険があるため、</li>
             </ul>
             <p>明示的な理由がある場合だけ使う。</p>
             <h2 id="参考資料">参考資料</h2>
@@ -85,6 +85,7 @@ line two&quot;</code></pre>
             </ul>
             <h2 id="更新履歴">更新履歴</h2>
             <ul>
+                <li>2026-10-08: yomiyasuの原則に基づき本文を推敲</li>
                 <li>2026-09-10: dotenvの役割、導入、書式、Node.js標準機能との使い分け、運用上の注意を整理</li>
             </ul>
             </div>

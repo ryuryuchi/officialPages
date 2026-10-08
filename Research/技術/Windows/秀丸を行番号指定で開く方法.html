@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>秀丸を行番号指定で開く方法</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">秀丸を行番号指定で開く方法</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>秀丸エディタでファイルを開くときに、コマンドラインから行番号や桁番号を指定してカーソルを移動できるかを調べた。</p>
+            <h2 id="結論">結論</h2>
+            <p>可能。秀丸の起動時オプション <code>/j</code> を使う。同じファイルがすでに開かれている場合の動作は、秀丸の設定または追加オプションで決まる。既存のファイルを再利用して指定行へ移動したい場合は、<code>/m3</code> を <code>/j</code> と組み合わせる。</p>
+            <pre><code class="language-text">&quot;C:\Program Files\Hidemaru\Hidemaru.exe&quot; /j100 &quot;C:\work\sample.txt&quot;</code></pre>
+            <p>この例では、<code>sample.txt</code> を開き、100行目の行頭へカーソルを移動する。秀丸のインストール先が異なる場合は、<code>Hidemaru.exe</code> のパスを置き換える。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="行番号だけを指定する">行番号だけを指定する</h3>
+            <p>コマンドプロンプトでは次の形式を使う。</p>
+            <pre><code class="language-bat">&quot;C:\Program Files\Hidemaru\Hidemaru.exe&quot; /j100 &quot;C:\work\sample.txt&quot;</code></pre>
+            <p>行番号は1から数える。したがって、<code>/j1</code> は1行目、<code>/j100</code> は100行目を指定する。ファイル名は必ず指定する。</p>
+            <h3 id="行番号と桁番号を指定する">行番号と桁番号を指定する</h3>
+            <p><code>/j行番号,桁番号</code> の形式で桁番号も指定できる。</p>
+            <pre><code class="language-bat">&quot;C:\Program Files\Hidemaru\Hidemaru.exe&quot; /j100,20 &quot;C:\work\sample.txt&quot;</code></pre>
+            <p>この例では100行目の20桁目へ移動する。桁番号を省略した場合は行頭になる。桁番号の数え方は通常の文字数を基準とし、タブ幅を考慮する場合は <code>/jx</code>、Unicode（UTF-16）の文字数を基準にする場合は <code>/jw</code> を使う。</p>
+            <h3 id="すでに開いているファイルを指定する場合">すでに開いているファイルを指定する場合</h3>
+            <p><code>/j</code> だけでは、同じファイルがすでに開かれている場合の扱いは固定されない。<code>/m</code> オプションを付けない場合は、秀丸の動作環境にある次の設定に従う。</p>
+            <p><code>その他</code> → <code>動作環境</code> → <code>ファイル</code> → <code>排他制御</code> → <code>秀丸エディタで同じファイルを開く場合</code></p>
+            <p>既存のファイルを再利用して、指定行へ移動したい場合は <code>/m3</code> を使う。</p>
+            <pre><code class="language-bat">Hidemaru.exe /m3 /j100,20 &quot;C:\work\sample.txt&quot;</code></pre>
+            <p><code>/m3</code> は「同じファイルを2つ開くことを禁止する（既に開いているファイルにジャンプする）」指定である。このため、<code>sample.txt</code> がすでに開かれていれば新しい同一ファイルのバッファーを作らず、開いている秀丸を前面に出して、<code>/j100,20</code> の位置へ移動する。開かれていなければ、通常どおり新しく開く。</p>
+            <p>反対に、同じファイルを別バッファーとして強制的に開きたい場合は <code>/m5</code> を使う。</p>
+            <pre><code class="language-bat">Hidemaru.exe /m5 /j100 &quot;C:\work\sample.txt&quot;</code></pre>
+            <p>したがって、目的別には次のように使い分ける。</p>
+            <ul>
+                <li>既存のファイルを前面に出して指定位置へ移動する: <code>/m3 /j</code></li>
+                <li>同じファイルを別に開く: <code>/m5 /j</code></li>
+                <li>設定済みの動作に任せる: <code>/j</code></li>
+            </ul>
+            <h3 id="powershellから実行する場合">PowerShellから実行する場合</h3>
+            <p>PowerShellでは、実行ファイルのパスを <code>&amp;</code>（呼び出し演算子）で実行する。</p>
+            <pre><code class="language-powershell">&amp; &quot;C:\Program Files\Hidemaru\Hidemaru.exe&quot; /j100 &quot;C:\work\sample.txt&quot;</code></pre>
+            <p>実際のパスに空白が含まれる場合は、実行ファイルと対象ファイルのパスをそれぞれダブルクォーテーションで囲む。</p>
+            <h3 id="他のツールから呼び出す場合">他のツールから呼び出す場合</h3>
+            <p>バッチファイルやPythonなどからも、実行ファイル、<code>/j</code> オプション、対象ファイルを分けて渡せばよい。</p>
+            <pre><code class="language-python">import subprocess
+
+subprocess.Popen(
+    [
+        r&quot;C:\Program Files\Hidemaru\Hidemaru.exe&quot;,
+        &quot;/j100&quot;,
+        r&quot;C:\work\sample.txt&quot;,
+    ]
+)</code></pre>
+            <p>ファイルを開いた後に指定行へカーソルを移動するオプションなので、行番号がファイルの行数を超える場合の表示は、秀丸側の動作に従う。必要に応じて、呼び出し元で対象行の存在を確認してから実行する。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://help.maruo.co.jp/hidemaru/html/230_Option.html">秀丸エディタ 起動時のオプション（コマンドラインパラメータ）</a></li>
+                <li><code>/j行番号,桁番号</code>、<code>/jx行番号,桁番号</code>、<code>/jw行番号,桁番号</code>、<code>/m3</code>、<code>/m5</code> の仕様、行番号が1から始まることを確認した。</li>
+                <li>参照日: 2026-10-08</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-10-08: 既に開いているファイルを指定した場合の動作と、<code>/m3</code>・<code>/m5</code> の使い分けを追記</li>
+                <li>2026-10-08: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>静的JavaScriptサイトでできることと制約</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">静的JavaScriptサイトでできることと制約</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>静的ホスティングで公開するHTML・CSS・JavaScriptのサイトで、どのような操作、 アニメーション、データ処理ができるかを整理する。サーバーやデータベースが必要に なる境界も確認する。</p>
+            <h2 id="結論">結論</h2>
+            <p>静的サイトでも、クリックに反応するUI、画面内容の切り替え、入力フォーム、 アニメーション、ゲームやグラフなどを作れる。JavaScriptは閲覧者のブラウザーで 実行されるため、画面内で完結する動作なら、サイト用のアプリケーションサーバーが なくても実現できる。</p>
+            <p>一方、JavaScriptだけではサーバー上に秘密を隠したり、全利用者で共有するデータを 安全に保存したりできない。ログイン後のデータ保護、共有データベース、秘密のAPIキー、 サーバー側の定期処理などが必要なら、API、認証サービス、データベース、サーバーレス 機能などを別に用意する。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="静的サイト-でも画面は動かせる">「静的サイト」でも画面は動かせる</h3>
+            <p>ここでいう静的サイトは、Webサーバーが完成済みのHTML、CSS、JavaScriptなどの ファイルを配信するサイトを指す。ページを開いた後はJavaScriptがブラウザーで動くため、 利用者の操作に応じて画面を書き換えられる。静的ホスティングのGitHub Pagesも、 HTML・CSS・JavaScriptを公開するサービスとして説明されている。</p>
+            <h3 id="できること">できること</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>種類</th>
+                        <th>例</th>
+                        <th>サーバーなしで可能か</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>動くUI</td>
+                        <td>メニュー、タブ、アコーディオン、モーダル、ステップ表示、画面の切り替え</td>
+                        <td>可能</td>
+                    </tr>
+                    <tr>
+                        <td>一覧の操作</td>
+                        <td>ダウンロード済みデータの検索、絞り込み、並べ替え、ページ送り</td>
+                        <td>可能</td>
+                    </tr>
+                    <tr>
+                        <td>入力への反応</td>
+                        <td>入力チェック、計算、プレビュー、進捗表示、簡単なフォーム</td>
+                        <td>可能。ただし重要な検証はサーバー側でも行う</td>
+                    </tr>
+                    <tr>
+                        <td>見た目や演出</td>
+                        <td>ホバー効果、画面遷移、通知、ローディング表示、グラフ、ゲーム</td>
+                        <td>可能</td>
+                    </tr>
+                    <tr>
+                        <td>ブラウザー内の保存</td>
+                        <td>テーマ設定、下書き、チェック状態、端末内データ</td>
+                        <td>可能。保存先は利用者のブラウザー</td>
+                    </tr>
+                    <tr>
+                        <td>外部サービスとの通信</td>
+                        <td>天気、公開API、外部フォームや認証サービスとの連携</td>
+                        <td>API側の公開条件、認証方式、CORS設定による</td>
+                    </tr>
+                    <tr>
+                        <td>オフライン利用</td>
+                        <td>キャッシュ済みページの表示や、端末内データを使う機能</td>
+                        <td>Service Workerなどで可能。事前設計が必要</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>たとえば、次のような小さなWebツールは静的サイトと相性がよい。</p>
+            <ul>
+                <li>料金・単位・日付などの計算ツール</li>
+                <li>FAQや商品リストを条件で絞り込むページ</li>
+                <li>アンケートの入力補助や、その場で結果を表示する診断</li>
+                <li>ブラウザー内に下書きを保存するメモ</li>
+                <li>クイズ、カード、簡単なゲーム</li>
+                <li>ボタン操作に反応する説明画面、グラフ、アニメーション</li>
+            </ul>
+            <h3 id="アニメーションや動くui">アニメーションや動くUI</h3>
+            <p>アニメーションは可能である。単純な色・位置・サイズの変化にはCSSの <code>transition</code>や<code>@keyframes</code>、JavaScriptから再生・停止・時間を制御したい場合には Web Animations API、図形を連続的に描画する場合にはCanvasなどを使える。 ボタンのクリックをきっかけにパネルを開く、通知を表示する、画面を切り替える、と いった動きもブラウザー内で作れる。</p>
+            <p>ただし、動きを多用すると操作しづらくなったり、端末によって重くなったりする。 キーボード操作やフォーカス位置を保ち、画面読み上げに状態変化を伝え、OSの 「視差効果を減らす」設定（<code>prefers-reduced-motion</code>）にも配慮する。</p>
+            <h3 id="データの保存と外部api">データの保存と外部API</h3>
+            <p><code>localStorage</code>は小さな文字列データ、IndexedDBは構造化データなどをブラウザー内に 保存する用途に使える。これらは利用者の端末・ブラウザーに属する保存先であり、 サーバーへのバックアップや複数端末間の同期にはならない。また、利用者が消去でき、 容量などの制限もある。秘密情報やAPIキーを保存する場所としても使えない。</p>
+            <p>JavaScriptから<code>fetch</code>で外部APIへ通信することもできる。ただし、相手のサーバーが ブラウザーからのアクセスを許可している必要があり、別ドメインへの通信はCORSなどの 制約を受ける。CORSはフロントエンドのJavaScriptだけで解除できず、APIを提供する側の 設定が必要である。</p>
+            <h3 id="同じ公開フォルダーのjsonをフォームに表示する">同じ公開フォルダーのJSONをフォームに表示する</h3>
+            <p>HTMLと同じフォルダーに<code>data.json</code>を置き、<code>fetch("./data.json")</code>で読み込める。 読み取った配列から<code>__RAW<em>HTML</em>0__</code>を作れば、フォームの選択肢をJSONの内容で表示できる。 <code>fetch</code>は相対URLをページのURLから解決するため、ページの置き場所に合わせてパスを 指定する。</p>
+            <p>例として、次のJSONを公開フォルダーに置く。</p>
+            <pre><code class="language-json">[
+  { &quot;id&quot;: &quot;a&quot;, &quot;label&quot;: &quot;りんご&quot; },
+  { &quot;id&quot;: &quot;b&quot;, &quot;label&quot;: &quot;みかん&quot; }
+]</code></pre>
+            <p>HTMLに選択欄と状態表示を置く。</p>
+            <pre><code class="language-html">&lt;label for=&quot;item&quot;&gt;項目&lt;/label&gt;
+&lt;select id=&quot;item&quot;&gt;&lt;/select&gt;
+&lt;p id=&quot;status&quot; role=&quot;status&quot;&gt;&lt;/p&gt;
+&lt;script type=&quot;module&quot; src=&quot;./app.js&quot;&gt;&lt;/script&gt;</code></pre>
+            <p><code>app.js</code>でJSONを読み込み、選択肢へ反映する。</p>
+            <pre><code class="language-javascript">const select = document.querySelector(&quot;#item&quot;);
+const status = document.querySelector(&quot;#status&quot;);
+
+async function loadItems() {
+  if (!(select instanceof HTMLSelectElement) || !(status instanceof HTMLElement)) {
+    throw new Error(&quot;フォーム要素が見つかりません。&quot;);
+  }
+
+  const response = await fetch(&quot;./data.json&quot;);
+  if (!response.ok) {
+    throw new Error(`JSONの取得に失敗しました: HTTP ${response.status}`);
+  }
+
+  const items = await response.json();
+  if (
+    !Array.isArray(items) ||
+    !items.every(
+      (item) =&gt;
+        item !== null &amp;&amp;
+        typeof item === &quot;object&quot; &amp;&amp;
+        typeof item.id === &quot;string&quot; &amp;&amp;
+        typeof item.label === &quot;string&quot;,
+    )
+  ) {
+    throw new TypeError(&quot;JSONの形式が正しくありません。&quot;);
+  }
+
+  select.replaceChildren(new Option(&quot;選択してください&quot;, &quot;&quot;));
+  for (const item of items) {
+    const option = new Option(item.label, item.id);
+    select.append(option);
+  }
+}
+
+loadItems().catch((error) =&gt; {
+  console.error(&quot;JSONの読み込みに失敗しました。&quot;, error);
+  if (status instanceof HTMLElement) {
+    status.textContent = &quot;データを読み込めませんでした。&quot;;
+  }
+});</code></pre>
+            <p>この方法は、静的ホスティングへ<code>data.json</code>も公開しておく必要がある。公開したJSONは URLを知る人が取得できるため、個人情報や秘密情報を含めない。<code>fetch</code>はHTTPエラーで 自動的に失敗扱いにならないため、例のように<code>response.ok</code>を確認する。HTMLを <code>file://</code>で直接開くとブラウザーのセキュリティ制約で取得できない場合があるので、 ローカル開発サーバーまたは公開先のHTTPSで確認する。GitHub Pagesのプロジェクトサイト などでページがサブパスにある場合は、ファイルの配置に合う相対パスを使う。</p>
+            <h3 id="静的サイトだけではできないこと-苦手なこと">静的サイトだけではできないこと・苦手なこと</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>要件</th>
+                        <th>静的サイトだけでは難しい理由</th>
+                        <th>必要になるもの</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>サーバーでの処理</td>
+                        <td>静的ホスティングは、リクエストごとに独自プログラムを実行しない</td>
+                        <td>APIサーバー、サーバーレス関数など</td>
+                    </tr>
+                    <tr>
+                        <td>全利用者で共有する保存</td>
+                        <td><code>localStorage</code>やIndexedDBは各利用者のブラウザー内にある</td>
+                        <td>APIとデータベース、またはBaaS</td>
+                    </tr>
+                    <tr>
+                        <td>秘密のAPIキーの保管</td>
+                        <td>配信したJavaScriptや設定値は利用者が調べられる</td>
+                        <td>秘密情報を保持するサーバー側のAPI</td>
+                    </tr>
+                    <tr>
+                        <td>保護されたデータの認可</td>
+                        <td>画面を隠すだけではデータへのアクセスを制限できない</td>
+                        <td>認証サービスと、サーバー側での認可チェック</td>
+                    </tr>
+                    <tr>
+                        <td>長時間・定期的な処理</td>
+                        <td>ブラウザーやタブを閉じると、常時実行を前提にできない</td>
+                        <td>サーバー側のジョブやスケジューラー</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>外部の認証サービスやデータサービスを使えば、静的なフロントエンドからログインや データ操作を開始する構成も作れる。ただし、認証情報やデータへのアクセス制御を フロントエンドだけに任せず、APIやサービス側で検証する必要がある。</p>
+            <h3 id="ブラウザーと利用者の制約">ブラウザーと利用者の制約</h3>
+            <p>JavaScriptが使える機能は、ブラウザーの種類・バージョン、権限、セキュリティ設定に 左右される。位置情報、カメラ、マイクなどは、対応ブラウザーに加えてHTTPSなどの 安全な接続と利用者の許可が必要になる。PC内の任意のファイルを無断で読み書きする こともできず、ファイル選択など利用者の明示的な操作が必要である。</p>
+            <p>したがって、重要な操作にはエラー表示や代替手段を用意し、異なる画面サイズ、 キーボード操作、支援技術でも使えるようにする。</p>
+            <h3 id="用途の判断">用途の判断</h3>
+            <ul>
+                <li><strong>静的サイト向き</strong>: 画面内の操作、計算、表示切り替え、公開データの検索、端末内の設定保存。</li>
+                <li><strong>バックエンドを追加</strong>: 利用者間の共有、複数端末での同期、非公開データ、決済、</li>
+            </ul>
+            <p>信頼できるログイン・認可、定期実行。</p>
+            <p>「動くUIが欲しい」だけなら、まずHTML・CSS・JavaScriptで始められる。画面や機能が 増えてから、必要に応じてフレームワークやバックエンドを選べばよい。</p>
+            <h3 id="関連メモ">関連メモ</h3>
+            <ul>
+                <li><a href="../HTML/静的サイトジェネレーターの基本.html">静的サイトジェネレーターの基本</a>:</li>
+            </ul>
+            <p>静的HTMLの生成と、ビルド時・アクセス時の処理の違い。</p>
+            <ul>
+                <li><a href="../Git/GitHub%20Pagesの基本と公開方法.html">GitHub Pagesの基本と公開方法</a>:</li>
+            </ul>
+            <p>静的ファイルの公開方法とホスティング側の制約。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://developer.mozilla.org/en-US/docs/Learn<em>web</em>development/Core/Scripting/DOM_scripting">DOM scripting introduction - Learn web development | MDN</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Animations/Using">Using CSS animations - CSS | MDN</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Web<em>Animations</em>API/Using<em>the</em>Web<em>Animations</em>API">Using the Web Animations API - Web APIs | MDN</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API">Canvas API - Web APIs | MDN</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch<em>API/Using</em>Fetch">Using the Fetch API - Web APIs | MDN</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS">Cross-Origin Resource Sharing (CORS) - HTTP | MDN</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage">Window: localStorage property - Web APIs | MDN</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://developer.mozilla.org/en-US/docs/Learn<em>web</em>development/Extensions/Client-side<em>APIs/Client-side</em>storage">Client-side storage - Learn web development | MDN</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API">IndexedDB API - Web APIs | MDN</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Service<em>Worker</em>API/Using<em>Service</em>Workers">Using Service Workers - Web APIs | MDN</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API">Geolocation API - Web APIs | MDN</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia">MediaDevices: getUserMedia() method - Web APIs | MDN</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/prefers-reduced-motion">prefers-reduced-motion CSS media feature - CSS | MDN</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages">What is GitHub Pages? - GitHub Docs</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits">GitHub Pages limits - GitHub Docs</a></li>
+                <li>参照日: 2026-09-28</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-28: 同じ公開フォルダーのJSONをfetchし、フォームへ表示する例と公開・パス上の注意を追加</li>
+                <li>2026-09-28: 静的サイトで可能な動的UI、アニメーション、保存・API連携とバックエンドの境界を整理</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

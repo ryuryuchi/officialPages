@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>開発手法の略語（DDD・TDDなど）</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">開発手法の略語（DDD・TDDなど）</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>DDDの正式名称と意味を確認し、TDDやBDDなど、名前に「Driven Development」を含む代表的な開発手法・設計アプローチを比較した。</p>
+            <h2 id="結論">結論</h2>
+            <p>ソフトウェア設計の文脈でDDDは、通常 <strong>Domain-Driven Design（ドメイン駆動設計）</strong> を指す。「Domain-Driven Development」ではなく、正式名称の末尾は「Design」である。ビジネス上の複雑な領域を理解し、その知識や用語をソフトウェアのモデルに反映する考え方である。</p>
+            <p>「〇〇駆動開発」は一つの分類体系ではない。よく見かける略語にはTDD、BDD、ATDD、FDDがあり、MDDも関連する用語として使われる。それぞれが重視するものは異なり、互いに置き換えるものとは限らない。DDDとTDDなどを組み合わせて使うこともできる。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="主な略語">主な略語</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>略語</th>
+                        <th>英語名</th>
+                        <th>日本語名</th>
+                        <th>主に重視するもの</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>DDD</td>
+                        <td>Domain-Driven Design</td>
+                        <td>ドメイン駆動設計</td>
+                        <td>業務領域の知識、業務ルール、開発者と業務担当者が共有する言葉やモデル</td>
+                    </tr>
+                    <tr>
+                        <td>TDD</td>
+                        <td>Test-Driven Development</td>
+                        <td>テスト駆動開発</td>
+                        <td>実装前にテストを書き、失敗・成功・リファクタリングを短い周期で繰り返すこと</td>
+                    </tr>
+                    <tr>
+                        <td>BDD</td>
+                        <td>Behavior-Driven Development</td>
+                        <td>振る舞い駆動開発</td>
+                        <td>利用者や関係者が理解できる言葉で、システムに期待する振る舞いを表すこと</td>
+                    </tr>
+                    <tr>
+                        <td>ATDD</td>
+                        <td>Acceptance Test-Driven Development</td>
+                        <td>受け入れテスト駆動開発</td>
+                        <td>開発・テスト・業務側が協力し、実装前に受け入れ条件やテストを決めること</td>
+                    </tr>
+                    <tr>
+                        <td>FDD</td>
+                        <td>Feature-Driven Development</td>
+                        <td>フィーチャ駆動開発</td>
+                        <td>利用者に価値のある機能を単位に、計画・設計・実装を反復すること</td>
+                    </tr>
+                    <tr>
+                        <td>MDD</td>
+                        <td>Model-Driven Development</td>
+                        <td>モデル駆動開発</td>
+                        <td>システムのモデルを中心に仕様や実装を組み立てること。ツールによってはモデルからコードなどを生成する</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3 id="それぞれの違い">それぞれの違い</h3>
+            <ul>
+                <li><strong>DDD</strong>は、何を作るかを業務領域の理解から考える設計アプローチである。複雑な業務ルールをモデルに反映し、業務担当者と開発者の共通語彙を育てる。Eric Evansの参考資料では、Entity、Value Object、Aggregate、Bounded Contextなどのパターンを扱う。</li>
+                <li><strong>TDD</strong>は、次に実現する機能のテストを先に書き、そのテストを通す最小限の実装を行ってからコードを整理する反復手法である。一般に「Red-Green-Refactor」と呼ばれる。</li>
+                <li><strong>BDD</strong>は、単にテストを書くことより、システムがどう振る舞うべきかを関係者間で明確にすることに重点を置く。Given-When-Then形式のシナリオがよく使われる。</li>
+                <li><strong>ATDD</strong>は、顧客・開発・テストなど異なる立場の人が、実装前に受け入れ条件を話し合う実践である。BDDと重なる部分はあるが、同じ意味の用語とは限らない。</li>
+                <li><strong>FDD</strong>は、機能の一覧を作り、機能ごとに計画、設計、構築する反復型の開発方法である。代表的な説明では、全体モデルの作成、機能一覧の作成、機能ごとの計画、設計、構築という流れを取る。</li>
+                <li><strong>MDD</strong>はモデルを中心に開発を進める考え方である。OMGのModel Driven Architecture（MDA）は関連するアプローチだが、MDDとMDAは同じ略語ではない。</li>
+            </ul>
+            <h3 id="覚え方と注意点">覚え方と注意点</h3>
+            <p>「何を中心に進めるか」で大まかに区別できる。</p>
+            <ul>
+                <li>業務の知識・ルールを中心に設計する: DDD</li>
+                <li>テストを先に書いて実装を進める: TDD</li>
+                <li>期待する振る舞いを共有する: BDD</li>
+                <li>受け入れ条件を関係者で決める: ATDD</li>
+                <li>利用者価値のある機能を単位に反復する: FDD</li>
+                <li>モデルを中心に仕様や実装を組み立てる: MDD</li>
+            </ul>
+            <p>DDDとTDDは競合する方法ではない。例えば、DDDで業務ルールをモデル化し、そのルールを実装するときにTDDを使える。BDDやATDDで期待する振る舞い・受け入れ条件を共有し、実装の細部をTDDで進める構成も可能である。</p>
+            <p>BDDとATDDの境界は資料やチームによって重なる。略語だけで違いを決めつけず、チームがどのような活動や成果物を指しているか確認する。</p>
+            <p>また、DDDは文脈によって「Data-Driven Development」など別の語の略として使われることがある。ソフトウェア設計の話ではDomain-Driven Designを指すことが多いが、会話や文書では正式名称を併記すると誤解を避けやすい。</p>
+            <p>「Event-Driven Architecture（EDA）」のように、似た言い方でも開発プロセスではなくシステム構成の考え方を指すものがある。そのため、「〇〇駆動」という言葉をすべて同じ種類の開発手法として扱わない。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://martinfowler.com/bliki/DomainDrivenDesign.html">Domain Driven Design | Martin Fowler</a></li>
+                <li>参照日: 2026-10-07</li>
+                <li><a href="https://domainlanguage.com/ddd/reference/">DDD Reference | Domain Language</a></li>
+                <li>参照日: 2026-10-07</li>
+                <li><a href="https://martinfowler.com/bliki/TestDrivenDevelopment.html">Test-Driven Development | Martin Fowler</a></li>
+                <li>参照日: 2026-10-07</li>
+                <li><a href="https://dannorth.net/blog/introducing-bdd/">Introducing BDD | Dan North</a></li>
+                <li>参照日: 2026-10-07</li>
+                <li><a href="https://cucumber.io/docs/bdd/history/">BDD History | Cucumber</a></li>
+                <li>参照日: 2026-10-07</li>
+                <li><a href="https://www.agilealliance.org/glossary/atdd/">Acceptance Test Driven Development (ATDD) | Agile Alliance</a></li>
+                <li>参照日: 2026-10-07</li>
+                <li><a href="https://www.productplan.com/glossary/feature-driven-development">Feature Driven Development | ProductPlan</a></li>
+                <li>参照日: 2026-10-07</li>
+                <li><a href="https://www.omg.org/mda/">MDA - The Architecture Of Choice For A Changing World | Object Management Group</a></li>
+                <li>参照日: 2026-10-07</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-10-07: 初版を作成。DDDの正式名称と、TDD・BDD・ATDD・FDD・MDDとの違いを整理。</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

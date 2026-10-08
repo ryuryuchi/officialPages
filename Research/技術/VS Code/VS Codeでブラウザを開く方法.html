@@ -34,12 +34,12 @@
                 <li>エクスプローラー上のファイル、またはエディターのタブを右クリックする。</li>
                 <li><code>Open in Integrated Browser</code>を選ぶ。</li>
             </ol>
-            <p>HTMLファイルを開いているときは、エディター右上の<code>Show Preview</code>アイコンからも表示できる。HTMLを変更すると、プレビューへリアルタイムに反映される。</p>
+            <p>HTMLファイルを開いているときは、エディター右上の<code>Show Preview</code>アイコンからも表示できる。HTMLを変更すると、プレビューにリアルタイムで反映される。</p>
             <p><code>file://</code>での表示では、JavaScriptモジュール、<code>fetch</code>、ルーティングなどがブラウザのセキュリティ制約で正しく動かない場合がある。その場合は、プロジェクトの開発サーバーを起動して<code>http://localhost:ポート番号</code>を開く。</p>
             <h3 id="localhostを外部ブラウザで開く">localhostを外部ブラウザで開く</h3>
             <p>現行のVS Codeでは、ターミナルやチャットに表示されたlocalhostリンクは、既定でIntegrated Browserに開く。</p>
             <p>OSの既定ブラウザで開くようにするには、設定画面で<code>workbench.browser.openLocalhostLinks</code>を無効にする。使用する外部ブラウザを固定する場合は、<code>workbench.externalBrowser</code>に<code>edge</code>、<code>chrome</code>、<code>firefox</code>、またはブラウザ実行ファイルの絶対パスを設定する。</p>
-            <p>設定例:</p>
+            <p>設定例は次のとおり。</p>
             <pre><code class="language-json">{
   &quot;workbench.browser.openLocalhostLinks&quot;: false,
   &quot;workbench.externalBrowser&quot;: &quot;edge&quot;
@@ -67,6 +67,9 @@
                 <li>参照日: 2026-09-01</li>
             </ul>
             <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-10-08: yomiyasuの原則に基づき本文を推敲</li>
+            </ul>
             <ul>
                 <li>2026-09-01: 初版を作成</li>
             </ul>

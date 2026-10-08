@@ -17,7 +17,7 @@
             <h2 id="概要">概要</h2>
             <p>複数の既存HTMLファイルへ同じCSSを適用し、後から一括でデザインを変更しやすくする方法を整理する。</p>
             <h2 id="結論">結論</h2>
-            <p>最適な基本方法は、共通スタイルを1つの外部CSSファイルへまとめ、各HTMLの<code>__RAW<em>HTML</em>0<strong></code>から<code></strong>RAW<em>HTML</em>1<strong></code>で読み込む構成である。CSSの修正が参照中の全ページへ反映されるため、各HTMLへ同じ<code></strong>RAW<em>HTML</em>2__</code>を複製するより保守しやすい。</p>
+            <p>基本的で最適な方法は、共通スタイルを1つの外部CSSファイルへまとめ、各HTMLの<code>__RAW<em>HTML</em>0<strong></code>から<code></strong>RAW<em>HTML</em>1<strong></code>で読み込む構成である。CSSの修正が読み込んでいる全ページへ反映されるため、各HTMLへ同じ<code></strong>RAW<em>HTML</em>2__</code>を複製するより保守しやすい。</p>
             <pre><code class="language-html">&lt;head&gt;
   &lt;meta charset=&quot;UTF-8&quot;&gt;
   &lt;link rel=&quot;stylesheet&quot; href=&quot;assets/css/common.css&quot;&gt;
@@ -86,7 +86,7 @@
 &lt;link rel=&quot;stylesheet&quot; href=&quot;/assets/css/common.css&quot;&gt;</code></pre>
             <p>ただし、読み込み順だけに頼った上書きを増やすと保守しにくい。次の順で整理する。</p>
             <ol>
-                <li>ブラウザーの開発者ツールにあるComputedまたはStylesで、どの規則が勝っているか確認する。</li>
+                <li>ブラウザーの開発者ツールにあるComputedまたはStylesで、どの規則が優先されているか確認する。</li>
                 <li>共通部品にはクラスセレクターを使い、ページ固有規則は<code>body</code>のページクラスなどで適用範囲を限定する。</li>
                 <li>セレクターの過度な詳細化と<code>!important</code>の常用を避ける。</li>
                 <li>移行後に不要になった重複規則を削除する。</li>
@@ -141,6 +141,7 @@
             </ul>
             <h2 id="更新履歴">更新履歴</h2>
             <ul>
+                <li>2026-10-08: yomiyasuの原則に基づき本文を推敲</li>
                 <li>2026-08-31: 全参考URLを実査し、<code>link</code>、URL解決、カスケード、<code>@import</code>の記述が現行仕様と一致することを確認</li>
                 <li>2026-08-31: 初版を作成</li>
             </ul>

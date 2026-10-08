@@ -96,7 +96,7 @@
             <p><code>olefile</code>はOLE2コンテナーの解析に使える低レベルライブラリだが、WordやExcelの 文書を高水準のオブジェクトとして編集するライブラリではない。旧形式を扱う場合は、 専用ライブラリ、OLE2解析、またはOffice COM自動化のどれが必要かを先に決める。</p>
             <h3 id="代表的な使い分け">代表的な使い分け</h3>
             <h4 id="word">Word</h4>
-            <p><code>python-docx</code>は<code>.docx</code>の作成・更新を対象にしている。段落、スタイル、表、画像、 ヘッダー・フッターなどをPythonオブジェクトとして操作できる。Wordのレイアウトを 完全に再現する変換器ではなく、複雑な図形、フィールド、マクロなどは別途確認する。</p>
+            <p><code>python-docx</code>は<code>.docx</code>の作成・更新を対象にしている。段落、スタイル、表、画像、 ヘッダー・フッターなどをPythonオブジェクトとして操作できる。Wordのレイアウトを 完全に再現するものではなく、複雑な図形、フィールド、マクロなどは別途確認する。</p>
             <p><code>.docx</code>をHTMLへ変換して見出しやスタイルを意味構造へ寄せたい場合は<code>mammoth</code>も 候補になる。ただし、入力文書をサニタイズしないため、信頼できないファイルを扱う 場合は出力HTMLを検査する。</p>
             <h4 id="excel">Excel</h4>
             <p><code>openpyxl</code>は<code>.xlsx</code>、<code>.xlsm</code>、<code>.xltx</code>、<code>.xltm</code>の読み書きに向く。セルの値や数式、 書式、シート、画像などを扱えるが、Excelアプリケーションそのものの計算結果を 再計算するものではない。マクロを保持する場合は、読み込み時の設定と保存後の 動作確認が必要である。</p>
@@ -127,7 +127,7 @@
             <h3 id="最小の導入例">最小の導入例</h3>
             <p>OOXML形式を直接処理する基本パッケージは次のように導入できる。</p>
             <pre><code class="language-powershell">python -m pip install python-docx openpyxl python-pptx</code></pre>
-            <p>Excelの値だけを読み取る例:</p>
+            <p>Excelの値だけを読み取る例は次のとおり。</p>
             <pre><code class="language-python">from pathlib import Path
 
 import openpyxl
@@ -191,6 +191,9 @@ workbook.close()</code></pre>
                 <li>参照日: 2026-09-15</li>
             </ul>
             <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-10-08: yomiyasuの原則に基づき本文を推敲</li>
+            </ul>
             <ul>
                 <li>2026-09-15: 初版を作成。Office文書、旧形式、Outlook、Access、Visio、</li>
             </ul>

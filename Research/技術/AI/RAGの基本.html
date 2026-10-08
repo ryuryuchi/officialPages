@@ -18,7 +18,8 @@
             <p>生成AIの話で使われるRAG（Retrieval-Augmented Generation、検索拡張生成）が何を指す言葉なのかを、言語・フレームワーク・データベースとの違いも含めて初心者向けに整理する。</p>
             <h2 id="結論">結論</h2>
             <p>RAGは<strong>プログラミング言語でも、単独のフレームワークでもない</strong>。質問に関係する資料を先に検索し、その検索結果をLLM（大規模言語モデル）へ渡して回答を生成させる、アプリケーションの構成方法・設計パターンである。</p>
-            <p>一言で言えば、RAGは「LLMに、回答前に関連資料を読ませる仕組み」である。モデルの再学習をしなくても、社内文書、製品マニュアル、最新情報などを回答の根拠に使える。ただし、検索結果が間違っていたり不足していたりすれば、RAGでも正しい回答は保証されない。</p>
+            <p>一言で言えば、RAGは「LLMへ回答前に関連資料を渡す仕組み」である。モデルの再学習をしなくても、社内文書、製品マニュアル、最新情報などを回答の根拠に使える。ただし、検索結果が間違っていたり不足していたりすれば、RAGでも正しい回答は保証されない。</p>
+            <p>用語の意味は文脈によって少し異なる。原著論文では、検索器・文書インデックス・生成モデルを組み合わせて学習する特定のモデル構成をRAGと呼んでいる。一方、現在のアプリ開発では、回答時に関連情報を検索し、質問とともにLLMへ渡す広い設計パターンを指すことが多い。このメモでは後者の意味で説明する。</p>
             <h2 id="詳細">詳細</h2>
             <h3 id="ragは何ではないか">RAGは何ではないか</h3>
             <table>
@@ -56,7 +57,9 @@
   ↓
 文書を小さなまとまり（チャンク）に分ける
   ↓
-各チャンクを検索しやすい表現（埋め込み）に変換して保存する
+検索用のインデックスに登録する
+  ├─ ベクトル検索の場合: 各チャンクを埋め込みに変換して保存する
+  └─ キーワード検索の場合: キーワード検索用の情報を登録する
   ↓
 ユーザーの質問を受ける
   ↓
@@ -65,7 +68,7 @@
 質問と検索結果をLLMに渡す
   ↓
 LLMが検索結果を参考に回答する</code></pre>
-            <p>このうち、文書の分割・埋め込み・保存は事前に行うことが多い。質問のたびに行うのは、質問を検索し、関連する資料を取り出し、LLMへ渡して回答を生成する処理である。</p>
+            <p>文書の分割やインデックス作成は事前に行うことが多い。埋め込みはベクトル検索で使うもので、RAGに必須ではない。キーワード検索や、ベクトル検索とキーワード検索を組み合わせるハイブリッド検索も使われる。質問のたびに行うのは、質問をもとに関連資料を検索し、その結果をLLMへ渡して回答を生成する処理である。</p>
             <h3 id="身近な例">身近な例</h3>
             <p>会社の就業規則PDFをLLMにそのまま覚えさせるのではなく、次のように使う。</p>
             <ol>
@@ -150,18 +153,23 @@ LLM              = 最終的な文章を生成するモデル</code></pre>
             <h2 id="参考資料">参考資料</h2>
             <ul>
                 <li><a href="https://arxiv.org/abs/2005.11401">Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks</a></li>
-                <li>参照日: 2026-09-10</li>
+                <li>参照日: 2026-10-06</li>
                 <li><a href="https://arxiv.org/html/2005.11401">Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks（HTML本文）</a></li>
-                <li>参照日: 2026-09-10</li>
+                <li>参照日: 2026-10-06</li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/retrieval-augmented-generation">Retrieval augmented generation (RAG) and indexes in Microsoft Foundry</a></li>
+                <li>参照日: 2026-10-06</li>
                 <li><a href="https://developers.openai.com/api/docs/guides/retrieval">Retrieval - OpenAI API</a></li>
-                <li>参照日: 2026-09-10</li>
+                <li>参照日: 2026-10-06</li>
                 <li><a href="https://developers.llamaindex.ai/python/framework/getting_started/concepts/">Concepts - LlamaIndex</a></li>
-                <li>参照日: 2026-09-10</li>
+                <li>参照日: 2026-10-06</li>
                 <li><a href="https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/grounding/overview">Grounding overview - Google Cloud</a></li>
-                <li>参照日: 2026-09-10</li>
+                <li>参照日: 2026-10-06</li>
             </ul>
             <h2 id="更新履歴">更新履歴</h2>
             <ul>
+                <li>2026-10-08: yomiyasuの原則に基づき本文を推敲</li>
+                <li>2026-10-06: 参考資料を再確認し、原著論文と現在の一般的な用語の使い方、および検索方式の違いを補足</li>
+                <li>2026-10-05: 文体を確認し、不自然な表現を修正</li>
                 <li>2026-09-10: RAGの位置付け、処理の流れ、関連部品、フレームワークとの違い、利点と限界を初版作成</li>
             </ul>
             </div>

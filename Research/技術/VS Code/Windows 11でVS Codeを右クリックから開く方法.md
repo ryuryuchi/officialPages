@@ -1,6 +1,6 @@
 ---
 作成日: 2026-09-14
-更新日: 2026-09-14
+更新日: 2026-10-08
 タグ:
   - VS Code
   - Windows 11
@@ -39,7 +39,7 @@ Windows 11の新しい右クリックメニューに表示されない場合は�
 
 1. [VS Code公式Windowsセットアップ](https://code.visualstudio.com/docs/setup/windows)から
    User setupまたはSystem setupをダウンロードする。
-2. インストーラーを起動し、通常どおりインストール先などを進める。
+2. インストーラーを起動し、インストール先などを指定して進める。
 3. 追加タスクの画面で、次の2項目にチェックを入れる。
    - `Add "Open with Code" action to Windows Explorer file context menu`
    - `Add "Open with Code" action to Windows Explorer directory context menu`
@@ -100,6 +100,8 @@ User setupは通常、管理者権限なしでユーザー単位にインスト�
   - 参照日: 2026-09-14
 
 ## 更新履歴
+
+- 2026-10-08: yomiyasuの原則に基づき本文を推敲
 
 - 2026-09-14: Windows 11の右クリックメニュー、初回インストール、既存インストールへの
   上書き適用、User setupとSystem setupの違いを公式資料で整理

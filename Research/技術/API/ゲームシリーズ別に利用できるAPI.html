@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ゲームシリーズ別に利用できるAPI</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">ゲームシリーズ別に利用できるAPI</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>モンスターハンターシリーズ、VALORANT、Apex Legends、ストリートファイター6 (SF6)、League of Legends (LoL) について、2026-09-28時点で利用できる公式APIと コミュニティ提供API・データソースを調べた。プレイヤー統計、試合データ、ゲーム内 データベースのどれを取得できるかを区別する。</p>
+            <h2 id="結論">結論</h2>
+            <ul>
+                <li><strong>公式のプレイヤー・試合APIが最も充実しているのはLoL</strong>。Riot Developer Portalの</li>
+            </ul>
+            <p>APIキーを使い、プレイヤー識別、試合詳細・タイムライン、ランクなどを取得できる。 チャンピオンやアイテムなどの静的データには別系統のData Dragonがある。</p>
+            <ul>
+                <li><strong>VALORANTにもRiot公式APIはある</strong>が、プレイヤー別データを使うアプリには本番キーと</li>
+            </ul>
+            <p>Riot Sign On (RSO) による本人の共有同意が必要。現在のVALORANTポリシーでは個人用 APIキー申請を受け付けていないため、気軽な個人用戦績取得には向かない。</p>
+            <ul>
+                <li><strong>モンスターハンターは、確認できた範囲でCapcom公式の公開Web APIは見つからない</strong>。</li>
+            </ul>
+            <p>代わりにWorld向けのMHW DB、Wilds向けのMHDB Wildsなど、作品別のコミュニティAPIが JSONデータを提供している。単一のシリーズ共通APIではない。</p>
+            <ul>
+                <li>**Apex Legendsは、確認できた範囲でEA/Respawn公式の公開プレイヤー戦績APIは</li>
+            </ul>
+            <p>見つからない**。Apex Legends APIやTracker Networkなどの非公式サービスが候補だが、 APIキー、利用条件、稼働状況、取得できるプラットフォームを各サービスで確認する。</p>
+            <ul>
+                <li>**SF6は、Capcom公式のBuckler's Boot Campでプロフィールやランキング等を閲覧</li>
+            </ul>
+            <p>できる一方、外部開発者向けの公開APIは確認できない**。コミュニティが非公開のWeb ルートを記録しているが、ログインセッションを要し、仕様変更や利用規約上のリスクが あるため、安定した公開APIとして扱わない。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>対象</th>
+                        <th>公式に確認できた開発者向けAPI</th>
+                        <th>コミュニティ等の候補</th>
+                        <th>実用上の見立て</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>モンスターハンター</td>
+                        <td>公開APIは確認できず</td>
+                        <td>MHW DB、MHDB Wilds、MonHunAPI</td>
+                        <td>モンスター・装備などの図鑑データ向け。作品ごとに選ぶ</td>
+                    </tr>
+                    <tr>
+                        <td>VALORANT</td>
+                        <td>Riot API: Content、Match、Ranked、Status</td>
+                        <td>VALORANT-API.com（ゲーム内コンテンツのカタログ）</td>
+                        <td>静的コンテンツ参照は比較的容易。個人戦績は本番キーとRSO同意が前提</td>
+                    </tr>
+                    <tr>
+                        <td>Apex Legends</td>
+                        <td>公開プレイヤー戦績APIは確認できず</td>
+                        <td>Apex Legends API、Tracker Network、DGS Ingram</td>
+                        <td>非公式サービスに依存。プレイヤー戦績・ゲーム情報の可用性は提供元次第</td>
+                    </tr>
+                    <tr>
+                        <td>SF6</td>
+                        <td>BucklerのWeb機能はあるが公開APIは確認できず</td>
+                        <td>Buckler API Notes、SF6 Stats</td>
+                        <td>非公式・未文書化ルート。試作以外の基盤には不向き</td>
+                    </tr>
+                    <tr>
+                        <td>LoL</td>
+                        <td>Riot API: Account、Match、League、Champion Mastery等</td>
+                        <td>CommunityDragon（補助的なクライアントデータ）</td>
+                        <td>プレイヤー・試合・ランク取得には公式APIが第一候補。静的データはData Dragon</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="モンスターハンターシリーズ">モンスターハンターシリーズ</h3>
+            <p>Capcom公式の開発者向けAPIドキュメントや公開Web APIは確認できなかった。確認できた 実用的な選択肢は、Capcomではなくコミュニティが整備するデータベースAPIである。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>サービス</th>
+                        <th>対象・取得データ</th>
+                        <th>確認事項</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><a href="https://docs.mhw-db.com/">MHW DB</a></td>
+                        <td>Monster Hunter: Worldのモンスター、武器、アイテム等。<code>https://mhw-db.com/monsters</code> のようなJSONエンドポイント</td>
+                        <td>ドキュメントには複数言語のエンドポイントがある。全言語の値が揃っているとは限らない</td>
+                    </tr>
+                    <tr>
+                        <td><a href="https://docs.wilds.mhdb.io/">MHDB Wilds</a></td>
+                        <td>Monster Hunter Wildsのモンスター、装備、アイテム等。例: <code>https://wilds.mhdb.io/en/monsters</code></td>
+                        <td>英語ロケールのJSONレスポンスを実際に確認。コミュニティ管理であり、データの未収録・更新遅れ・スキーマ変更があり得る</td>
+                    </tr>
+                    <tr>
+                        <td><a href="https://github.com/pkwlo/MonHun-API">MonHunAPI</a></td>
+                        <td>複数作品のモンスター情報をまとめることを掲げるコミュニティAPI</td>
+                        <td>リポジトリの説明ではWorldやRiseなどを順次扱う構想。Wildsを含む現在の網羅性・稼働状況は利用前に確認する</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>アイテム検索や装備シミュレーターのような「ゲーム内図鑑」機能なら、対象作品に対応する データソースを使うのが現実的である。API提供者と権利元は別であるため、ゲームデータや画像の 再配布・商用利用をする場合は、APIプロジェクトのライセンスだけでなくゲーム素材の権利と 各サービスの利用条件も別に確認する。APIが無料で応答することは、データの自由な再配布を 意味しない。</p>
+            <h3 id="valorant">VALORANT</h3>
+            <p>Riot公式のVALORANT APIとして、少なくとも次のカテゴリがDeveloper Portalに記載されている。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>API</th>
+                        <th>主な用途</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>VAL-CONTENT-V1</td>
+                        <td>コンテンツ情報の取得</td>
+                    </tr>
+                    <tr>
+                        <td>VAL-MATCH-V1</td>
+                        <td>match IDによる試合詳細、PUUIDのmatch list、キュー別の最近の試合</td>
+                    </tr>
+                    <tr>
+                        <td>VAL-RANKED-V1</td>
+                        <td>Actごとの競技ランキング</td>
+                    </tr>
+                    <tr>
+                        <td>VAL-STATUS-V1</td>
+                        <td>プラットフォームのサービス状態</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>ただし、APIが公開されていることと、誰でもプレイヤー戦績を取得できることは同じではない。 VALORANTの公式ポリシーでは、プレイヤー別データを扱うアプリはユーザーのオプトインを 求める必要があり、RSOと本番APIキーが必要とされる。また、ドキュメントには個人用キーの 申請を現在受け付けていない旨がある。したがって、個人が試しに開発キーを取得して他人の 戦績を自由に調べるAPIとしては考えない。</p>
+            <p><a href="https://valorant-api.com/">VALORANT-API.com</a>は、武器やスキン等のゲーム内コンテンツと アセットを提供する非公式コミュニティAPIである。これはRiotのプレイヤー戦績APIの代替では なく、コンテンツカタログ向けである。Riot公式ポリシーの公開コンテンツカタログも、画像や テキストなどの静的素材を配布する別の手段として案内されている。</p>
+            <h3 id="apex-legends">Apex Legends</h3>
+            <p>公開ドキュメントを確認できるEA/Respawn公式プレイヤー統計APIは見つからなかった。 プレイヤー情報やゲームデータが必要なら、第三者が運営するサービスを使うことになる。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>サービス</th>
+                        <th>取得できるもの・条件</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><a href="https://apexlegendsapi.com/">Apex Legends API</a></td>
+                        <td>非公式API。プレイヤー統計とゲーム情報を提供すると明記。APIキーが必要で、提供者自身が無保証・稼働保証なしと明記している。プレイヤー照会は名前とプラットフォームを指定する形式</td>
+                    </tr>
+                    <tr>
+                        <td><a href="https://tracker.gg/developers/docs/titles/apex">Tracker Network Apex API</a></td>
+                        <td>Tracker Networkの開発者API資料がある。APIキーの取得可否や最新の利用制限・商用条件を登録前に確認する</td>
+                    </tr>
+                    <tr>
+                        <td><a href="https://apexlegendsstatus.com/tournament-stable/api">DGS "Ingram" API</a></td>
+                        <td>ApexLegendsStatusの大会データ向けAPI。トーナメント、スコア、参加選手の大会成績など。プレイヤーの一般的な全試合履歴を取るAPIとは異なる。トークンが必要で、資料上は標準2 requests/second、非商用利用可、商用は事前連絡が必要</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>API提供者のデータソースやEA側の変更に依存するため、長期運用では応答エラー、更新停止、 取得可能なプラットフォームの縮小を想定する。特にApex Legends APIはドキュメント上で 無保証としているため、唯一のデータ供給元にしない設計がよい。</p>
+            <h3 id="ストリートファイター6-sf6">ストリートファイター6 (SF6)</h3>
+            <p>Capcom公式の<a href="https://www.streetfighter.com/6/buckler/en/welcome">Buckler's Boot Camp</a> ではプロフィール、ランキング、キャラクター統計等を閲覧できる。しかし、第三者が利用する ための公式公開APIドキュメントは確認できなかった。</p>
+            <p><a href="https://sfstats.app/buckler">Buckler API Notes</a>は、BucklerのWebフロントエンドが使う 未文書化のNext.jsページデータルートを観察してまとめたコミュニティ資料である。資料自身が 「REST APIではない」「非公式」「ルート・フィールド・認証が変更され得る」と注意している。 ログイン済みの自分のブラウザーセッションを使う想定であり、認証の回避や他人の資格情報の 利用を目的としたものではない。</p>
+            <p>個人の検証であっても、セッションCookieを秘密情報として保護し、利用規約・アクセス制御に 従う必要がある。公開サービスや継続運用での依存先としては、Capcomの公式提供や許可を 得られない限り推奨しない。試合データが必要な場合は、Bucklerを人が閲覧する用途と、 コミュニティの未保証な取得手段を分けて判断する。</p>
+            <h3 id="league-of-legends-lol">League of Legends (LoL)</h3>
+            <p>Riot Developer Portalから公式APIを利用できる。主な用途は次のとおり。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>API</th>
+                        <th>主な用途</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Account-V1</td>
+                        <td>Riot ID等からRiotアカウント識別情報を取得</td>
+                    </tr>
+                    <tr>
+                        <td>Match-V5</td>
+                        <td>PUUIDからmatch ID一覧を取得し、試合詳細・タイムラインを取得</td>
+                    </tr>
+                    <tr>
+                        <td>League-V4</td>
+                        <td>ランクリーグやリーグ情報を取得</td>
+                    </tr>
+                    <tr>
+                        <td>Champion-Mastery-V4</td>
+                        <td>プレイヤーのチャンピオン熟練度情報を取得</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>利用にはRiot APIキーが必要。RiotアカウントでDeveloper Portalにログインすると開発用キーが 発行され、プロダクトを登録して審査を受けることで追加アクセスやレート上限の引き上げを 申請できる。プレイヤー向けに公開するプロダクトはDeveloper Portalへの登録とRiotの ポリシー順守が必要で、APIキーを配布アプリやブラウザー側のコードへ埋め込んではならない。 正確なレート上限、キーの有効条件、必要なルーティング地域は利用時点の公式ドキュメントで 確認する。</p>
+            <p><a href="https://ddragon.leagueoflegends.com/cdn/">Data Dragon</a>は、チャンピオン、アイテム、 ルーン、サモナースペル、画像などの<strong>パッチ単位の静的データ配布</strong>であり、プレイヤーの 試合履歴を返すAPIとは別である。バージョン一覧を取得して、対象バージョンと言語のJSONを 選んで使う。クライアント由来の追加データが必要な場合は<a href="https://communitydragon.org/">CommunityDragon</a> 等の非公式資料もあるが、公式Data Dragonと同等のサポートや安定性は期待できない。</p>
+            <p>Riotの一般・ゲーム別ポリシーはタイトルごとに異なる。LoLで許される使い方をVALORANTにも そのまま適用できるとは限らない。試合前の相手のスカウティング、隠されたプレイヤーの特定、 公式ランク制度の代替、ゲーム内で得られない競争上の優位につながる機能などは特に避け、 各ゲームのポリシーを確認する。</p>
+            <h3 id="用途別の選び方">用途別の選び方</h3>
+            <ul>
+                <li><strong>モンスター・武器・装備図鑑</strong>: WildsならMHDB Wilds、WorldならMHW DBなど、作品対応を</li>
+            </ul>
+            <p>明示するコミュニティAPIを選ぶ。</p>
+            <ul>
+                <li><strong>VALORANTのスキン・武器等の表示</strong>: 公式コンテンツカタログまたはVALORANT-API.com。</li>
+                <li><strong>VALORANTの個人戦績</strong>: Riotにプロダクトを登録し、本番キーとRSO同意を含む要件を満たせる</li>
+            </ul>
+            <p>場合に限る。</p>
+            <ul>
+                <li><strong>Apexのプレイヤー統計</strong>: Apex Legends APIやTracker Networkの提供条件・対象プラット</li>
+            </ul>
+            <p>フォームを確認して選ぶ。大会統計ならDGS Ingramも候補。</p>
+            <ul>
+                <li><strong>SF6のランク・バトル履歴</strong>: まずBuckler公式サイトを利用。機械取得は非公式かつ未保証な</li>
+            </ul>
+            <p>方法であることを前提に、公開サービス用途では公式許可を優先する。</p>
+            <ul>
+                <li><strong>LoLの試合・ランク・プレイヤー情報</strong>: Riot公式API。チャンピオン・アイテム等の静的情報は</li>
+            </ul>
+            <p>Data Dragon。</p>
+            <p>いずれも、キーやログインCookieをクライアントコード・公開リポジトリに置かず、APIの利用規約、 レート制限、データの再配布条件を確認する。コミュニティAPIは、エンドポイントが現在応答する ことだけで、将来の継続提供や商用利用が保証されるわけではない。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://developer.riotgames.com/docs/valorant">Riot Developer Portal: VALORANT API Policy</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://developer.riotgames.com/docs/lol">Riot Developer Portal: League of Legends API Policy</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://developer.riotgames.com/docs/portal">Riot Developer Portal Overview</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://developer.riotgames.com/apis">Riot Developer Portal API Catalog</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://ddragon.leagueoflegends.com/cdn/">Data Dragon CDN</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://communitydragon.org/">CommunityDragon</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://valorant-api.com/">VALORANT-API.com</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://docs.wilds.mhdb.io/">Monster Hunter: Wilds API Reference</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://docs.mhw-db.com/">Monster Hunter World API documentation</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://github.com/pkwlo/MonHun-API">MonHun-API GitHub repository</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://apexlegendsapi.com/">Apex Legends API documentation</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://tracker.gg/developers/docs/titles/apex">Tracker Network: Apex Legends API</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://apexlegendsstatus.com/tournament-stable/api">Apex Legends Status: DGS "Ingram" API</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://www.streetfighter.com/6/buckler/en/welcome">Buckler's Boot Camp</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://sfstats.app/buckler">Buckler API Notes: Undocumented SF6 Data Routes</a></li>
+                <li>参照日: 2026-09-28</li>
+                <li><a href="https://www.streetfighter.com/6/eula/ps/en/">Street Fighter 6 Terms of Service and EULA</a></li>
+                <li>参照日: 2026-09-28</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-10-08: yomiyasuの原則に基づき本文を推敲</li>
+                <li>2026-09-28: モンスターハンター、VALORANT、Apex Legends、SF6、LoLで利用できる公式・コミュニティAPIを比較して初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

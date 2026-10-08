@@ -1,6 +1,6 @@
 ---
 作成日: 2026-08-25
-更新日: 2026-08-31
+更新日: 2026-10-05
 タグ:
   - VS Code
   - GitHub Copilot
@@ -60,8 +60,8 @@ Autopilotへ切り替える。
 拡張機能ホストの新規Chatで既定の権限レベルを指定する設定は
 `chat.permissions.default` であり、値 `autopilot` を指定できる。
 
-VS Code 1.124のリリースノートは、当時のAutopilotを権限レベルとして説明し、
-新規Chatの既定値を `chat.permissions.default` で変更できると案内されている。
+VS Code 1.124のリリースノートでは、当時のAutopilotを権限レベルとして説明し、
+新規Chatの既定値は `chat.permissions.default` で変更できると案内している。
 利用中のVS Codeで `chat.defaultConfiguration` が設定候補に出ない場合は、
 この従来設定を使用する。
 
@@ -114,6 +114,7 @@ VS Code 1.124のリリースノートは、当時のAutopilotを権限レベル�
 
 ## 更新履歴
 
+- 2026-10-05: 文体を確認し、不自然な表現を修正
 - 2026-08-31: 全参考URLと現行設定定義を再確認し、Agent HostとLocalハーネスの
   区別、Autopilotの自動再試行・質問応答、管理対象ルールの優先を反映
 - 2026-08-25: ワークスペース外のファイル読み取りに関する確認挙動と安全な運用規定を追記

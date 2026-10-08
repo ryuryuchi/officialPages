@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VS Code Copilotの思考中メッセージの仕組み</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">VS Code Copilotの思考中メッセージの仕組み</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>VS CodeのCopilot Chatで処理中に表示される「ハムスターに賄賂を渡しています」のような文言について、生成元と選ばれ方を公式ソースコードから調べた。</p>
+            <h2 id="結論">結論</h2>
+            <ul>
+                <li>Copilotの処理中に出る文言を日本語にするには、VS Codeの設定 <code>chat.agent.thinking.phrases</code> を使い、<code>mode</code> を <code>replace</code> にして日本語の文言を指定する。</li>
+                <li>VS Codeの表示言語を日本語にする設定とは別である。表示言語はメニューなどのUIを切り替えるが、処理中の文言を確実に日本語へ統一するには独自フレーズを設定する。</li>
+                <li>この文言はCopilotのAIモデルがその場で考えて出力した文章ではなく、VS Codeの画面側にあらかじめ用意された表示用メッセージである。</li>
+                <li>英語のソース文字列は <code>Bribing the hamster</code>。VS Codeのソースコードでは、こうした文言を「Easter-egg loading messages」と明記している。</li>
+                <li>表示するかどうかは処理中の表示を更新する際に抽選で決まり、通常は約50回に1回の割合でイースターエッグ文言を選ぶ。表示する場合は、登録済みの複数の文言からランダムに1つ選ぶ。</li>
+                <li>ハムスターという比喩を選んだ個別の由来や作成者は、確認した公式ソースでは説明されていない。</li>
+            </ul>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="文言の出どころ">文言の出どころ</h3>
+            <p>VS Codeのチャット表示コードには <code>funWorkingMessages</code> という配列があり、処理中のイースターエッグ文言が文字列として定義されている。調査時点のソースには一般向け10件、Minecraft関連3件、Microsoft関連1件の計14件が登録されていた。</p>
+            <p>各文言はローカライズ用の関数を通して表示されるため、英語のソース文字列が日本語UIでは翻訳された形で見えることがある。</p>
+            <h3 id="イースターエッグ文言一覧">イースターエッグ文言一覧</h3>
+            <p>次の表は調査時点のソースコードに定義されていた一覧である。「意味の目安」は英語の文言を説明するための意訳であり、実際の日本語UI表示と一致するとは限らない。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>分類</th>
+                        <th>英語のソース文言</th>
+                        <th>意味の目安（意訳）</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>一般</td>
+                        <td><code>Bribing the hamster</code></td>
+                        <td>ハムスターに賄賂を渡しています</td>
+                    </tr>
+                    <tr>
+                        <td>一般</td>
+                        <td><code>Reticulating splines</code></td>
+                        <td>スプラインを調整しています</td>
+                    </tr>
+                    <tr>
+                        <td>一般</td>
+                        <td><code>Untangling the spaghetti</code></td>
+                        <td>スパゲッティをほどいています</td>
+                    </tr>
+                    <tr>
+                        <td>一般</td>
+                        <td><code>Communing with the codebase</code></td>
+                        <td>コードベースと交信しています</td>
+                    </tr>
+                    <tr>
+                        <td>一般</td>
+                        <td><code>Letting it cook</code></td>
+                        <td>じっくり仕上げています</td>
+                    </tr>
+                    <tr>
+                        <td>一般</td>
+                        <td><code>Thanking all the fish</code></td>
+                        <td>魚たちに感謝しています</td>
+                    </tr>
+                    <tr>
+                        <td>一般</td>
+                        <td><code>Stabilizing the wormhole</code></td>
+                        <td>ワームホールを安定させています</td>
+                    </tr>
+                    <tr>
+                        <td>一般</td>
+                        <td><code>Baking the ideas</code></td>
+                        <td>アイデアを焼き上げています</td>
+                    </tr>
+                    <tr>
+                        <td>一般</td>
+                        <td><code>Consulting the oracle</code></td>
+                        <td>神託に相談しています</td>
+                    </tr>
+                    <tr>
+                        <td>一般</td>
+                        <td><code>Stirring the solution</code></td>
+                        <td>解決策をかき混ぜています</td>
+                    </tr>
+                    <tr>
+                        <td>Minecraft</td>
+                        <td><code>Mining diamonds</code></td>
+                        <td>ダイヤモンドを採掘しています</td>
+                    </tr>
+                    <tr>
+                        <td>Minecraft</td>
+                        <td><code>Digging straight down</code></td>
+                        <td>真下に掘っています</td>
+                    </tr>
+                    <tr>
+                        <td>Minecraft</td>
+                        <td><code>Mining at night</code></td>
+                        <td>夜に採掘しています</td>
+                    </tr>
+                    <tr>
+                        <td>Microsoft</td>
+                        <td><code>Summoning Clippy</code></td>
+                        <td>Clippyを呼び出しています</td>
+                    </tr>
+                </tbody>
+            </table>
+            <h3 id="表示の決まり方">表示の決まり方</h3>
+            <p>ソースコードの <code>maybePickFunWorkingMessage</code> は乱数を使い、<code>FUN<em>WORKING</em>MESSAGE_RATE = 50</code> に対して1回の抽選が当たったときだけ、配列から文言を1つ返す。したがって「常にハムスターの処理をしている」という意味ではなく、待ち時間に表示する遊び心のある表示である。</p>
+            <p>この抽選は処理状況の更新ごとに呼び出されるため、「1セッションにつき50回に1回」や「処理時間の2%」という意味ではない。表示頻度は処理中表示の更新回数にも左右される。</p>
+            <h3 id="処理中の文言を日本語にする">処理中の文言を日本語にする</h3>
+            <ol>
+                <li>VS Codeで <code>Ctrl+Shift+P</code> を押し、<code>User Settings (JSON)</code> を開くコマンドを実行する。英語UIでのコマンド名は <code>Preferences: Open User Settings (JSON)</code>。</li>
+                <li>次の設定を追加して保存する。既に設定がある場合は、既存のJSONにプロパティを追加する。</li>
+            </ol>
+            <pre><code class="language-json">&quot;chat.agent.thinking.phrases&quot;: {
+  &quot;mode&quot;: &quot;replace&quot;,
+  &quot;phrases&quot;: [
+    &quot;考え中です&quot;,
+    &quot;回答を組み立てています&quot;,
+    &quot;必要な情報を確認しています&quot;
+  ]
+}</code></pre>
+            <p><code>mode</code> は <code>replace</code>（既定のフレーズを置き換える）または <code>append</code>（既定のフレーズに追加する）を指定する。日本語だけを表示したい場合は <code>replace</code> にする。<code>append</code> では既定の英語フレーズも引き続き選ばれる。</p>
+            <p>この設定はVS Code 1.110（2026年2月リリース）で案内された。設定項目が見つからない場合は、VS Codeを更新する。</p>
+            <p>この設定は、考え中の表示のほか、作業中、ターミナル、ツール操作中のローディング文言を対象とする。設定できるのは画面に出る進捗用メッセージであり、モデルの内部推論や回答内容を翻訳・表示する設定ではない。</p>
+            <p>VS Codeのメニューなども日本語にしたい場合は、コマンドパレットから <code>Configure Display Language</code> を実行し、日本語 (<code>ja</code>) を選ぶ。必要な言語パックがなければインストール後、再起動する。これはUIの表示言語を切り替える設定であり、上記の独自フレーズ設定とは別である。</p>
+            <h3 id="表示文言のカスタマイズ">表示文言のカスタマイズ</h3>
+            <p>独自フレーズは複数登録でき、処理中にその中から表示される。既定のイースターエッグ文言も含めて独自文言に置き換えたい場合は <code>replace</code>、既定文言を残して候補を増やしたい場合は <code>append</code> を使う。</p>
+            <h3 id="分かっていることと分からないこと">分かっていることと分からないこと</h3>
+            <p>「イースターエッグ」であること、文言がVS CodeのUIコードに定義されていること、乱数で選ばれることはソースコードで確認できる。一方、「なぜハムスターに賄賂を渡す表現にしたのか」や、誰が最初に考案したかまでは、確認した公式情報からは特定できない。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://github.com/microsoft/vscode/blob/62d758930fb1642067e32d745ab961a471b1d27a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatThinkingContentPart.ts#L269-L320">VS Code: chatThinkingContentPart.ts（メッセージ一覧と抽選処理）</a></li>
+                <li>参照日: 2026-10-06</li>
+                <li><a href="https://github.com/microsoft/vscode/blob/62d758930fb1642067e32d745ab961a471b1d27a/src/vs/workbench/contrib/chat/browser/widget/chatContentParts/chatProgressContentPart.ts">VS Code: chatProgressContentPart.ts（処理中表示での呼び出し）</a></li>
+                <li>参照日: 2026-10-06</li>
+                <li><a href="https://code.visualstudio.com/updates/v1_110">Custom thinking phrases - Visual Studio Code February 2026 Release Notes</a></li>
+                <li>推論中やツール呼び出し中に表示するローディング文言をカスタマイズできる機能を案内</li>
+                <li>参照日: 2026-10-07</li>
+                <li><a href="https://github.com/microsoft/vscode/blob/main/extensions/copilot/CHANGELOG.md">VS Code Copilot extension CHANGELOG</a></li>
+                <li><code>chat.agent.thinking.phrases</code> によるローディング文言のカスタマイズを案内</li>
+                <li>参照日: 2026-10-07</li>
+                <li><a href="https://github.com/microsoft/vscode/blob/main/src/vs/workbench/contrib/chat/browser/chat.shared.contribution.ts">VS Code: chat.shared.contribution.ts（chat.agent.thinking.phrases設定の定義）</a></li>
+                <li><code>mode</code> の <code>replace</code> / <code>append</code> と、独自フレーズの設定を定義</li>
+                <li>参照日: 2026-10-07</li>
+                <li><a href="https://code.visualstudio.com/docs/configure/locales">Display Language - Visual Studio Code</a></li>
+                <li><code>Configure Display Language</code> コマンドと日本語 (<code>ja</code>) の選択方法を案内</li>
+                <li>参照日: 2026-10-07</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-10-08: yomiyasuの原則に基づき本文を推敲</li>
+            </ul>
+            <ul>
+                <li>2026-10-07: <code>chat.agent.thinking.phrases</code> を使った日本語化手順と、表示言語設定との違いを追記</li>
+                <li>2026-10-06: ソースコードにあるイースターエッグ文言14件を分類・意訳付きの表に追加</li>
+                <li>2026-10-06: 初版を作成</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

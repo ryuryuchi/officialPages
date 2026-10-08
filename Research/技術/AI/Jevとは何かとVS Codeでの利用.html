@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jevとは何かとVS Codeでの利用</title>
+    <link rel="stylesheet" href="../../../assets/css/style_qiita.css">
+</head>
+<body>
+    <main>
+        <article class="card">
+            <div class="article-header">
+                <h1 class="article-title">Jevとは何かとVS Codeでの利用</h1>
+
+            </div>
+            <div class="article-body">
+            <h2 id="概要">概要</h2>
+            <p>「すごいAI」として紹介されるJevが何をするモデルなのか、一般的なチャットAIやコーディングAIと何が違うのか、VS Codeで利用できるのかを、TypeSafeとVS Codeの公式資料を中心に調べる。</p>
+            <h2 id="結論">結論</h2>
+            <p>JevはTypeSafeの「System One」モデルで、自由な文章やコードを生成するのではなく、文章やJSONなどの入力について、選択・採点・真偽判定といった<strong>範囲を定めた判断</strong>を返す。結果が型付きデータと確率で返るため、分類、振り分け、評価などをアプリケーションの処理に組み込みやすい。</p>
+            <p>「何でも答える非常に賢いチャットAI」や、Copilotの代わりにコードを書くモデルではない。特定の判断タスクで役に立つ専用部品であり、汎用LLMやコーディングエージェントを置き換えるものではない。Jevがあらゆる用途で他のAIより優れているという独立した比較結果は、この調査では確認できていない。</p>
+            <p>VS Codeでは、GitHub Copilotが対応するAgent SkillsとしてTypeSafeの公式スキルを読み込ませ、TypeSafeを使うコードの作成を支援させられる。また、自分のアプリや拡張機能からTypeSafe APIを呼ぶこともできる。いずれもCopilotの基盤モデルをJevに切り替える機能ではない。</p>
+            <h2 id="詳細">詳細</h2>
+            <h3 id="jevが返すもの">Jevが返すもの</h3>
+            <p>TypeSafeは、Jevを「System One」モデルと呼んでいる。入力（state）と質問を渡し、主に次の3種類の回答を得る。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>型</th>
+                        <th>できること</th>
+                        <th>例</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Choice</td>
+                        <td>あらかじめ定めた選択肢から選ぶ</td>
+                        <td>問い合わせを担当部署へ振り分ける</td>
+                    </tr>
+                    <tr>
+                        <td>Score</td>
+                        <td>定義した基準に沿って点数を付ける</td>
+                        <td>文面の緊急度や品質を採点する</td>
+                    </tr>
+                    <tr>
+                        <td>Noul</td>
+                        <td>真偽を判定し、0〜1の値を返す</td>
+                        <td>返金を求めているか判定する</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>たとえば問い合わせ文を一度渡して、「緊急か」「どの部署が担当か」「どれくらい不満か」を同時に質問し、返ってきた値に応じて通常のプログラムで処理を分けられる。APIとSDKが結果を型付きデータとして返すため、LLMに「JSONだけで返して」と頼む方法より、出力の形式をソフトウェア側で扱いやすくする設計である。</p>
+            <h3 id="すごい-の意味と限界">「すごい」の意味と限界</h3>
+            <ul>
+                <li>TypeSafeは、確率の校正、速さ、ソフトウェアで直接扱える構造化出力をJevの設計目標として説明している。これは提供元の説明であり、どの業務でも一定の正解率や速度を保証する意味ではない。</li>
+                <li>確率の校正は、多数の予測を集めたときに確率が実際の正解頻度に近づく性質であり、個々の回答が必ず正しいという保証ではない。閾値を決めて、人に確認を回す処理も検討する。</li>
+                <li>自由な説明、文章やコードの生成、会話、画像・音声・動画の直接入力には向かない。公式資料ではテキスト入力のみ対応としている。</li>
+                <li>英語が主な学習言語で、日本語を含む他言語も扱うが、精度は同等とは限らない。日本語で実運用する前に、対象データでテストする必要がある。</li>
+                <li>2026-09-25に確認したモデル資料ではJev 1.13.0が掲載され、入力は100万トークンあたり0.042米ドル、出力トークンは無料。料金や提供モデルは変わる可能性があるため、利用時に公式ページを再確認する。</li>
+                <li>同じモデル資料では、1リクエストの上限を64kトークン（入力全体と質問の合計）、入力と最長質問の組み合わせは32kトークンとしている。上限値やレート制限は変更される可能性がある。</li>
+            </ul>
+            <h3 id="vs-codeでの利用方法">VS Codeでの利用方法</h3>
+            <h4 id="github-copilotにtypesafeの使い方を教える">GitHub CopilotにTypeSafeの使い方を教える</h4>
+            <p>VS CodeのGitHub CopilotはAgent Skillsに対応しており、プロジェクト内では<code>.github/skills/</code>などに置いたスキルを必要に応じて読み込める。TypeSafeの公式<code>typesafe-ai</code>スキルは、API、質問型、設計パターンをコーディングエージェントに説明し、TypeSafeを使うコードを書くのを支援する。</p>
+            <p>この方法でJevがCopilot Chatのモデルになるわけではない。Copilotのエージェントがコード作成を担い、生成したアプリケーションが必要に応じてTypeSafe APIを呼ぶという役割分担である。インストール方法はTypeSafe公式のAgent Skill資料とVS CodeのAgent Skills資料を参照する。</p>
+            <h4 id="自作アプリからjevを呼ぶ">自作アプリからJevを呼ぶ</h4>
+            <p>アプリケーションからTypeSafe API（<code>POST /v1/systemone</code>）またはPython・JavaScript SDKを使って呼び出す。TypeSafeのAPIキーが必要であり、キーは環境変数や秘密情報管理機能に保管し、ソースコードやGitへ書き込まない。</p>
+            <p>APIへ渡す文章やデータはTypeSafeのサービスに送信される。提供元は入力をモデル学習に使わないと説明しているが、それだけでデータ保持やその他のプライバシー条件がすべて保証されるわけではない。機密情報を送る場合は、組織の規則と最新の利用規約・プライバシー資料を確認する。TypeSafeはEnterprise向けにゼロデータ保持（ZDR）を案内している。</p>
+            <h4 id="jevを使う編集用agent-skillの例">Jevを使う編集用Agent Skillの例</h4>
+            <p>GitHubの<code>RefoundAI/jev-editor-skill</code>は、記事やブログ原稿の文体、編集構成、SEOなどをJevで評価するコミュニティ製スキルである。これはTypeSafe公式の汎用<code>typesafe-ai</code>スキルとは別のプロジェクトで、Agent Skills対応エージェントから使う例の一つ。リポジトリはPython 3.10以上とTypeSafe APIキーを要件としている。</p>
+            <h2 id="参考資料">参考資料</h2>
+            <ul>
+                <li><a href="https://docs.typesafe.ai/introduction/coding-agents">Jev with coding agents - TypeSafe AI</a></li>
+                <li>参照日: 2026-09-25</li>
+                <li><a href="https://docs.typesafe.ai/concepts/system-one">System One - TypeSafe AI</a></li>
+                <li>参照日: 2026-09-25</li>
+                <li><a href="https://docs.typesafe.ai/models">Models - TypeSafe AI</a></li>
+                <li>参照日: 2026-09-25</li>
+                <li><a href="https://docs.typesafe.ai/introduction/quickstart">Quick start - TypeSafe AI</a></li>
+                <li>参照日: 2026-09-25</li>
+                <li><a href="https://docs.typesafe.ai/agent-skill">Agent skill - TypeSafe AI</a></li>
+                <li>参照日: 2026-09-25</li>
+                <li><a href="https://code.visualstudio.com/docs/agent-customization/agent-skills">Use Agent Skills in VS Code - Visual Studio Code</a></li>
+                <li>参照日: 2026-09-25</li>
+                <li><a href="https://typesafe.ai/legal/privacy-policy">Privacy policy - TypeSafe AI</a></li>
+                <li>参照日: 2026-09-25</li>
+                <li><a href="https://github.com/RefoundAI/jev-editor-skill">RefoundAI/jev-editor-skill - GitHub</a></li>
+                <li>参照日: 2026-09-25</li>
+            </ul>
+            <h2 id="更新履歴">更新履歴</h2>
+            <ul>
+                <li>2026-09-25: 初版を作成。Jevの特性、用途と制約、VS CodeでのAgent Skills/API利用を公式資料から整理</li>
+            </ul>
+            </div>
+        </article>
+    </main>
+</body>
+</html>
